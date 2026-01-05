@@ -1,0 +1,25 @@
+# Development overrides
+# This file is automatically loaded by docker-compose
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend:/var/www/html
+      - /var/www/html/vendor
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./app:/app
+      - /app/.dart_tool
+      - /app/build
+    ports:
+      - "3000:3000"

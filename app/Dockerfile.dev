@@ -1,0 +1,16 @@
+# Development Dockerfile for Flutter Web
+FROM ghcr.io/cirruslabs/flutter:3.27.2
+
+WORKDIR /app
+
+# Copy pubspec files first for caching
+COPY pubspec.yaml pubspec.lock ./
+RUN flutter pub get
+
+# Copy the rest of the app
+COPY . .
+
+EXPOSE 3000
+
+# Run Flutter web in development mode
+CMD ["flutter", "run", "-d", "web-server", "--web-port=3000", "--web-hostname=0.0.0.0"]
