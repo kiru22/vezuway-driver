@@ -49,6 +49,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+
+    final success = await ref.read(authProvider.notifier).signInWithGoogle();
+
+    setState(() => _isLoading = false);
+
+    if (!success && mounted) {
+      final error = ref.read(authProvider).error;
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -152,6 +172,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         )
                       : const Text('Iniciar sesion'),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: colors.textSecondary.withAlpha(77))),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'o continua con',
+                        style: TextStyle(color: colors.textSecondary),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: colors.textSecondary.withAlpha(77))),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _handleGoogleSignIn,
+                  icon: Image.network(
+                    'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                    height: 20,
+                    width: 20,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata, size: 24),
+                  ),
+                  label: const Text('Continuar con Google'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(color: colors.textSecondary.withAlpha(77)),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(

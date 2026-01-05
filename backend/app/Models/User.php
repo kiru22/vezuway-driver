@@ -25,6 +25,8 @@ class User extends Authenticatable
         'phone',
         'locale',
         'fcm_token',
+        'google_id',
+        'avatar_url',
     ];
 
     /**
@@ -36,6 +38,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'fcm_token',
+        'google_id',
     ];
 
     /**

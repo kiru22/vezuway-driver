@@ -82,4 +82,17 @@ class AuthRepository {
   Future<bool> isAuthenticated() async {
     return await _api.hasToken();
   }
+
+  Future<({UserModel user, String token})> googleLogin(String idToken) async {
+    final response = await _api.post('/auth/google', data: {
+      'id_token': idToken,
+    });
+
+    final user = UserModel.fromJson(response.data['user']);
+    final token = response.data['token'] as String;
+
+    await _api.setToken(token);
+
+    return (user: user, token: token);
+  }
 }

@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Auth\Resources\UserResource;
+use Google\Client as GoogleClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -115,5 +116,87 @@ class AuthController extends Controller
         $user->update(['password' => Hash::make($validated['password'])]);
 
         return response()->json(['message' => 'Contraseña actualizada correctamente']);
+    }
+
+    public function googleLogin(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'id_token' => 'required|string',
+        ]);
+
+        // Get all valid client IDs (web, iOS, Android)
+        $validClientIds = array_filter([
+            config('services.google.client_id'),
+            config('services.google.client_id_ios'),
+            config('services.google.client_id_android'),
+        ]);
+
+        if (empty($validClientIds)) {
+            return response()->json([
+                'message' => 'Google authentication is not configured',
+            ], 500);
+        }
+
+        try {
+            $client = new GoogleClient;
+
+            // Verify token against all valid client IDs
+            $payload = null;
+            foreach ($validClientIds as $clientId) {
+                $client->setClientId($clientId);
+                $payload = $client->verifyIdToken($validated['id_token']);
+                if ($payload) {
+                    break;
+                }
+            }
+
+            if (! $payload) {
+                return response()->json([
+                    'message' => 'Token de Google inválido',
+                ], 401);
+            }
+
+            $googleId = $payload['sub'];
+            $email = $payload['email'];
+            $name = $payload['name'] ?? $payload['email'];
+            $avatarUrl = $payload['picture'] ?? null;
+
+            // Find user by google_id or email
+            $user = User::where('google_id', $googleId)
+                ->orWhere('email', $email)
+                ->first();
+
+            if ($user) {
+                // Link Google account if not already linked
+                if (! $user->google_id) {
+                    $user->update([
+                        'google_id' => $googleId,
+                        'avatar_url' => $avatarUrl ?? $user->avatar_url,
+                    ]);
+                }
+            } else {
+                // Create new user
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'google_id' => $googleId,
+                    'avatar_url' => $avatarUrl,
+                    'password' => null, // OAuth users don't have password
+                    'locale' => 'es',
+                ]);
+            }
+
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return response()->json([
+                'user' => new UserResource($user),
+                'token' => $token,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al autenticar con Google',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 401);
+        }
     }
 }

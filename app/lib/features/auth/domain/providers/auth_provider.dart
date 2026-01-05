@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/services/api_service.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -11,6 +12,13 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 // Auth Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.watch(apiServiceProvider));
+});
+
+// Google Sign In Provider
+final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  return GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 });
 
 // Auth State
@@ -43,8 +51,9 @@ class AuthState {
 // Auth Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  final GoogleSignIn _googleSignIn;
 
-  AuthNotifier(this._repository) : super(const AuthState()) {
+  AuthNotifier(this._repository, this._googleSignIn) : super(const AuthState()) {
     checkAuthStatus();
   }
 
@@ -120,11 +129,60 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _repository.logout();
+    // Also sign out from Google
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {
+      // Ignore Google sign out errors
+    }
     state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<bool> signInWithGoogle() async {
+    state = state.copyWith(status: AuthStatus.loading, error: null);
+
+    try {
+      // Trigger Google Sign In flow
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled the sign in
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+        return false;
+      }
+
+      // Get authentication details
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        state = state.copyWith(
+          status: AuthStatus.unauthenticated,
+          error: 'No se pudo obtener el token de Google',
+        );
+        return false;
+      }
+
+      // Send token to backend
+      final result = await _repository.googleLogin(idToken);
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: result.user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.unauthenticated,
+        error: 'Error al iniciar sesion con Google',
+      );
+      return false;
+    }
   }
 }
 
 // Auth Provider
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier(ref.watch(authRepositoryProvider));
+  return AuthNotifier(
+    ref.watch(authRepositoryProvider),
+    ref.watch(googleSignInProvider),
+  );
 });

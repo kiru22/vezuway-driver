@@ -4,6 +4,7 @@ class UserModel {
   final String email;
   final String? phone;
   final String locale;
+  final String? avatarUrl;
   final String? fcmToken;
   final DateTime? emailVerifiedAt;
   final DateTime createdAt;
@@ -15,6 +16,7 @@ class UserModel {
     required this.email,
     this.phone,
     required this.locale,
+    this.avatarUrl,
     this.fcmToken,
     this.emailVerifiedAt,
     required this.createdAt,
@@ -28,6 +30,7 @@ class UserModel {
       email: json['email'],
       phone: json['phone'],
       locale: json['locale'] ?? 'es',
+      avatarUrl: json['avatar_url'],
       fcmToken: json['fcm_token'],
       emailVerifiedAt: json['email_verified_at'] != null
           ? DateTime.parse(json['email_verified_at'])
@@ -44,6 +47,7 @@ class UserModel {
       'email': email,
       'phone': phone,
       'locale': locale,
+      'avatar_url': avatarUrl,
       'fcm_token': fcmToken,
     };
   }
