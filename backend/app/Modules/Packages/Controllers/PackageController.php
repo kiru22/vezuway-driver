@@ -29,14 +29,18 @@ class PackageController extends Controller
             $query->where('route_id', $request->route_id);
         }
 
+        $perPage = min($request->integer('per_page', 15), 100);
+
         $packages = $query->orderBy('created_at', 'desc')
-            ->paginate($request->per_page ?? 15);
+            ->paginate($perPage);
 
         return PackageResource::collection($packages);
     }
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Package::class);
+
         $validated = $request->validate([
             'sender_name' => 'required|string|max:255',
             'sender_phone' => 'nullable|string|max:50',

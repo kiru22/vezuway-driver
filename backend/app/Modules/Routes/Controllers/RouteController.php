@@ -5,10 +5,9 @@ namespace App\Modules\Routes\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Packages\Models\Package;
 use App\Modules\Routes\Models\Route;
-use App\Modules\Routes\Models\RouteSchedule;
 use App\Modules\Routes\Resources\RouteResource;
-use Carbon\Carbon;
 use App\Shared\Enums\RouteStatus;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -33,14 +32,18 @@ class RouteController extends Controller
             $query->active();
         }
 
+        $perPage = min($request->integer('per_page', 15), 100);
+
         $routes = $query->orderBy('departure_date', 'desc')
-            ->paginate($request->per_page ?? 15);
+            ->paginate($perPage);
 
         return RouteResource::collection($routes);
     }
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Route::class);
+
         $validated = $request->validate([
             'origin_city' => 'required|string|max:100',
             'origin_country' => 'required|string|max:2',
@@ -67,7 +70,7 @@ class RouteController extends Controller
         $firstDate = collect($departureDates)->sort()->first();
         $validated['departure_date'] = $firstDate;
 
-        if ($tripDurationHours && !isset($validated['estimated_arrival_date'])) {
+        if ($tripDurationHours && ! isset($validated['estimated_arrival_date'])) {
             $validated['estimated_arrival_date'] = Carbon::parse($firstDate)->addHours($tripDurationHours);
         }
 

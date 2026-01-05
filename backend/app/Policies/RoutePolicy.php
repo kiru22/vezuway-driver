@@ -7,6 +7,11 @@ use App\Modules\Routes\Models\Route;
 
 class RoutePolicy
 {
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
     public function view(User $user, Route $route): bool
     {
         return $user->id === $route->transporter_id;

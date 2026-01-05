@@ -39,14 +39,13 @@ class RouteResource extends JsonResource
 
             'packages_count' => $this->when(isset($this->packages_count), $this->packages_count),
 
-            'schedules' => $this->whenLoaded('schedules', fn () =>
-                $this->schedules->map(fn ($schedule) => [
-                    'id' => $schedule->id,
-                    'departure_date' => $schedule->departure_date?->format('Y-m-d'),
-                    'estimated_arrival_date' => $schedule->estimated_arrival_date?->format('Y-m-d'),
-                    'status' => $schedule->status,
-                    'status_label' => $schedule->status?->label(),
-                ])
+            'schedules' => $this->whenLoaded('schedules', fn () => $this->schedules->map(fn ($schedule) => [
+                'id' => $schedule->id,
+                'departure_date' => $schedule->departure_date?->format('Y-m-d'),
+                'estimated_arrival_date' => $schedule->estimated_arrival_date?->format('Y-m-d'),
+                'status' => $schedule->status,
+                'status_label' => $schedule->status?->label(),
+            ])
             ),
 
             'transporter' => $this->whenLoaded('transporter', fn () => [

@@ -20,8 +20,8 @@ Route::get('health', function () {
 });
 
 Route::prefix('v1')->group(function () {
-    // Auth routes (public)
-    Route::prefix('auth')->group(function () {
+    // Auth routes (public) - rate limited to prevent brute force
+    Route::prefix('auth')->middleware('throttle:5,1')->group(function () {
         Route::post('register', [AuthController::class, 'register']);
         Route::post('login', [AuthController::class, 'login']);
     });

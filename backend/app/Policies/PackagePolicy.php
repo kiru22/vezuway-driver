@@ -7,6 +7,11 @@ use App\Modules\Packages\Models\Package;
 
 class PackagePolicy
 {
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
     public function view(User $user, Package $package): bool
     {
         return $user->id === $package->transporter_id;
