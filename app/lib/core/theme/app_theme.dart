@@ -183,7 +183,7 @@ class AppTheme {
           size: 24,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         color: AppColors.cardBackground,
         shadowColor: AppColors.shadow,
@@ -355,7 +355,7 @@ class AppTheme {
         dragHandleSize: Size(40, 4),
         showDragHandle: true,
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 24,
@@ -464,7 +464,7 @@ class AppTheme {
         linearTrackColor: AppColors.surfaceLight,
         circularTrackColor: AppColors.surfaceLight,
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.textMuted,
         indicatorColor: AppColors.primary,
@@ -630,7 +630,7 @@ class AppTheme {
           size: 24,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         color: AppColors.lightCardBackground,
         shadowColor: AppColors.lightShadow,
@@ -758,7 +758,7 @@ class AppTheme {
         dragHandleSize: Size(40, 4),
         showDragHandle: true,
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.lightSurface,
         surfaceTintColor: Colors.transparent,
         elevation: 24,

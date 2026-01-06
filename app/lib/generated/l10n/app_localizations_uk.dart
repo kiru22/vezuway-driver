@@ -1,5 +1,5 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -126,7 +126,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get auth_passwordMismatch => 'Паролi не спiвпадають';
 
   @override
-  String get auth_passwordMinLength => 'Пароль повинен мiстити не менше 8 символiв';
+  String get auth_passwordMinLength =>
+      'Пароль повинен мiстити не менше 8 символiв';
 
   @override
   String get auth_registerButton => 'Створити акаунт';
@@ -188,7 +189,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_title => 'Замовлення';
 
   @override
-  String get packages_searchPlaceholder => 'Шукати за кодом, вiдправником або отримувачем...';
+  String get packages_searchPlaceholder =>
+      'Шукати за кодом, вiдправником або отримувачем...';
 
   @override
   String get packages_filterAll => 'Всi';
@@ -197,13 +199,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_emptyTitle => 'Немає посилок';
 
   @override
-  String get packages_emptyMessage => 'Використовуйте кнопку + щоб зареєструвати нову посилку';
+  String get packages_emptyMessage =>
+      'Використовуйте кнопку + щоб зареєструвати нову посилку';
 
   @override
   String get packages_emptyFilterTitle => 'Немає результатiв';
 
   @override
-  String get packages_emptyFilterMessage => 'Не знайдено посилок за обраними фiльтрами';
+  String get packages_emptyFilterMessage =>
+      'Не знайдено посилок за обраними фiльтрами';
 
   @override
   String get packages_changeStatus => 'Змiнити статус';
@@ -295,13 +299,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_emptyPlanned => 'Немає запланованих маршрутiв';
 
   @override
-  String get routes_emptyPlannedSubtitle => 'Створiть новий маршрут, щоб почати';
+  String get routes_emptyPlannedSubtitle =>
+      'Створiть новий маршрут, щоб почати';
 
   @override
   String get routes_emptyHistory => 'Немає iсторiї';
 
   @override
-  String get routes_emptyHistorySubtitle => 'Завершенi маршрути з\'являться тут';
+  String get routes_emptyHistorySubtitle =>
+      'Завершенi маршрути з\'являться тут';
 
   @override
   String get routes_createTitle => 'Новий маршрут';
@@ -325,10 +331,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_departureDates => 'Дати вiдправлення';
 
   @override
-  String get routes_departureDatesHint => 'Оберiть одну або декiлька дат у календарi';
+  String get routes_departureDatesHint =>
+      'Оберiть одну або декiлька дат у календарi';
 
   @override
-  String get routes_atLeastOneDate => 'Оберiть щонайменше одну дату вiдправлення';
+  String get routes_atLeastOneDate =>
+      'Оберiть щонайменше одну дату вiдправлення';
 
   @override
   String get routes_tripDuration => 'Тривалiсть поїздки (необов\'язково)';
@@ -337,7 +345,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_tripDurationHint => 'Кiлькiсть годин';
 
   @override
-  String get routes_tripDurationDescription => 'Приблизний час поїздки в годинах';
+  String get routes_tripDurationDescription =>
+      'Приблизний час поїздки в годинах';
 
   @override
   String get routes_notesOptional => 'Примiтки (необов\'язково)';
@@ -367,7 +376,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_createError => 'Помилка створення маршруту';
 
   @override
-  String get routes_selectDatesPrompt => 'Торкнiться днiв у календарi для вибору';
+  String get routes_selectDatesPrompt =>
+      'Торкнiться днiв у календарi для вибору';
 
   @override
   String routes_selectedDatesCount(int count) {
