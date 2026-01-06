@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../l10n/l10n_extension.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: Center(
@@ -27,9 +30,9 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Logistics UA-ES',
-              style: TextStyle(
+            Text(
+              l10n.common_appName,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -37,7 +40,7 @@ class SplashScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tu paquete, su destino',
+              l10n.common_appTagline,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,

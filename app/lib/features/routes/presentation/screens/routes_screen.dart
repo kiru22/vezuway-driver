@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_extensions.dart';
@@ -8,6 +7,7 @@ import '../../../../shared/widgets/app_header.dart';
 import '../../../../shared/widgets/status_chip.dart';
 import '../../data/models/route_model.dart';
 import '../../domain/providers/route_provider.dart';
+import '../widgets/route_dates_carousel.dart';
 
 class RoutesScreen extends ConsumerStatefulWidget {
   const RoutesScreen({super.key});
@@ -271,7 +271,6 @@ class _RouteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final dateFormat = DateFormat('d MMM yyyy', 'es');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -368,16 +367,13 @@ class _RouteCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          // Dates carousel
+          RouteDatesCarousel(dates: route.allDepartureDates),
+          const SizedBox(height: 12),
           // Info row
           Row(
             children: [
-              // Date
-              _InfoChip(
-                icon: Icons.calendar_today_outlined,
-                label: dateFormat.format(route.departureDate),
-              ),
-              const SizedBox(width: 12),
               // Packages count
               _InfoChip(
                 icon: Icons.inventory_2_outlined,

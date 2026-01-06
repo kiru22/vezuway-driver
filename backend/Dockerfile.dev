@@ -13,6 +13,7 @@ RUN apk add --no-cache \
     postgresql-dev \
     git \
     unzip \
+    $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
@@ -23,6 +24,9 @@ RUN apk add --no-cache \
         opcache \
         pcntl \
         exif \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del $PHPIZE_DEPS \
     && rm -rf /var/cache/apk/*
 
 # Install Composer
@@ -32,6 +36,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+COPY docker/php/opcache.dev.ini /usr/local/etc/php/conf.d/opcache.ini
 
 # Configure Nginx
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf

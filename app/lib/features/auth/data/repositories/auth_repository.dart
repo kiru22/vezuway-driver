@@ -64,11 +64,13 @@ class AuthRepository {
     String? name,
     String? phone,
     String? locale,
+    String? themePreference,
   }) async {
     final response = await _api.put('/profile', data: {
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (locale != null) 'locale': locale,
+      if (themePreference != null) 'theme_preference': themePreference,
     });
     return UserModel.fromJson(response.data);
   }
@@ -83,9 +85,17 @@ class AuthRepository {
     return await _api.hasToken();
   }
 
-  Future<({UserModel user, String token})> googleLogin(String idToken) async {
+  Future<({UserModel user, String token})> googleLogin({
+    String? idToken,
+    String? accessToken,
+  }) async {
+    if (idToken == null && accessToken == null) {
+      throw ArgumentError('At least one of idToken or accessToken must be provided');
+    }
+
     final response = await _api.post('/auth/google', data: {
-      'id_token': idToken,
+      if (idToken != null) 'id_token': idToken,
+      if (accessToken != null) 'access_token': accessToken,
     });
 
     final user = UserModel.fromJson(response.data['user']);

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../../routes/domain/providers/route_provider.dart';
@@ -110,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Proximas rutas',
+                        context.l10n.home_upcomingRoutes,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -121,7 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       TextButton(
                         onPressed: () {},
                         child: Text(
-                          'Ver todas',
+                          context.l10n.common_viewAll,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -167,11 +168,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => _UserMenuSheet(
-        userName: user?.name ?? 'Usuario',
+      useRootNavigator: true,
+      builder: (sheetContext) => _UserMenuSheet(
+        userName: user?.name ?? context.l10n.common_user,
         userEmail: user?.email ?? '',
         onLogout: () {
-          Navigator.pop(context);
+          Navigator.pop(sheetContext);
           ref.read(authProvider.notifier).logout();
         },
       ),
@@ -290,17 +292,14 @@ class _UserMenuSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border(
-          top: BorderSide(color: colors.borderAccent),
-          left: BorderSide(color: colors.borderAccent),
-          right: BorderSide(color: colors.borderAccent),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, 16 + bottomPadding),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -313,76 +312,73 @@ class _UserMenuSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 28),
-          // User avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+          const SizedBox(height: 16),
+          // User info row
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                child: Center(
+                  child: Text(
+                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userName,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      userEmail,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
-          Text(
-            userName,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: colors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            userEmail,
-            style: TextStyle(
-              fontSize: 14,
-              color: colors.textMuted,
-            ),
-          ),
-          const SizedBox(height: 28),
           // Menu options
           _MenuOption(
             icon: Icons.person_outline_rounded,
-            label: 'Mi perfil',
-            onTap: () {
-              Navigator.pop(context);
-            },
+            label: context.l10n.userMenu_profile,
+            onTap: () => Navigator.pop(context),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _MenuOption(
             icon: Icons.settings_outlined,
-            label: 'Configuracion',
-            onTap: () {
-              Navigator.pop(context);
-            },
+            label: context.l10n.userMenu_settings,
+            onTap: () => Navigator.pop(context),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _MenuOption(
             icon: Icons.help_outline_rounded,
-            label: 'Ayuda',
-            onTap: () {
-              Navigator.pop(context);
-            },
+            label: context.l10n.userMenu_help,
+            onTap: () => Navigator.pop(context),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           // Logout button
           GestureDetector(
             onTap: () {
@@ -391,27 +387,23 @@ class _UserMenuSheet extends StatelessWidget {
             },
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppColors.error.withValues(alpha: 0.3),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.logout_rounded,
-                    color: AppColors.error,
-                    size: 20,
-                  ),
-                  SizedBox(width: 10),
+                  const Icon(Icons.logout_rounded, color: AppColors.error, size: 18),
+                  const SizedBox(width: 8),
                   Text(
-                    'Cerrar sesion',
-                    style: TextStyle(
-                      fontSize: 16,
+                    context.l10n.auth_logout,
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.error,
                     ),
@@ -420,7 +412,6 @@ class _UserMenuSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
         ],
       ),
     );
@@ -448,7 +439,7 @@ class _MenuOption extends StatelessWidget {
         onTap();
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: colors.cardBackground,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -457,8 +448,8 @@ class _MenuOption extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: colors.surfaceLight,
                 borderRadius: BorderRadius.circular(10),
@@ -466,10 +457,10 @@ class _MenuOption extends StatelessWidget {
               child: Icon(
                 icon,
                 color: colors.textSecondary,
-                size: 20,
+                size: 18,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,

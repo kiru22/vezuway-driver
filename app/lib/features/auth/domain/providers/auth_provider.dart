@@ -142,19 +142,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading, error: null);
 
     try {
-      // Trigger Google Sign In flow
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        // User cancelled the sign in
         state = state.copyWith(status: AuthStatus.unauthenticated);
         return false;
       }
 
-      // Get authentication details
       final googleAuth = await googleUser.authentication;
       final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
 
-      if (idToken == null) {
+      if (idToken == null && accessToken == null) {
         state = state.copyWith(
           status: AuthStatus.unauthenticated,
           error: 'No se pudo obtener el token de Google',
@@ -162,8 +160,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
 
-      // Send token to backend
-      final result = await _repository.googleLogin(idToken);
+      final result = await _repository.googleLogin(
+        idToken: idToken,
+        accessToken: accessToken,
+      );
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: result.user,

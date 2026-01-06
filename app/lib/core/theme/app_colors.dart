@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de colores premium oscura con acentos naranjas
-/// Inspirada en diseño de apps de delivery de alta gama
+/// Paleta de colores premium oscura con acentos azules
+/// Inspirada en el diseño de vezuway.com
 class AppColors {
   AppColors._();
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PRIMARY - Naranja Vibrante
+  // PRIMARY - Azul Vezuway
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color primary = Color(0xFFFF6B35);
-  static const Color primaryLight = Color(0xFFFF8A5C);
-  static const Color primaryDark = Color(0xFFE55B25);
-  static const Color primaryMuted = Color(0xFFFF6B35);
+  static const Color primary = Color(0xFF2563EB);
+  static const Color primaryLight = Color(0xFF3B82F6);
+  static const Color primaryDark = Color(0xFF1D4ED8);
+  static const Color primaryMuted = Color(0xFF2563EB);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // BACKGROUNDS - Escala de Grises Oscuros
@@ -72,7 +72,7 @@ class AppColors {
   // ═══════════════════════════════════════════════════════════════════════════
   static const Color border = Color(0xFF2A2A2A);
   static const Color borderLight = Color(0xFF333333);
-  static const Color borderAccent = Color(0xFF3D2A20);
+  static const Color borderAccent = Color(0xFF1E3A5F);
   static const Color divider = Color(0xFF262626);
   static const Color dividerLight = Color(0xFF303030);
 
@@ -109,7 +109,7 @@ class AppColors {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFF8A5C), Color(0xFFFF6B35), Color(0xFFE55B25)],
+    colors: [Color(0xFF3B82F6), Color(0xFF2563EB), Color(0xFF1D4ED8)],
   );
 
   static const LinearGradient cardGradient = LinearGradient(
@@ -127,7 +127,7 @@ class AppColors {
   // ═══════════════════════════════════════════════════════════════════════════
   // SPECIAL EFFECTS
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color glowOrange = Color(0x40FF6B35);
+  static const Color glowPrimary = Color(0x402563EB);
   static const Color glowSuccess = Color(0x4022C55E);
   static const Color shimmerBase = Color(0xFF1A1A1A);
   static const Color shimmerHighlight = Color(0xFF2A2A2A);
@@ -136,9 +136,9 @@ class AppColors {
   // NAVIGATION
   // ═══════════════════════════════════════════════════════════════════════════
   static const Color navBackground = Color(0xFF141414);
-  static const Color navItemActive = Color(0xFFFF6B35);
+  static const Color navItemActive = Color(0xFF2563EB);
   static const Color navItemInactive = Color(0xFF666666);
-  static const Color navIndicator = Color(0xFFFF6B35);
+  static const Color navIndicator = Color(0xFF2563EB);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LIGHT THEME COLORS

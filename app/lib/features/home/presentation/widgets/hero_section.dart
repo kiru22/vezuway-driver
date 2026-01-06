@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../l10n/date_formatters.dart';
 
-class HeroSection extends StatelessWidget {
+class HeroSection extends ConsumerWidget {
   final String? userName;
 
   const HeroSection({
@@ -12,12 +14,13 @@ class HeroSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
-    final dateFormat = DateFormat('EEEE, d MMMM', 'es');
-    final formattedDate = dateFormat.format(now);
+    final formatters = ref.watch(dateFormattersProvider);
+    final formattedDate = formatters.fullDate.format(now);
     final capitalizedDate = formattedDate[0].toUpperCase() + formattedDate.substring(1);
     final colors = context.colors;
+    final l10n = context.l10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,7 +33,7 @@ class HeroSection extends StatelessWidget {
             end: Alignment.bottomCenter,
           ).createShader(bounds),
           child: Text(
-            'Hola, ${userName ?? 'Usuario'}',
+            l10n.home_greeting(userName ?? l10n.common_user),
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w800,

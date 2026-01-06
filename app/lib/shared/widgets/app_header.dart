@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_extensions.dart';
+import '../../l10n/l10n_extension.dart';
 import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 
@@ -75,7 +76,7 @@ class AppHeader extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Logistics',
+                        context.l10n.common_appName,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -83,9 +84,9 @@ class AppHeader extends ConsumerWidget {
                           letterSpacing: -0.2,
                         ),
                       ),
-                      const Text(
-                        'UA-ES',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.common_appTagline,
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary,
@@ -103,7 +104,7 @@ class AppHeader extends ConsumerWidget {
                 selectedLocale: locale,
                 onLocaleChanged: (newLocale) {
                   HapticFeedback.lightImpact();
-                  ref.read(localeProvider.notifier).state = newLocale;
+                  ref.read(localeProvider.notifier).setLocale(newLocale);
                 },
               ),
               const SizedBox(width: 8),
@@ -113,8 +114,7 @@ class AppHeader extends ConsumerWidget {
               isDarkMode: isDarkMode,
               onToggle: () {
                 HapticFeedback.lightImpact();
-                ref.read(themeModeProvider.notifier).state =
-                    isDarkMode ? ThemeMode.light : ThemeMode.dark;
+                ref.read(themeModeProvider.notifier).toggleTheme();
               },
             ),
             const SizedBox(width: 8),
@@ -235,8 +235,8 @@ class _LanguageSelector extends StatelessWidget {
           const SizedBox(width: 2),
           _LanguageButton(
             label: 'UA',
-            isSelected: selectedLocale == AppLocale.ua,
-            onTap: () => onLocaleChanged(AppLocale.ua),
+            isSelected: selectedLocale == AppLocale.uk,
+            onTap: () => onLocaleChanged(AppLocale.uk),
           ),
         ],
       ),

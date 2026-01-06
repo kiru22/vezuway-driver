@@ -11,6 +11,6 @@ void main() {
     );
 
     await tester.pump();
-    expect(find.text('Logistics UA-ES'), findsWidgets);
+    expect(find.text('vezuway.'), findsWidgets);
   });
 }

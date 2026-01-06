@@ -15,6 +15,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'locale' => $this->locale,
+            'theme_preference' => $this->theme_preference ?? 'dark',
             'avatar_url' => $this->avatar_url,
             'email_verified_at' => $this->email_verified_at,
             'created_at' => $this->created_at,

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/theme/app_theme.dart';
 import 'features/auth/domain/providers/auth_provider.dart';
+import 'generated/l10n/app_localizations.dart';
+import 'shared/providers/locale_provider.dart';
 import 'shared/providers/theme_provider.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
 import 'features/packages/presentation/screens/packages_screen.dart';
 import 'features/packages/presentation/screens/package_detail_screen.dart';
+import 'features/packages/presentation/screens/create_package_screen.dart';
 import 'features/routes/presentation/screens/routes_screen.dart';
 import 'features/routes/presentation/screens/create_route_screen.dart';
 import 'features/shell/presentation/main_shell.dart';
@@ -47,12 +51,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      // Splash screen
       GoRoute(
         path: '/',
         builder: (context, state) => const SplashScreen(),
       ),
-      // Auth routes (outside shell)
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
@@ -61,33 +63,29 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-      // Main shell with bottom navigation
+      GoRoute(
+        path: '/routes/create',
+        builder: (context, state) => const CreateRouteScreen(),
+      ),
+      GoRoute(
+        path: '/packages/new',
+        builder: (context, state) => const CreatePackageScreen(),
+      ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
-          // Home/Dashboard tab
           GoRoute(
             path: '/home',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: HomeScreen(),
             ),
           ),
-          // Packages tab
           GoRoute(
             path: '/packages',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: PackagesScreen(),
             ),
             routes: [
-              // New package route must come before :id to avoid parsing "new" as int
-              GoRoute(
-                path: 'new',
-                builder: (context, state) => const PackagesScreen(), // TODO: Replace with CreatePackageScreen
-              ),
-              GoRoute(
-                path: 'scan',
-                builder: (context, state) => const PackagesScreen(), // TODO: Replace with ScanPackageScreen
-              ),
               GoRoute(
                 path: ':id',
                 builder: (context, state) {
@@ -97,23 +95,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Routes tab
           GoRoute(
             path: '/routes',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: RoutesScreen(),
             ),
-            routes: [
-              GoRoute(
-                path: 'create',
-                builder: (context, state) => const CreateRouteScreen(),
-              ),
-            ],
           ),
-          // Imports
           GoRoute(
             path: '/imports',
-            builder: (context, state) => const PackagesScreen(), // TODO: Replace with ImportsScreen
+            builder: (context, state) => const PackagesScreen(),
           ),
         ],
       ),
@@ -128,14 +118,24 @@ class LogisticsApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final appLocale = ref.watch(localeProvider);
 
     return MaterialApp.router(
-      title: 'Logistics UA-ES',
+      title: 'vezuway.',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
+
+      locale: appLocale.locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }

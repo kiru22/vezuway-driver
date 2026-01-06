@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use App\Modules\Packages\Models\Package;
+use App\Modules\Packages\Policies\PackagePolicy;
 use App\Modules\Routes\Models\Route;
-use App\Policies\PackagePolicy;
-use App\Policies\RoutePolicy;
+use App\Modules\Routes\Policies\RoutePolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 

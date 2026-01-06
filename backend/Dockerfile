@@ -1,5 +1,5 @@
 # Build stage
-FROM composer:2 AS composer
+FROM composer:2 AS vendor
 
 WORKDIR /app
 
@@ -22,6 +22,7 @@ RUN apk add --no-cache \
     libzip-dev \
     oniguruma-dev \
     postgresql-dev \
+    $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
@@ -32,6 +33,9 @@ RUN apk add --no-cache \
         opcache \
         pcntl \
         exif \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del $PHPIZE_DEPS \
     && rm -rf /var/cache/apk/*
 
 # Configure PHP
@@ -51,7 +55,7 @@ COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 WORKDIR /var/www/html
 
 # Copy application files
-COPY --from=composer /app /var/www/html
+COPY --from=vendor /app /var/www/html
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \

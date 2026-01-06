@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../l10n/date_formatters.dart';
+import '../../../../l10n/status_localizations.dart';
 import '../../../routes/data/models/route_model.dart';
 
-class UpcomingRoutesList extends StatelessWidget {
+class UpcomingRoutesList extends ConsumerWidget {
   final List<RouteModel> routes;
 
   const UpcomingRoutesList({
@@ -15,7 +19,10 @@ class UpcomingRoutesList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formatters = ref.watch(dateFormattersProvider);
+    final l10n = context.l10n;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -23,10 +30,15 @@ class UpcomingRoutesList extends StatelessWidget {
         children: [
           // Routes list
           if (routes.isEmpty)
-            _EmptyState()
+            _EmptyState(
+              title: l10n.home_noScheduledRoutes,
+              subtitle: l10n.home_createRoutePrompt,
+            )
           else
             ...routes.take(3).map((route) => _SimpleRouteCard(
               route: route,
+              dateFormatter: formatters.shortDateNoYear,
+              packagesLabel: l10n.packages_count(route.packagesCount),
               onTap: () => _onRouteTap(context, route),
             )),
         ],
@@ -42,15 +54,18 @@ class UpcomingRoutesList extends StatelessWidget {
 class _SimpleRouteCard extends StatelessWidget {
   final RouteModel route;
   final VoidCallback? onTap;
+  final DateFormat dateFormatter;
+  final String packagesLabel;
 
   const _SimpleRouteCard({
     required this.route,
+    required this.dateFormatter,
+    required this.packagesLabel,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('d MMM', 'es');
     final colors = context.colors;
     final colorScheme = context.colorScheme;
 
@@ -119,7 +134,7 @@ class _SimpleRouteCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        dateFormat.format(route.departureDate),
+                        dateFormatter.format(route.nextDepartureDate ?? route.departureDate),
                         style: TextStyle(
                           fontSize: 13,
                           color: colors.textMuted,
@@ -133,7 +148,7 @@ class _SimpleRouteCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${route.packagesCount} paquetes',
+                        packagesLabel,
                         style: TextStyle(
                           fontSize: 13,
                           color: colors.textMuted,
@@ -145,7 +160,10 @@ class _SimpleRouteCard extends StatelessWidget {
               ),
             ),
             // Status chip
-            _StatusChip(status: route.status),
+            Flexible(
+              flex: 0,
+              child: _StatusChip(status: route.status),
+            ),
           ],
         ),
       ),
@@ -200,19 +218,23 @@ class _StatusChip extends StatelessWidget {
     final chipColors = _getColors(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      constraints: const BoxConstraints(maxWidth: 120),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: chipColors.background,
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
         border: Border.all(color: chipColors.border),
       ),
-      child: Text(
-        status.displayName,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: chipColors.text,
-          letterSpacing: 0.3,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          status.localizedName(context).toUpperCase(),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: chipColors.text,
+            letterSpacing: 0.3,
+          ),
         ),
       ),
     );
@@ -251,6 +273,14 @@ class _StatusChip extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _EmptyState({
+    required this.title,
+    required this.subtitle,
+  });
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -287,7 +317,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Sin rutas programadas',
+            title,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -296,7 +326,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Crea una nueva ruta para comenzar',
+            subtitle,
             style: TextStyle(
               fontSize: 14,
               color: colors.textMuted,

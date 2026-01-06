@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
+import '../../../l10n/l10n_extension.dart';
 
 class MainShell extends ConsumerWidget {
   final Widget child;
@@ -17,26 +18,41 @@ class MainShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    // Bottom nav height: 60 (nav) + 16 (top) + 16 (bottom) + safe area
+    const bottomNavHeight = 60.0 + 16 + 16;
 
-    // Set system UI overlay style based on theme
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
-      systemNavigationBarColor: colors.navBackground,
-      systemNavigationBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
-    ));
-
-    return Scaffold(
-      backgroundColor: context.theme.scaffoldBackgroundColor,
-      body: child,
-      extendBody: true,
-      floatingActionButton: _FloatingAddButton(
-        onPressed: () => _showAddPackageSheet(context),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: colors.navBackground,
+        systemNavigationBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _PremiumBottomNav(
-        currentIndex: _calculateSelectedIndex(context),
-        onTap: (index) => _onItemTapped(index, context),
+      child: Scaffold(
+        backgroundColor: context.theme.scaffoldBackgroundColor,
+        body: Stack(
+          children: [
+            // Main content with bottom padding to avoid nav overlap
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: bottomNavHeight + bottomPadding),
+                child: child,
+              ),
+            ),
+            // Bottom navigation
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _PremiumBottomNav(
+                currentIndex: _calculateSelectedIndex(context),
+                onTap: (index) => _onItemTapped(index, context),
+                onAddPressed: () => _showAddPackageSheet(context),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -109,47 +125,45 @@ class _FloatingAddButtonState extends State<_FloatingAddButton>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) {
-        _controller.reverse();
-        widget.onPressed();
-      },
-      onTapCancel: () => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.5),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 40,
-                    offset: const Offset(0, 16),
-                    spreadRadius: -10,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.add_rounded,
-                size: 32,
-                color: Colors.white,
-              ),
-            ),
-          );
+    final l10n = context.l10n;
+
+    return Semantics(
+      label: l10n.quickAction_title,
+      button: true,
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) {
+          _controller.reverse();
+          widget.onPressed();
         },
+        onTapCancel: () => _controller.reverse(),
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                      spreadRadius: -2,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  size: 28,
+                  color: Colors.white,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -158,65 +172,101 @@ class _FloatingAddButtonState extends State<_FloatingAddButton>
 class _PremiumBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final VoidCallback onAddPressed;
 
   const _PremiumBottomNav({
     required this.currentIndex,
     required this.onTap,
+    required this.onAddPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = context.l10n;
+    final isDark = context.isDarkMode;
+
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          color: colors.navBackground,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXxl),
-          border: Border.all(
-            color: colors.border,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colors.shadow.withValues(alpha: 0.4),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            colors.surface.withValues(alpha: 0),
+            colors.surface.withValues(alpha: 0.8),
+            colors.surface,
           ],
+          stops: const [0.0, 0.3, 1.0],
         ),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _NavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
-                label: 'Inicio',
-                isSelected: currentIndex == 0,
-                onTap: () => onTap(0),
+      ),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
+      child: Row(
+        children: [
+          // Navigation bar
+          Expanded(
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: isDark ? colors.navBackground : Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: isDark
+                      ? colors.border.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.06),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                    spreadRadius: -4,
+                  ),
+                ],
               ),
-              // Space for FAB
-              const SizedBox(width: 72),
-              _NavItem(
-                icon: Icons.inventory_2_outlined,
-                activeIcon: Icons.inventory_2_rounded,
-                label: 'Pedidos',
-                isSelected: currentIndex == 1,
-                onTap: () => onTap(1),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.space_dashboard_outlined,
+                      activeIcon: Icons.space_dashboard_rounded,
+                      label: l10n.nav_home,
+                      isSelected: currentIndex == 0,
+                      onTap: () => onTap(0),
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.inventory_2_outlined,
+                      activeIcon: Icons.inventory_2_rounded,
+                      label: l10n.nav_packages,
+                      isSelected: currentIndex == 1,
+                      onTap: () => onTap(1),
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.timeline_outlined,
+                      activeIcon: Icons.timeline_rounded,
+                      label: l10n.nav_routes,
+                      isSelected: currentIndex == 2,
+                      onTap: () => onTap(2),
+                    ),
+                  ),
+                ],
               ),
-              _NavItem(
-                icon: Icons.route_outlined,
-                activeIcon: Icons.route_rounded,
-                label: 'Rutas',
-                isSelected: currentIndex == 2,
-                onTap: () => onTap(2),
-              ),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(width: 12),
+          // FAB
+          SizedBox(
+            width: 60,
+            height: 60,
+            child: _FloatingAddButton(onPressed: onAddPressed),
+          ),
+        ],
       ),
     );
   }
@@ -240,44 +290,28 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = context.isDarkMode;
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: AppTheme.durationFast,
-        width: 64,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: AppTheme.durationFast,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.15)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                isSelected ? activeIcon : icon,
-                color: isSelected ? AppColors.primary : colors.navItemInactive,
-                size: 24,
-              ),
-            ),
-            const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: AppTheme.durationFast,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? AppColors.primary : colors.navItemInactive,
-                letterSpacing: 0.2,
-              ),
-              child: Text(label),
-            ),
-          ],
+    return Semantics(
+      label: label,
+      button: true,
+      selected: isSelected,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: Icon(
+            isSelected ? activeIcon : icon,
+            color: isSelected
+                ? AppColors.primary
+                : isDark
+                    ? colors.textMuted
+                    : Colors.black45,
+            size: 24,
+          ),
         ),
       ),
     );
@@ -291,6 +325,7 @@ class _AddPackageSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final colorScheme = context.colorScheme;
+    final l10n = context.l10n;
 
     return Container(
       decoration: BoxDecoration(
@@ -347,7 +382,7 @@ class _AddPackageSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Crear nuevo',
+                    l10n.quickAction_title,
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
@@ -357,7 +392,7 @@ class _AddPackageSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Selecciona que quieres registrar',
+                    l10n.quickAction_subtitle,
                     style: TextStyle(
                       fontSize: 14,
                       color: colors.textMuted,
@@ -374,8 +409,8 @@ class _AddPackageSheet extends StatelessWidget {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.route_rounded,
-                  title: 'Nueva ruta',
-                  subtitle: 'Espana-Ucrania',
+                  title: l10n.quickAction_newRoute,
+                  subtitle: l10n.quickAction_newRouteSubtitle,
                   gradient: const [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                   onTap: () {
                     Navigator.pop(context);
@@ -387,8 +422,8 @@ class _AddPackageSheet extends StatelessWidget {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.inventory_2_rounded,
-                  title: 'Nuevo paquete',
-                  subtitle: 'Manual',
+                  title: l10n.quickAction_newPackage,
+                  subtitle: l10n.quickAction_newPackageSubtitle,
                   gradient: [AppColors.primary, AppColors.primaryDark],
                   onTap: () {
                     Navigator.pop(context);
@@ -404,8 +439,8 @@ class _AddPackageSheet extends StatelessWidget {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.document_scanner_rounded,
-                  title: 'Escanear',
-                  subtitle: 'OCR',
+                  title: l10n.quickAction_scan,
+                  subtitle: l10n.quickAction_scanSubtitle,
                   gradient: const [Color(0xFF059669), Color(0xFF047857)],
                   onTap: () {
                     Navigator.pop(context);
@@ -417,8 +452,8 @@ class _AddPackageSheet extends StatelessWidget {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.upload_file_rounded,
-                  title: 'Importar',
-                  subtitle: 'Excel',
+                  title: l10n.quickAction_import,
+                  subtitle: l10n.quickAction_importSubtitle,
                   gradient: const [Color(0xFF7C3AED), Color(0xFF6D28D9)],
                   onTap: () {
                     Navigator.pop(context);

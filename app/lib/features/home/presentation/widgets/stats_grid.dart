@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../l10n/date_formatters.dart';
 import '../../domain/providers/dashboard_provider.dart';
 
-class StatsGrid extends StatelessWidget {
+class StatsGrid extends ConsumerWidget {
   final DashboardStats stats;
 
   const StatsGrid({
@@ -14,8 +17,10 @@ class StatsGrid extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentTrip = stats.activeTrip ?? stats.nextTrip;
+    final l10n = context.l10n;
+    final formatters = ref.watch(dateFormattersProvider);
 
     if (currentTrip == null && stats.packagesCount == 0) {
       return const SizedBox.shrink();
@@ -31,6 +36,9 @@ class StatsGrid extends StatelessWidget {
             destination: currentTrip.destination,
             date: currentTrip.departureDate,
             isActive: stats.activeTrip != null,
+            dateFormatter: formatters.shortDate,
+            activeTripLabel: l10n.home_activeTrip,
+            nextTripLabel: l10n.home_nextTrip,
           ),
           const SizedBox(height: 20),
         ],
@@ -40,7 +48,7 @@ class StatsGrid extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 icon: Icons.inventory_2_rounded,
-                label: 'Paquetes',
+                label: l10n.stats_packages,
                 value: '${stats.packagesCount}',
                 gradient: [AppColors.primary, AppColors.primaryDark],
               ),
@@ -49,8 +57,8 @@ class StatsGrid extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 icon: Icons.scale_rounded,
-                label: 'Peso total',
-                value: '${stats.totalWeight.toStringAsFixed(1)} kg',
+                label: l10n.stats_totalWeight,
+                value: '${stats.totalWeight.toStringAsFixed(1)} ${l10n.common_kg}',
                 gradient: [AppColors.warning, const Color(0xFFD97706)],
               ),
             ),
@@ -58,8 +66,8 @@ class StatsGrid extends StatelessWidget {
             Expanded(
               child: _StatCard(
                 icon: Icons.euro_rounded,
-                label: 'Valor',
-                value: '${stats.totalDeclaredValue.toStringAsFixed(0)}',
+                label: l10n.stats_declaredValue,
+                value: stats.totalDeclaredValue.toStringAsFixed(0),
                 gradient: [AppColors.success, const Color(0xFF16A34A)],
               ),
             ),
@@ -75,12 +83,18 @@ class _ActiveTripBanner extends StatelessWidget {
   final String destination;
   final DateTime date;
   final bool isActive;
+  final DateFormat dateFormatter;
+  final String activeTripLabel;
+  final String nextTripLabel;
 
   const _ActiveTripBanner({
     required this.origin,
     required this.destination,
     required this.date,
     required this.isActive,
+    required this.dateFormatter,
+    required this.activeTripLabel,
+    required this.nextTripLabel,
   });
 
   @override
@@ -165,7 +179,7 @@ class _ActiveTripBanner extends StatelessWidget {
                       const SizedBox(width: 8),
                     ],
                     Text(
-                      isActive ? 'Viaje activo' : 'Proximo viaje',
+                      isActive ? activeTripLabel : nextTripLabel,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -196,7 +210,7 @@ class _ActiveTripBanner extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      DateFormat('d MMMM yyyy', 'es').format(date),
+                      dateFormatter.format(date),
                       style: TextStyle(
                         fontSize: 13,
                         color: colors.textMuted,

@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/routes/data/models/route_model.dart';
+import '../../l10n/l10n_extension.dart';
+import '../../l10n/status_localizations.dart';
 import 'status_chip.dart';
 import 'route_progress.dart';
 import 'driver_info_card.dart';
@@ -101,7 +103,7 @@ class TripCard extends StatelessWidget {
 
             // Driver info
             DriverInfoCard(
-              name: driverName ?? 'Conductor',
+              name: driverName ?? context.l10n.tripCard_driver,
               avatarUrl: driverAvatarUrl,
               vehicle: vehicle ?? 'Mercedes Sprinter',
               rating: rating ?? 4.9,
@@ -120,32 +122,6 @@ class TripCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _getStatusLabel() {
-    switch (route.status) {
-      case RouteStatus.planned:
-        return 'PLANIFICADA';
-      case RouteStatus.inProgress:
-        return 'EN TRANSITO';
-      case RouteStatus.completed:
-        return 'COMPLETADA';
-      case RouteStatus.cancelled:
-        return 'CANCELADA';
-    }
-  }
-
-  ChipVariant _getStatusVariant() {
-    switch (route.status) {
-      case RouteStatus.planned:
-        return ChipVariant.blue;
-      case RouteStatus.inProgress:
-        return ChipVariant.orange;
-      case RouteStatus.completed:
-        return ChipVariant.green;
-      case RouteStatus.cancelled:
-        return ChipVariant.gray;
-    }
   }
 
   String _extractCity(String location) {
@@ -194,20 +170,22 @@ class _HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeCode = Localizations.localeOf(context).languageCode;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         StatusChip(
-          label: _getStatusLabel(),
-          variant: _getStatusVariant(),
+          label: route.status.localizedName(context).toUpperCase(),
+          variant: route.status.chipVariant,
           isCompact: isCompact,
         ),
         Row(
           children: [
             StatusChip.date(
-              DateFormat('d MMM', 'es').format(route.departureDate),
+              DateFormat('d MMM', localeCode).format(route.departureDate),
             ),
-            if (route.estimatedArrival != null) ...[
+            if (route.arrivalDate != null) ...[
               const SizedBox(width: 8),
               StatusChip.time(
                 DateFormat('HH:mm').format(route.departureDate),
@@ -217,32 +195,6 @@ class _HeaderSection extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _getStatusLabel() {
-    switch (route.status) {
-      case RouteStatus.planned:
-        return 'PLANIFICADA';
-      case RouteStatus.inProgress:
-        return 'EN TRANSITO';
-      case RouteStatus.completed:
-        return 'COMPLETADA';
-      case RouteStatus.cancelled:
-        return 'CANCELADA';
-    }
-  }
-
-  ChipVariant _getStatusVariant() {
-    switch (route.status) {
-      case RouteStatus.planned:
-        return ChipVariant.blue;
-      case RouteStatus.inProgress:
-        return ChipVariant.orange;
-      case RouteStatus.completed:
-        return ChipVariant.green;
-      case RouteStatus.cancelled:
-        return ChipVariant.gray;
-    }
   }
 }
 
@@ -316,6 +268,8 @@ class TripCardCompact extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeCode = Localizations.localeOf(context).languageCode;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -360,7 +314,7 @@ class TripCardCompact extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        DateFormat('d MMM, HH:mm', 'es').format(route.departureDate),
+                        DateFormat('d MMM, HH:mm', localeCode).format(route.departureDate),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textMuted,
@@ -438,6 +392,8 @@ class FeaturedTripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeCode = Localizations.localeOf(context).languageCode;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -484,8 +440,8 @@ class FeaturedTripCard extends StatelessWidget {
                 children: [
                   // Status chip
                   StatusChip(
-                    label: _getStatusLabel(),
-                    variant: _getStatusVariant(),
+                    label: route.status.localizedName(context).toUpperCase(),
+                    variant: route.status.chipVariant,
                   ),
                   const Spacer(),
                   // Route info
@@ -516,7 +472,7 @@ class FeaturedTripCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        DateFormat('d MMM', 'es').format(route.departureDate),
+                        DateFormat('d MMM', localeCode).format(route.departureDate),
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.textMuted,
@@ -536,31 +492,5 @@ class FeaturedTripCard extends StatelessWidget {
   String _extractCity(String location) {
     final parts = location.split(',');
     return parts.first.trim();
-  }
-
-  String _getStatusLabel() {
-    switch (route.status) {
-      case RouteStatus.planned:
-        return 'PLANIFICADA';
-      case RouteStatus.inProgress:
-        return 'EN TRANSITO';
-      case RouteStatus.completed:
-        return 'COMPLETADA';
-      case RouteStatus.cancelled:
-        return 'CANCELADA';
-    }
-  }
-
-  ChipVariant _getStatusVariant() {
-    switch (route.status) {
-      case RouteStatus.planned:
-        return ChipVariant.blue;
-      case RouteStatus.inProgress:
-        return ChipVariant.orange;
-      case RouteStatus.completed:
-        return ChipVariant.green;
-      case RouteStatus.cancelled:
-        return ChipVariant.gray;
-    }
   }
 }

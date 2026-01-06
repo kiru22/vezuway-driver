@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'locale',
+        'theme_preference',
         'fcm_token',
         'google_id',
         'avatar_url',

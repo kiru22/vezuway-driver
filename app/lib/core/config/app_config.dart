@@ -1,5 +1,5 @@
 class AppConfig {
-  static const String appName = 'Logistics UA-ES';
+  static const String appName = 'vezuway.';
 
   // API URL is set at build time via --dart-define=API_URL=...
   // Default to localhost for development

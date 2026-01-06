@@ -9,6 +9,8 @@ use Google\Client as GoogleClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -80,6 +82,7 @@ class AuthController extends Controller
             'name' => 'sometimes|string|max:255',
             'phone' => 'nullable|string|max:50',
             'locale' => 'sometimes|string|in:es,uk,en',
+            'theme_preference' => 'sometimes|string|in:light,dark,system',
         ]);
 
         $request->user()->update($validated);
@@ -121,45 +124,60 @@ class AuthController extends Controller
     public function googleLogin(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'id_token' => 'required|string',
+            'id_token' => 'nullable|string',
+            'access_token' => 'nullable|string',
         ]);
 
-        // Get all valid client IDs (web, iOS, Android)
-        $validClientIds = array_filter([
-            config('services.google.client_id'),
-            config('services.google.client_id_ios'),
-            config('services.google.client_id_android'),
-        ]);
-
-        if (empty($validClientIds)) {
+        if (empty($validated['id_token']) && empty($validated['access_token'])) {
             return response()->json([
-                'message' => 'Google authentication is not configured',
-            ], 500);
+                'message' => 'Se requiere id_token o access_token',
+            ], 422);
         }
 
         try {
-            $client = new GoogleClient;
+            $googleId = null;
+            $email = null;
+            $name = null;
+            $avatarUrl = null;
 
-            // Verify token against all valid client IDs
-            $payload = null;
-            foreach ($validClientIds as $clientId) {
-                $client->setClientId($clientId);
-                $payload = $client->verifyIdToken($validated['id_token']);
-                if ($payload) {
-                    break;
+            if (! empty($validated['id_token'])) {
+                // Verify ID token (preferred method for mobile)
+                $payload = $this->verifyIdToken($validated['id_token']);
+                if (! $payload) {
+                    return response()->json([
+                        'message' => 'Token de Google inválido',
+                    ], 401);
                 }
-            }
 
-            if (! $payload) {
-                return response()->json([
-                    'message' => 'Token de Google inválido',
-                ], 401);
-            }
+                // Security: Verify email is verified to prevent account takeover
+                if (empty($payload['email_verified']) || $payload['email_verified'] !== true) {
+                    Log::warning('Google login rejected: email not verified (id_token)', [
+                        'email' => $payload['email'] ?? 'unknown',
+                    ]);
 
-            $googleId = $payload['sub'];
-            $email = $payload['email'];
-            $name = $payload['name'] ?? $payload['email'];
-            $avatarUrl = $payload['picture'] ?? null;
+                    return response()->json([
+                        'message' => 'El email de Google no está verificado',
+                    ], 401);
+                }
+
+                $googleId = $payload['sub'];
+                $email = $payload['email'];
+                $name = $payload['name'] ?? $payload['email'];
+                $avatarUrl = $payload['picture'] ?? null;
+            } else {
+                // Verify access token via Google's userinfo API (fallback for web)
+                $userInfo = $this->verifyAccessToken($validated['access_token']);
+                if (! $userInfo) {
+                    return response()->json([
+                        'message' => 'Token de Google inválido',
+                    ], 401);
+                }
+
+                $googleId = $userInfo['sub'] ?? $userInfo['id'];
+                $email = $userInfo['email'];
+                $name = $userInfo['name'] ?? $userInfo['email'];
+                $avatarUrl = $userInfo['picture'] ?? null;
+            }
 
             // Find user by google_id or email
             $user = User::where('google_id', $googleId)
@@ -197,6 +215,73 @@ class AuthController extends Controller
                 'message' => 'Error al autenticar con Google',
                 'error' => config('app.debug') ? $e->getMessage() : null,
             ], 401);
+        }
+    }
+
+    private function verifyIdToken(string $idToken): ?array
+    {
+        $validClientIds = array_filter([
+            config('services.google.client_id'),
+            config('services.google.client_id_ios'),
+            config('services.google.client_id_android'),
+        ]);
+
+        if (empty($validClientIds)) {
+            Log::warning('Google authentication not configured: no client IDs found in services.google config');
+
+            return null;
+        }
+
+        $client = new GoogleClient;
+
+        foreach ($validClientIds as $clientId) {
+            $client->setClientId($clientId);
+            $payload = $client->verifyIdToken($idToken);
+            if ($payload) {
+                return $payload;
+            }
+        }
+
+        return null;
+    }
+
+    private function verifyAccessToken(string $accessToken): ?array
+    {
+        try {
+            $response = Http::timeout(10)
+                ->withToken($accessToken)
+                ->get('https://www.googleapis.com/oauth2/v3/userinfo');
+
+            if ($response->failed()) {
+                Log::warning('Google userinfo API request failed', [
+                    'status' => $response->status(),
+                ]);
+
+                return null;
+            }
+
+            $userInfo = $response->json();
+
+            if (empty($userInfo['email'])) {
+                return null;
+            }
+
+            // Security: Verify email is verified to prevent account takeover
+            if (empty($userInfo['email_verified']) || $userInfo['email_verified'] !== true) {
+                Log::warning('Google login rejected: email not verified', [
+                    'email' => $userInfo['email'] ?? 'unknown',
+                ]);
+
+                return null;
+            }
+
+            return $userInfo;
+        } catch (\Exception $e) {
+            Log::error('Google access token verification failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
         }
     }
 }

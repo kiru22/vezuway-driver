@@ -33,12 +33,12 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   // Get all routes
   final routes = routesState.routes;
 
-  // Find next planned trip (upcoming)
-  final now = DateTime.now();
+  // Find next planned trip (upcoming) - considers all schedule dates
   final plannedRoutes = routes
-      .where((r) => r.status == RouteStatus.planned && r.departureDate.isAfter(now))
+      .where((r) => r.status == RouteStatus.planned && r.hasUpcomingDates)
       .toList()
-    ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
+    ..sort((a, b) => (a.nextDepartureDate ?? a.departureDate)
+        .compareTo(b.nextDepartureDate ?? b.departureDate));
 
   final nextTrip = plannedRoutes.isNotEmpty ? plannedRoutes.first : null;
 
@@ -82,22 +82,22 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
 
 final upcomingTripsProvider = Provider<List<RouteModel>>((ref) {
   final routesState = ref.watch(routesProvider);
-  final now = DateTime.now();
 
-  // Get planned and in-progress routes
+  // Get planned routes with upcoming dates and in-progress routes
   return routesState.routes
       .where((r) =>
-          (r.status == RouteStatus.planned && r.departureDate.isAfter(now)) ||
+          (r.status == RouteStatus.planned && r.hasUpcomingDates) ||
           r.status == RouteStatus.inProgress)
       .toList()
     ..sort((a, b) {
-      // Active trips first, then by date
+      // Active trips first, then by next departure date
       if (a.status == RouteStatus.inProgress && b.status != RouteStatus.inProgress) {
         return -1;
       }
       if (b.status == RouteStatus.inProgress && a.status != RouteStatus.inProgress) {
         return 1;
       }
-      return a.departureDate.compareTo(b.departureDate);
+      return (a.nextDepartureDate ?? a.departureDate)
+          .compareTo(b.nextDepartureDate ?? b.departureDate);
     });
 });

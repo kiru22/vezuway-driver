@@ -85,6 +85,17 @@ class RouteModel {
     return schedules.map((s) => s.departureDate).toList()..sort();
   }
 
+  // Returns the next future departure date, or null if all dates have passed
+  DateTime? get nextDepartureDate {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final futureDates = allDepartureDates.where((d) => !d.isBefore(todayStart)).toList();
+    return futureDates.isNotEmpty ? futureDates.first : null;
+  }
+
+  // Returns true if this route has any future departure dates
+  bool get hasUpcomingDates => nextDepartureDate != null;
+
   // Helper to get display name (origin -> destination)
   String get name => '$origin - $destination';
 
