@@ -1,5 +1,16 @@
 # Build stage
-FROM composer:2 AS vendor
+FROM php:8.3-cli-alpine AS vendor
+
+# Install composer and required extensions for dependencies
+RUN apk add --no-cache \
+    libzip-dev \
+    libpng-dev \
+    libxml2-dev \
+    oniguruma-dev \
+    $PHPIZE_DEPS \
+    && docker-php-ext-install zip gd xml mbstring \
+    && apk del $PHPIZE_DEPS \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 WORKDIR /app
 
