@@ -40,14 +40,29 @@ class _RoutesScreenState extends ConsumerState<RoutesScreen>
     final colors = context.colors;
     final routesState = ref.watch(routesProvider);
 
-    // Group routes by status
+    // Group routes by date (not by status)
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Active: departure date is today or in the past, but not completed/cancelled
     final activeRoutes = routesState.routes
-        .where((r) => r.status == RouteStatus.inProgress)
-        .toList();
-    final plannedRoutes = routesState.routes
-        .where((r) => r.status == RouteStatus.planned)
+        .where((r) =>
+            r.status != RouteStatus.completed &&
+            r.status != RouteStatus.cancelled &&
+            !r.departureDate.isAfter(today))
         .toList()
       ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
+
+    // Upcoming: departure date is in the future, not completed/cancelled
+    final plannedRoutes = routesState.routes
+        .where((r) =>
+            r.status != RouteStatus.completed &&
+            r.status != RouteStatus.cancelled &&
+            r.departureDate.isAfter(today))
+        .toList()
+      ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
+
+    // History: completed or cancelled routes
     final completedRoutes = routesState.routes
         .where((r) =>
             r.status == RouteStatus.completed ||
