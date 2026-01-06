@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     oniguruma-dev \
     $PHPIZE_DEPS \
-    && docker-php-ext-install zip gd xml mbstring \
+    && docker-php-ext-install zip gd xml mbstring exif \
     && apk del $PHPIZE_DEPS \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
