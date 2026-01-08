@@ -87,6 +87,10 @@ class PackageModel {
   final String? receiverAddress;
   final String? description;
   final double? weight;
+  final int? lengthCm;
+  final int? widthCm;
+  final int? heightCm;
+  final int? quantity;
   final double? declaredValue;
   final String? notes;
   final String? ocrRawText;
@@ -107,6 +111,10 @@ class PackageModel {
     this.receiverAddress,
     this.description,
     this.weight,
+    this.lengthCm,
+    this.widthCm,
+    this.heightCm,
+    this.quantity,
     this.declaredValue,
     this.notes,
     this.ocrRawText,
@@ -116,26 +124,53 @@ class PackageModel {
   });
 
   factory PackageModel.fromJson(Map<String, dynamic> json) {
+    // Support both nested (API v1) and flat structures
+    final sender = json['sender'] as Map<String, dynamic>?;
+    final receiver = json['receiver'] as Map<String, dynamic>?;
+    final dimensions = json['dimensions'] as Map<String, dynamic>?;
+    final ocr = json['ocr'] as Map<String, dynamic>?;
+
     return PackageModel(
       id: json['id'],
       routeId: json['route_id'],
       trackingCode: json['tracking_code'],
       status: PackageStatus.fromString(json['status']),
-      senderName: json['sender_name'],
-      senderPhone: json['sender_phone'],
-      senderAddress: json['sender_address'],
-      receiverName: json['receiver_name'],
-      receiverPhone: json['receiver_phone'],
-      receiverAddress: json['receiver_address'],
+      senderName: sender?['name'] ?? json['sender_name'] ?? '',
+      senderPhone: sender?['phone'] ?? json['sender_phone'],
+      senderAddress: sender?['address'] ?? json['sender_address'],
+      receiverName: receiver?['name'] ?? json['receiver_name'] ?? '',
+      receiverPhone: receiver?['phone'] ?? json['receiver_phone'],
+      receiverAddress: receiver?['address'] ?? json['receiver_address'],
       description: json['description'],
-      weight: json['weight']?.toDouble(),
-      declaredValue: json['declared_value']?.toDouble(),
+      weight: _parseDouble(json['weight'] ?? dimensions?['weight_kg']),
+      lengthCm: _parseInt(json['length_cm'] ?? dimensions?['length_cm']),
+      widthCm: _parseInt(json['width_cm'] ?? dimensions?['width_cm']),
+      heightCm: _parseInt(json['height_cm'] ?? dimensions?['height_cm']),
+      quantity: _parseInt(json['quantity']),
+      declaredValue: _parseDouble(json['declared_value']),
       notes: json['notes'],
-      ocrRawText: json['ocr_raw_text'],
+      ocrRawText: ocr?['raw_text'] ?? json['ocr_raw_text'],
       ocrParsedData: json['ocr_parsed_data'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
     );
+  }
+
+  /// Parse a value to double, handling both String and num
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  /// Parse a value to int, handling both String and num
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   Map<String, dynamic> toJson() {
@@ -152,6 +187,10 @@ class PackageModel {
       'receiver_address': receiverAddress,
       'description': description,
       'weight': weight,
+      'length_cm': lengthCm,
+      'width_cm': widthCm,
+      'height_cm': heightCm,
+      'quantity': quantity,
       'declared_value': declaredValue,
       'notes': notes,
     };
@@ -170,6 +209,10 @@ class PackageModel {
     String? receiverAddress,
     String? description,
     double? weight,
+    int? lengthCm,
+    int? widthCm,
+    int? heightCm,
+    int? quantity,
     double? declaredValue,
     String? notes,
     String? ocrRawText,
@@ -190,6 +233,10 @@ class PackageModel {
       receiverAddress: receiverAddress ?? this.receiverAddress,
       description: description ?? this.description,
       weight: weight ?? this.weight,
+      lengthCm: lengthCm ?? this.lengthCm,
+      widthCm: widthCm ?? this.widthCm,
+      heightCm: heightCm ?? this.heightCm,
+      quantity: quantity ?? this.quantity,
       declaredValue: declaredValue ?? this.declaredValue,
       notes: notes ?? this.notes,
       ocrRawText: ocrRawText ?? this.ocrRawText,

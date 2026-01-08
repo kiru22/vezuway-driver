@@ -118,3 +118,26 @@ Each feature follows the pattern:
 | PostgreSQL | 5432 | logistics-db |
 | Redis | 6379 | logistics-redis |
 | Adminer | 8080 | logistics-adminer (dev only) |
+
+## Development Notes
+
+### Flutter Local (Recomendado para desarrollo)
+Para desarrollo activo con hot reload instantáneo, ejecutar Flutter localmente:
+
+```bash
+make frontend-local   # Detiene contenedor Docker y ejecuta Flutter local
+```
+
+O manualmente:
+```bash
+docker stop logistics-frontend
+cd app && flutter run -d chrome --web-port=3000
+```
+
+- Presionar `r` para hot reload (cambios de UI)
+- Presionar `R` para hot restart (cambios estructurales)
+- Los cambios se aplican instantáneamente sin reiniciar
+
+### Flutter en Docker (Para CI/CD o testing)
+- Usar `make up-dev` para iniciar todos los servicios incluyendo frontend en Docker
+- Hot reload no es automático en Docker - requiere `docker restart logistics-frontend`

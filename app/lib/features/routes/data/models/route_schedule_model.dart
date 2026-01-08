@@ -14,13 +14,25 @@ class RouteScheduleModel {
   });
 
   factory RouteScheduleModel.fromJson(Map<String, dynamic> json) {
+    // Parse status - handle both string and enum object formats
+    String statusValue;
+    if (json['status'] is String) {
+      statusValue = json['status'];
+    } else if (json['status'] is Map) {
+      statusValue = json['status']['value'] ?? 'planned';
+    } else {
+      statusValue = 'planned';
+    }
+
     return RouteScheduleModel(
       id: json['id'],
-      departureDate: DateTime.parse(json['departure_date']),
+      departureDate: json['departure_date'] != null
+          ? DateTime.parse(json['departure_date'])
+          : DateTime.now(),
       estimatedArrivalDate: json['estimated_arrival_date'] != null
           ? DateTime.parse(json['estimated_arrival_date'])
           : null,
-      status: RouteStatus.fromString(json['status'] ?? 'planned'),
+      status: RouteStatus.fromString(statusValue),
     );
   }
 

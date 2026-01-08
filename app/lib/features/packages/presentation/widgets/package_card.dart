@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../l10n/status_localizations.dart';
 import '../../data/models/package_model.dart';
 
 class PackageCard extends StatelessWidget {
@@ -39,6 +42,9 @@ class PackageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -47,12 +53,12 @@ class PackageCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: isDark ? colors.cardBackground : Colors.white,
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadow.withValues(alpha: 0.15),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -107,19 +113,19 @@ class PackageCard extends StatelessWidget {
                           children: [
                             Text(
                               package.trackingCode,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 16,
-                                color: AppColors.textPrimary,
+                                color: colors.textPrimary,
                                 letterSpacing: -0.2,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               '${(package.weight ?? 0.0).toStringAsFixed(1)} kg',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textMuted,
+                                color: colors.textMuted,
                               ),
                             ),
                           ],
@@ -137,7 +143,7 @@ class PackageCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
+                      color: isDark ? colors.surfaceLight : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: Row(
@@ -146,8 +152,10 @@ class PackageCard extends StatelessWidget {
                           child: _PersonInfo(
                             icon: Icons.upload_rounded,
                             iconColor: AppColors.info,
-                            label: 'Remitente',
+                            label: context.l10n.packages_sender,
                             name: package.senderName,
+                            textColor: colors.textPrimary,
+                            mutedColor: colors.textMuted,
                           ),
                         ),
                         // Arrow
@@ -155,13 +163,13 @@ class PackageCard extends StatelessWidget {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: AppColors.cardBackground,
+                            color: isDark ? colors.cardBackground : Colors.white,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: colors.border),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_forward_rounded,
-                            color: AppColors.textMuted,
+                            color: colors.textMuted,
                             size: 16,
                           ),
                         ),
@@ -169,9 +177,11 @@ class PackageCard extends StatelessWidget {
                           child: _PersonInfo(
                             icon: Icons.download_rounded,
                             iconColor: AppColors.success,
-                            label: 'Destinatario',
+                            label: context.l10n.packages_receiver,
                             name: package.receiverName,
                             alignEnd: true,
+                            textColor: colors.textPrimary,
+                            mutedColor: colors.textMuted,
                           ),
                         ),
                       ],
@@ -182,8 +192,8 @@ class PackageCard extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       package.description!,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: colors.textSecondary,
                         fontSize: 13,
                         height: 1.4,
                       ),
@@ -199,7 +209,7 @@ class PackageCard extends StatelessWidget {
                 package.status != PackageStatus.cancelled)
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
+                  color: isDark ? colors.surfaceLight : const Color(0xFFF8FAFC),
                   borderRadius: const BorderRadius.vertical(
                     bottom: Radius.circular(AppTheme.radiusXl - 1),
                   ),
@@ -211,7 +221,7 @@ class PackageCard extends StatelessWidget {
                     TextButton.icon(
                       onPressed: () => _showStatusMenu(context),
                       icon: const Icon(Icons.edit_outlined, size: 18),
-                      label: const Text('Cambiar estado'),
+                      label: Text(context.l10n.packages_changeStatus),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         textStyle: const TextStyle(
@@ -265,7 +275,7 @@ class _StatusBadge extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Text(
-        status.displayName,
+        status.localizedName(context),
         style: TextStyle(
           color: color,
           fontSize: 11,
@@ -283,6 +293,8 @@ class _PersonInfo extends StatelessWidget {
   final String label;
   final String name;
   final bool alignEnd;
+  final Color textColor;
+  final Color mutedColor;
 
   const _PersonInfo({
     required this.icon,
@@ -290,6 +302,8 @@ class _PersonInfo extends StatelessWidget {
     required this.label,
     required this.name,
     this.alignEnd = false,
+    required this.textColor,
+    required this.mutedColor,
   });
 
   @override
@@ -307,8 +321,8 @@ class _PersonInfo extends StatelessWidget {
             ],
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textMuted,
+              style: TextStyle(
+                color: mutedColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
@@ -322,10 +336,10 @@ class _PersonInfo extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           name,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 14,
-            color: AppColors.textPrimary,
+            color: textColor,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -376,18 +390,18 @@ class _StatusSelectorSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Cambiar estado',
-            style: TextStyle(
+          Text(
+            context.l10n.packages_changeStatus,
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Selecciona el nuevo estado del paquete',
-            style: TextStyle(
+          Text(
+            context.l10n.packages_selectNewStatus,
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.textMuted,
             ),
@@ -455,7 +469,7 @@ class _StatusOption extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                status.displayName,
+                status.localizedName(context),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,

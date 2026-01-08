@@ -11,7 +11,7 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 
 // Auth Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(apiServiceProvider));
+  return AuthRepository(ref.read(apiServiceProvider));
 });
 
 // Google Sign In Provider
@@ -182,7 +182,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 // Auth Provider
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
-    ref.watch(authRepositoryProvider),
-    ref.watch(googleSignInProvider),
+    ref.read(authRepositoryProvider),
+    ref.read(googleSignInProvider),
   );
 });

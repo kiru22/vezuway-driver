@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/models/city_model.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../data/models/route_model.dart';
 import '../../data/repositories/route_repository.dart';
 
 // Route Repository Provider
 final routeRepositoryProvider = Provider<RouteRepository>((ref) {
-  return RouteRepository(ref.watch(apiServiceProvider));
+  return RouteRepository(ref.read(apiServiceProvider));
 });
 
 // Routes List State
@@ -37,18 +38,28 @@ class RoutesState {
 // Routes Notifier
 class RoutesNotifier extends StateNotifier<RoutesState> {
   final RouteRepository _repository;
+  bool _isInitialized = false;
 
   RoutesNotifier(this._repository) : super(const RoutesState()) {
-    loadRoutes();
+    _init();
+  }
+
+  Future<void> _init() async {
+    if (_isInitialized) return;
+    _isInitialized = true;
+    await loadRoutes();
   }
 
   Future<void> loadRoutes() async {
+    // Prevent concurrent loads
+    if (state.isLoading) return;
+
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final routes = await _repository.getRoutes();
       state = state.copyWith(routes: routes, isLoading: false);
-    } catch (e) {
+    } catch (_) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error al cargar rutas',
@@ -58,18 +69,30 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
 
   Future<bool> createRoute({
     required String origin,
+    required String originCountry,
     required String destination,
+    required String destinationCountry,
     required List<DateTime> departureDates,
     int? tripDurationHours,
     String? notes,
+    List<CityModel>? stops,
+    double? pricePerKg,
+    double? minimumPrice,
+    double? priceMultiplier,
   }) async {
     try {
       final newRoute = await _repository.createRoute(
         origin: origin,
+        originCountry: originCountry,
         destination: destination,
+        destinationCountry: destinationCountry,
         departureDates: departureDates,
         tripDurationHours: tripDurationHours,
         notes: notes,
+        stops: stops,
+        pricePerKg: pricePerKg,
+        minimumPrice: minimumPrice,
+        priceMultiplier: priceMultiplier,
       );
       state = state.copyWith(
         routes: [newRoute, ...state.routes],
@@ -107,11 +130,11 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
 
 // Routes Provider
 final routesProvider = StateNotifierProvider<RoutesNotifier, RoutesState>((ref) {
-  return RoutesNotifier(ref.watch(routeRepositoryProvider));
+  return RoutesNotifier(ref.read(routeRepositoryProvider));
 });
 
 // Single Route Provider
 final routeDetailProvider = FutureProvider.family<RouteModel, int>((ref, id) async {
-  final repository = ref.watch(routeRepositoryProvider);
+  final repository = ref.read(routeRepositoryProvider);
   return repository.getRoute(id);
 });

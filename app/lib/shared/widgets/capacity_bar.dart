@@ -81,7 +81,7 @@ class CapacityBar extends StatelessWidget {
                     const SizedBox(width: 8),
                   ],
                   Text(
-                    '${currentWeight.toStringAsFixed(0)}',
+                    currentWeight.toStringAsFixed(0),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,

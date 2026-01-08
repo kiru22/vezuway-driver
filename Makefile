@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell-backend shell-frontend migrate seed fresh test clean
+.PHONY: help build up down restart logs shell-backend shell-frontend frontend-local migrate seed fresh test clean
 
 # Default target
 help:
@@ -17,6 +17,7 @@ help:
 	@echo "  logs-frontend  View frontend logs"
 	@echo "  shell-backend  Open shell in backend container"
 	@echo "  shell-frontend Open shell in frontend container"
+	@echo "  frontend-local Run Flutter locally with hot reload"
 	@echo "  migrate        Run Laravel migrations"
 	@echo "  seed           Run Laravel seeders"
 	@echo "  fresh          Fresh migration with seed"
@@ -61,6 +62,11 @@ shell-backend:
 
 shell-frontend:
 	docker compose exec frontend sh
+
+# Run Flutter locally with hot reload (stop Docker frontend first)
+frontend-local:
+	@docker stop logistics-frontend 2>/dev/null || true
+	cd app && flutter run -d chrome --web-port=3000
 
 # Laravel commands
 migrate:

@@ -1,5 +1,5 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -270,6 +270,165 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
+  String get packages_createTitle => 'Нова посилка';
+
+  @override
+  String get packages_createSuccess => 'Посилку успiшно створено';
+
+  @override
+  String get packages_createError => 'Помилка створення посилки';
+
+  @override
+  String get packages_assignRoute => 'Призначити на маршрут';
+
+  @override
+  String get packages_senderSection => 'Вiдправник';
+
+  @override
+  String get packages_senderNameLabel => 'Iм\'я *';
+
+  @override
+  String get packages_senderNameHint => 'Iм\'я вiдправника';
+
+  @override
+  String get packages_nameRequired => 'Iм\'я обов\'язкове';
+
+  @override
+  String get packages_phoneLabel => 'Телефон';
+
+  @override
+  String get packages_phoneHintSpain => '+34 600 000 000';
+
+  @override
+  String get packages_phoneHintUkraine => '+380 00 000 0000';
+
+  @override
+  String get packages_addressLabel => 'Адреса';
+
+  @override
+  String get packages_pickupAddressHint => 'Адреса забору';
+
+  @override
+  String get packages_receiverSection => 'Отримувач';
+
+  @override
+  String get packages_receiverNameHint => 'Iм\'я отримувача';
+
+  @override
+  String get packages_deliveryAddressHint => 'Адреса доставки';
+
+  @override
+  String get packages_detailsSection => 'Деталi посилки';
+
+  @override
+  String get packages_contentHint => 'Вмiст посилки';
+
+  @override
+  String get packages_weightLabel => 'Вага (кг)';
+
+  @override
+  String get packages_declaredValueLabel => 'Оголошена вартiсть (EUR)';
+
+  @override
+  String get packages_notesLabel => 'Примiтки';
+
+  @override
+  String get packages_additionalNotesHint => 'Додатковi примiтки...';
+
+  @override
+  String get packages_unassigned => 'Не призначено';
+
+  @override
+  String get packages_tabSender => 'Вiдправник';
+
+  @override
+  String get packages_tabReceiver => 'Отримувач';
+
+  @override
+  String get packages_widthLabel => 'Ш';
+
+  @override
+  String get packages_heightLabel => 'В';
+
+  @override
+  String get packages_lengthLabel => 'Д';
+
+  @override
+  String get packages_quantityLabel => 'Кiлькiсть';
+
+  @override
+  String get packages_tariffLabel => 'ТАРИФ';
+
+  @override
+  String get packages_totalPrice => 'ВСЬОГО';
+
+  @override
+  String get packages_noRoutesTitle => 'Немає доступних маршрутiв';
+
+  @override
+  String get packages_noRoutesMessage => 'Спочатку створiть маршрут, щоб реєструвати посилки';
+
+  @override
+  String get packages_createRouteButton => 'Створити маршрут';
+
+  @override
+  String get packages_submitPackage => 'Оформити посилку';
+
+  @override
+  String get packages_addressRequired => 'Адреса обов\'язкова';
+
+  @override
+  String get packages_routeRequired => 'Оберiть маршрут';
+
+  @override
+  String get packages_selectRoute => 'Оберiть маршрут';
+
+  @override
+  String get packages_volumetricWeight => 'Об\'ємна вага';
+
+  @override
+  String get packages_toEurope => 'В ЄВРОПУ';
+
+  @override
+  String get packages_cityLabel => 'Місто';
+
+  @override
+  String get packages_addressButton => 'Адреса';
+
+  @override
+  String get packages_deliverySection => 'ДОСТАВКА';
+
+  @override
+  String get packages_hide => 'Приховати';
+
+  @override
+  String get packages_exactAddress => 'Точна адреса';
+
+  @override
+  String get packages_googleMapsLink => 'Посилання на Google Maps';
+
+  @override
+  String get packages_weightKg => 'ВАГА (КГ)';
+
+  @override
+  String get packages_quantityPcs => 'КІЛЬКІСТЬ (ШТ)';
+
+  @override
+  String get packages_dimensionsCm => 'ГАБАРИТИ (СМ)';
+
+  @override
+  String get packages_nameLabel => 'Ім\'я';
+
+  @override
+  String get packages_cityRequired => 'Місто обов\'язкове';
+
+  @override
+  String get packages_mapsPrefix => 'Карти';
+
+  @override
+  String get packages_billingWeight => 'Розрахункова вага';
+
+  @override
   String get routes_title => 'Маршрути';
 
   @override
@@ -385,6 +544,39 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_month => 'Мiсяць';
 
   @override
+  String get routes_searchCity => 'Пошук мiста...';
+
+  @override
+  String get routes_stopsOptional => 'Промiжнi зупинки (необовязково)';
+
+  @override
+  String get routes_pricing => 'Тарифи';
+
+  @override
+  String get routes_pricePerKg => 'Цiна/кг';
+
+  @override
+  String get routes_minimumPrice => 'Мiнiмум';
+
+  @override
+  String get routes_multiplier => 'Множник';
+
+  @override
+  String get routes_multiplierHint => 'Сезонне коригування (1.0 = базова цiна)';
+
+  @override
+  String get routes_deleteConfirmTitle => 'Видалити маршрут';
+
+  @override
+  String get routes_deleteConfirmMessage => 'Ви впевненi, що хочете видалити цей маршрут? Цю дiю не можна скасувати.';
+
+  @override
+  String get routes_deleteSuccess => 'Маршрут видалено';
+
+  @override
+  String get routes_deleteError => 'Помилка видалення маршруту';
+
+  @override
   String get nav_home => 'Головна';
 
   @override
@@ -431,6 +623,12 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get userMenu_help => 'Допомога';
+
+  @override
+  String get userMenu_language => 'Мова';
+
+  @override
+  String get userMenu_theme => 'Тема';
 
   @override
   String get status_package_pending => 'Очiкує';

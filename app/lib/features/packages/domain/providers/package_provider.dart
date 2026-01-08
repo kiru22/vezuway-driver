@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/domain/providers/auth_provider.dart';
@@ -6,7 +7,7 @@ import '../../data/repositories/package_repository.dart';
 
 // Package Repository Provider
 final packageRepositoryProvider = Provider<PackageRepository>((ref) {
-  return PackageRepository(ref.watch(apiServiceProvider));
+  return PackageRepository(ref.read(apiServiceProvider));
 });
 
 // Packages List State
@@ -42,18 +43,29 @@ class PackagesState {
 // Packages Notifier
 class PackagesNotifier extends StateNotifier<PackagesState> {
   final PackageRepository _repository;
+  bool _isInitialized = false;
 
   PackagesNotifier(this._repository) : super(const PackagesState()) {
-    loadPackages();
+    _init();
+  }
+
+  Future<void> _init() async {
+    if (_isInitialized) return;
+    _isInitialized = true;
+    await loadPackages();
   }
 
   Future<void> loadPackages() async {
+    // Prevent concurrent loads
+    if (state.isLoading) return;
+
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final packages = await _repository.getPackages(status: state.filterStatus);
       state = state.copyWith(packages: packages, isLoading: false);
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('PackagesNotifier.loadPackages error: $e\n$stack');
       state = state.copyWith(
         isLoading: false,
         error: 'Error al cargar paquetes',
@@ -80,6 +92,10 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     String? receiverAddress,
     String? description,
     double? weight,
+    int? lengthCm,
+    int? widthCm,
+    int? heightCm,
+    int? quantity,
     double? declaredValue,
     String? notes,
   }) async {
@@ -94,6 +110,10 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         receiverAddress: receiverAddress,
         description: description,
         weight: weight,
+        lengthCm: lengthCm,
+        widthCm: widthCm,
+        heightCm: heightCm,
+        quantity: quantity,
         declaredValue: declaredValue,
         notes: notes,
       );
@@ -101,7 +121,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         packages: [newPackage, ...state.packages],
       );
       return true;
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('PackagesNotifier.createPackage error: $e\n$stack');
       return false;
     }
   }
@@ -114,7 +135,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
       }).toList();
       state = state.copyWith(packages: packages);
       return true;
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('PackagesNotifier.updateStatus error: $e\n$stack');
       return false;
     }
   }
@@ -125,7 +147,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
       final packages = state.packages.where((p) => p.id != id).toList();
       state = state.copyWith(packages: packages);
       return true;
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('PackagesNotifier.deletePackage error: $e\n$stack');
       return false;
     }
   }
@@ -134,19 +157,19 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
 // Packages Provider
 final packagesProvider =
     StateNotifierProvider<PackagesNotifier, PackagesState>((ref) {
-  return PackagesNotifier(ref.watch(packageRepositoryProvider));
+  return PackagesNotifier(ref.read(packageRepositoryProvider));
 });
 
 // Single Package Provider
 final packageDetailProvider =
     FutureProvider.family<PackageModel, int>((ref, id) async {
-  final repository = ref.watch(packageRepositoryProvider);
+  final repository = ref.read(packageRepositoryProvider);
   return repository.getPackage(id);
 });
 
 // Package Status History Provider
 final packageHistoryProvider =
     FutureProvider.family<List<Map<String, dynamic>>, int>((ref, id) async {
-  final repository = ref.watch(packageRepositoryProvider);
+  final repository = ref.read(packageRepositoryProvider);
   return repository.getStatusHistory(id);
 });

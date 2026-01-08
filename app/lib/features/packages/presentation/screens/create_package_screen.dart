@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/models/city_model.dart';
+import '../../../../shared/widgets/form_app_bar.dart';
 import '../../domain/providers/package_provider.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 import '../../../routes/data/models/route_model.dart';
@@ -18,73 +23,242 @@ class CreatePackageScreen extends ConsumerStatefulWidget {
 
 class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _formKey = GlobalKey<FormState>();
+  int _selectedTabIndex = 0;
 
   // Sender fields
   final _senderNameController = TextEditingController();
   final _senderPhoneController = TextEditingController();
-  final _senderAddressController = TextEditingController();
+  final _senderExactAddressController = TextEditingController();
+  final _senderGoogleMapsController = TextEditingController();
+  CityModel? _senderCity;
+  bool _senderShowAddress = false;
 
   // Receiver fields
   final _receiverNameController = TextEditingController();
   final _receiverPhoneController = TextEditingController();
-  final _receiverAddressController = TextEditingController();
+  final _receiverExactAddressController = TextEditingController();
+  final _receiverGoogleMapsController = TextEditingController();
+  CityModel? _receiverCity;
+  bool _receiverShowAddress = false;
 
   // Package details
-  final _descriptionController = TextEditingController();
   final _weightController = TextEditingController();
-  final _declaredValueController = TextEditingController();
-  final _notesController = TextEditingController();
+  final _lengthController = TextEditingController();
+  final _widthController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _quantityController = TextEditingController(text: '1');
 
-  int? _selectedRouteId;
+  RouteModel? _selectedRoute;
+  double _volumetricWeight = 0.0;
+  double _calculatedPrice = 0.0;
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+
+    // Listeners for reactive price calculation
+    for (final controller in [
+      _weightController,
+      _lengthController,
+      _widthController,
+      _heightController,
+      _quantityController,
+    ]) {
+      controller.addListener(_updatePriceCalculation);
+    }
+
+    // Preselect route after frame renders
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _preselectClosestRoute();
+    });
+  }
+
+  @override
   void dispose() {
+    // Remove listeners before disposing controllers
+    for (final controller in [
+      _weightController,
+      _lengthController,
+      _widthController,
+      _heightController,
+      _quantityController,
+    ]) {
+      controller.removeListener(_updatePriceCalculation);
+    }
+
     _senderNameController.dispose();
     _senderPhoneController.dispose();
-    _senderAddressController.dispose();
+    _senderExactAddressController.dispose();
+    _senderGoogleMapsController.dispose();
     _receiverNameController.dispose();
     _receiverPhoneController.dispose();
-    _receiverAddressController.dispose();
-    _descriptionController.dispose();
+    _receiverExactAddressController.dispose();
+    _receiverGoogleMapsController.dispose();
     _weightController.dispose();
-    _declaredValueController.dispose();
-    _notesController.dispose();
+    _lengthController.dispose();
+    _widthController.dispose();
+    _heightController.dispose();
+    _quantityController.dispose();
     super.dispose();
   }
 
+  void _preselectClosestRoute() {
+    final routesState = ref.read(routesProvider);
+    final availableRoutes = routesState.routes
+        .where((r) => r.status == RouteStatus.planned || r.status == RouteStatus.inProgress)
+        .where((r) => r.departureDate.isAfter(DateTime.now().subtract(const Duration(days: 1))))
+        .toList()
+      ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
+
+    if (availableRoutes.isNotEmpty) {
+      setState(() {
+        _selectedRoute = availableRoutes.first;
+        _updatePriceCalculation();
+      });
+    }
+  }
+
+  double _calculateVolumetricWeight() {
+    final length = double.tryParse(_lengthController.text) ?? 0;
+    final width = double.tryParse(_widthController.text) ?? 0;
+    final height = double.tryParse(_heightController.text) ?? 0;
+
+    if (length <= 0 || width <= 0 || height <= 0) return 0;
+    return (length * width * height) / 5000;
+  }
+
+  double _calculatePrice() {
+    final route = _selectedRoute;
+    if (route == null) return 0;
+
+    final pricePerKg = route.pricePerKg;
+    if (pricePerKg == null) return 0;
+
+    final actualWeight = double.tryParse(_weightController.text) ?? 0;
+    final volumetric = _calculateVolumetricWeight();
+    final billingWeight = actualWeight > volumetric ? actualWeight : volumetric;
+    final qty = int.tryParse(_quantityController.text) ?? 1;
+
+    final multiplier = route.priceMultiplier ?? 1.0;
+    final minPrice = route.minimumPrice ?? 0;
+
+    final calculatedPrice = billingWeight * pricePerKg * multiplier * qty;
+    return calculatedPrice > (minPrice * qty) ? calculatedPrice : (minPrice * qty);
+  }
+
+  void _updatePriceCalculation() {
+    setState(() {
+      _volumetricWeight = _calculateVolumetricWeight();
+      _calculatedPrice = _calculatePrice();
+    });
+  }
+
+  void _switchTab(int index) {
+    if (_selectedTabIndex == index) return;
+    setState(() => _selectedTabIndex = index);
+  }
+
+  String _buildFullAddress(CityModel? city, String exactAddress, String? googleMapsLink) {
+    final parts = <String>[];
+
+    if (city != null) {
+      parts.add(city.name);
+    }
+
+    if (exactAddress.isNotEmpty) {
+      parts.add(exactAddress);
+    }
+
+    // Append Google Maps link if provided
+    if (googleMapsLink != null && googleMapsLink.isNotEmpty) {
+      parts.add('Maps: $googleMapsLink');
+    }
+
+    return parts.join(', ');
+  }
+
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_selectedRoute == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.packages_routeRequired),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Validate cities (not covered by form validation)
+    if (_senderCity == null) {
+      setState(() => _selectedTabIndex = 0);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.packages_cityRequired),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_receiverCity == null) {
+      setState(() => _selectedTabIndex = 1);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.packages_cityRequired),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      // Switch to tab with validation error
+      if (_senderNameController.text.isEmpty) {
+        setState(() => _selectedTabIndex = 0);
+      } else if (_receiverNameController.text.isEmpty) {
+        setState(() => _selectedTabIndex = 1);
+      }
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     final weight = double.tryParse(_weightController.text);
-    final declaredValue = double.tryParse(_declaredValueController.text);
+    final length = int.tryParse(_lengthController.text);
+    final width = int.tryParse(_widthController.text);
+    final height = int.tryParse(_heightController.text);
+    final quantity = int.tryParse(_quantityController.text);
+
+    // Build full addresses combining city + exact address + Google Maps link
+    final senderAddress = _buildFullAddress(
+      _senderCity,
+      _senderExactAddressController.text.trim(),
+      _senderGoogleMapsController.text.trim(),
+    );
+    final receiverAddress = _buildFullAddress(
+      _receiverCity,
+      _receiverExactAddressController.text.trim(),
+      _receiverGoogleMapsController.text.trim(),
+    );
 
     final success = await ref.read(packagesProvider.notifier).createPackage(
-      routeId: _selectedRouteId,
+      routeId: _selectedRoute!.id,
       senderName: _senderNameController.text.trim(),
       senderPhone: _senderPhoneController.text.isNotEmpty
           ? _senderPhoneController.text.trim()
           : null,
-      senderAddress: _senderAddressController.text.isNotEmpty
-          ? _senderAddressController.text.trim()
-          : null,
+      senderAddress: senderAddress,
       receiverName: _receiverNameController.text.trim(),
       receiverPhone: _receiverPhoneController.text.isNotEmpty
           ? _receiverPhoneController.text.trim()
           : null,
-      receiverAddress: _receiverAddressController.text.isNotEmpty
-          ? _receiverAddressController.text.trim()
-          : null,
-      description: _descriptionController.text.isNotEmpty
-          ? _descriptionController.text.trim()
-          : null,
+      receiverAddress: receiverAddress,
       weight: weight,
-      declaredValue: declaredValue,
-      notes: _notesController.text.isNotEmpty
-          ? _notesController.text.trim()
-          : null,
+      lengthCm: length,
+      widthCm: width,
+      heightCm: height,
+      quantity: quantity,
     );
 
     setState(() => _isLoading = false);
@@ -92,8 +266,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     if (mounted) {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Paquete creado correctamente'),
+          SnackBar(
+            content: Text(context.l10n.packages_createSuccess),
             backgroundColor: AppColors.success,
           ),
         );
@@ -101,7 +275,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(ref.read(packagesProvider).error ?? 'Error al crear el paquete'),
+            content: Text(ref.read(packagesProvider).error ?? context.l10n.packages_createError),
             backgroundColor: AppColors.error,
           ),
         );
@@ -114,318 +288,1148 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     final colors = context.colors;
     final routes = ref.watch(routesProvider).routes
         .where((r) => r.status == RouteStatus.planned || r.status == RouteStatus.inProgress)
-        .toList();
+        .where((r) => r.departureDate.isAfter(DateTime.now().subtract(const Duration(days: 1))))
+        .toList()
+      ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
+
+    // Show empty state if no routes available
+    if (routes.isEmpty) {
+      return Scaffold(
+        backgroundColor: colors.surface,
+        appBar: AppBar(
+          backgroundColor: colors.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.close, color: colors.textPrimary),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: _buildEmptyRoutesState(colors),
+      );
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.close, color: colors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Nuevo Paquete',
-          style: TextStyle(
-            color: colors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: TextButton(
-              onPressed: _isLoading ? null : _handleSubmit,
-              child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : const Text(
-                      'Guardar',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-            ),
-          ),
-        ],
-      ),
+      // Subtle gray background for light theme so white cards pop
+      backgroundColor: isDark ? colors.surface : const Color(0xFFF8FAFC),
+      appBar: _buildAppBar(),
       body: Form(
         key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
+        child: Column(
           children: [
-            // Route selector
-            _SectionTitle(title: 'Asignar a ruta', icon: Icons.route_rounded),
-            const SizedBox(height: 12),
-            _RouteDropdown(
-              routes: routes,
-              selectedRouteId: _selectedRouteId,
-              onChanged: (id) => setState(() => _selectedRouteId = id),
-            ),
-            const SizedBox(height: 24),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  // Route selector
+                  _buildRouteSelector(routes, colors),
+                  const SizedBox(height: 20),
 
-            // Sender section
-            _SectionTitle(title: 'Remitente', icon: Icons.person_outline),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _senderNameController,
-              label: 'Nombre *',
-              hint: 'Nombre del remitente',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'El nombre es requerido';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _senderPhoneController,
-              label: 'Teléfono',
-              hint: '+34 600 000 000',
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _senderAddressController,
-              label: 'Dirección',
-              hint: 'Dirección de recogida',
-              maxLines: 2,
-            ),
-            const SizedBox(height: 24),
+                  // Pill tabs for Sender/Receiver
+                  _buildPillTabs(colors),
+                  const SizedBox(height: 16),
 
-            // Receiver section
-            _SectionTitle(title: 'Destinatario', icon: Icons.person_pin_circle_outlined),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _receiverNameController,
-              label: 'Nombre *',
-              hint: 'Nombre del destinatario',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'El nombre es requerido';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _receiverPhoneController,
-              label: 'Teléfono',
-              hint: '+380 00 000 0000',
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _receiverAddressController,
-              label: 'Dirección',
-              hint: 'Dirección de entrega',
-              maxLines: 2,
-            ),
-            const SizedBox(height: 24),
+                  // Person form (changes based on tab)
+                  _buildPersonForm(colors),
+                  const SizedBox(height: 24),
 
-            // Package details section
-            _SectionTitle(title: 'Detalles del paquete', icon: Icons.inventory_2_outlined),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _descriptionController,
-              label: 'Descripción',
-              hint: 'Contenido del paquete',
+                  // Price Calculator
+                  _buildPriceCalculator(colors),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _FormField(
-                    controller: _weightController,
-                    label: 'Peso (kg)',
-                    hint: '0.0',
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _FormField(
-                    controller: _declaredValueController,
-                    label: 'Valor declarado (€)',
-                    hint: '0.00',
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _FormField(
-              controller: _notesController,
-              label: 'Notas',
-              hint: 'Notas adicionales...',
-              maxLines: 3,
-            ),
-            const SizedBox(height: 40),
+
+            // Submit button
+            _buildSubmitButton(colors),
           ],
         ),
       ),
     );
   }
-}
 
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  final IconData icon;
+  PreferredSizeWidget _buildAppBar() {
+    return FormAppBar(
+      title: context.l10n.packages_createTitle,
+      onClose: () => context.pop(),
+    );
+  }
 
-  const _SectionTitle({
-    required this.title,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Row(
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 18, color: AppColors.primary),
+  Widget _buildEmptyRoutesState(AppColorsExtension colors) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.route_rounded,
+                size: 40,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              context.l10n.packages_noRoutesTitle,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              context.l10n.packages_noRoutesMessage,
+              style: TextStyle(
+                fontSize: 14,
+                color: colors.textMuted,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.push('/routes/create'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  context.l10n.packages_createRouteButton,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: colors.textPrimary,
+      ),
+    );
+  }
+
+  Widget _buildRouteSelector(List<RouteModel> routes, AppColorsExtension colors) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? colors.surface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
+        ],
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: _selectedRoute?.id,
+          hint: Text(
+            context.l10n.packages_selectRoute,
+            style: TextStyle(
+              color: isDark ? colors.textMuted : const Color(0xFF64748B),
+            ),
+          ),
+          isExpanded: true,
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+          ),
+          dropdownColor: isDark ? colors.surface : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          items: routes.map((route) => DropdownMenuItem<int>(
+            value: route.id,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.route_rounded, size: 18, color: AppColors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        route.name,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('dd/MM/yyyy').format(route.departureDate),
+                        style: TextStyle(
+                          color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (route.pricePerKg != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.primary.withValues(alpha: 0.2)
+                          : const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '${route.pricePerKg!.toStringAsFixed(2)}€/kg',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          )).toList(),
+          onChanged: (id) {
+            setState(() {
+              _selectedRoute = routes.firstWhere((r) => r.id == id);
+              // Reset cities when route changes
+              _senderCity = null;
+              _receiverCity = null;
+              _updatePriceCalculation();
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPillTabs(AppColorsExtension colors) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? colors.surface : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tabWidth = (constraints.maxWidth - 4) / 2; // Account for gap
+
+          return Stack(
+            children: [
+              // Sliding indicator
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                left: _selectedTabIndex == 0 ? 0 : tabWidth + 4,
+                top: 0,
+                bottom: 0,
+                width: tabWidth,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Tab labels
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _switchTab(0),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        child: Center(
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 200),
+                            style: TextStyle(
+                              color: _selectedTabIndex == 0
+                                  ? Colors.white
+                                  : (isDark ? colors.textSecondary : const Color(0xFF475569)),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                            child: Text(context.l10n.packages_tabSender),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _switchTab(1),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        child: Center(
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 200),
+                            style: TextStyle(
+                              color: _selectedTabIndex == 1
+                                  ? Colors.white
+                                  : (isDark ? colors.textSecondary : const Color(0xFF475569)),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                            child: Text(context.l10n.packages_tabReceiver),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPersonForm(AppColorsExtension colors) {
+    final isSender = _selectedTabIndex == 0;
+    final nameController = isSender ? _senderNameController : _receiverNameController;
+    final phoneController = isSender ? _senderPhoneController : _receiverPhoneController;
+    final exactAddressController = isSender ? _senderExactAddressController : _receiverExactAddressController;
+    final googleMapsController = isSender ? _senderGoogleMapsController : _receiverGoogleMapsController;
+    final selectedCity = isSender ? _senderCity : _receiverCity;
+    final showAddress = isSender ? _senderShowAddress : _receiverShowAddress;
+    final phoneHint = isSender ? context.l10n.packages_phoneHintSpain : context.l10n.packages_phoneHintUkraine;
+
+    // Get available cities from route stops
+    final availableCities = _selectedRoute?.stops ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Name field
+        _FormField(
+          controller: nameController,
+          label: context.l10n.packages_nameLabel,
+          hint: isSender ? context.l10n.packages_senderNameHint : context.l10n.packages_receiverNameHint,
+          prefixIcon: Icons.person_outline,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return context.l10n.packages_nameRequired;
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 12),
+
+        // Phone field
+        _FormField(
+          controller: phoneController,
+          label: context.l10n.packages_phoneLabel,
+          hint: phoneHint,
+          prefixIcon: Icons.phone_outlined,
+          keyboardType: TextInputType.phone,
+        ),
+        const SizedBox(height: 12),
+
+        // City dropdown + Address button row
+        Row(
+          children: [
+            // City dropdown
+            Expanded(
+              child: _buildCityDropdown(
+                selectedCity: selectedCity,
+                cities: availableCities,
+                colors: colors,
+                onChanged: (city) {
+                  setState(() {
+                    if (isSender) {
+                      _senderCity = city;
+                    } else {
+                      _receiverCity = city;
+                    }
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Address expand button
+            SizedBox(
+              height: 48,
+              child: TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    if (isSender) {
+                      _senderShowAddress = !_senderShowAddress;
+                    } else {
+                      _receiverShowAddress = !_receiverShowAddress;
+                    }
+                  });
+                },
+                icon: Icon(
+                  showAddress ? Icons.expand_less : Icons.location_on_outlined,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
+                label: Text(
+                  context.l10n.packages_addressButton,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        // Expandable address section
+        AnimatedCrossFade(
+          firstChild: const SizedBox.shrink(),
+          secondChild: _buildExpandableAddressSection(
+            exactAddressController: exactAddressController,
+            googleMapsController: googleMapsController,
+            colors: colors,
+          ),
+          crossFadeState: showAddress ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
         ),
       ],
     );
   }
+
+  Widget _buildCityDropdown({
+    required CityModel? selectedCity,
+    required List<CityModel> cities,
+    required AppColorsExtension colors,
+    required ValueChanged<CityModel?> onChanged,
+  }) {
+    // If no stops defined, show disabled text (cities come from route stops)
+    if (cities.isEmpty) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: isDark ? colors.surface : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? colors.border : const Color(0xFFE2E8F0),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.location_city_outlined,
+              size: 20,
+              color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selectedCity?.name ?? context.l10n.packages_cityLabel,
+                style: TextStyle(
+                  color: selectedCity != null
+                      ? colors.textPrimary
+                      : (isDark ? colors.textMuted : const Color(0xFF64748B)),
+                  fontWeight: selectedCity != null ? FontWeight.w500 : FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: isDark ? colors.surface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<CityModel>(
+          value: selectedCity,
+          hint: Row(
+            children: [
+              Icon(
+                Icons.location_city_outlined,
+                size: 20,
+                color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                context.l10n.packages_cityLabel,
+                style: TextStyle(
+                  color: isDark ? colors.textMuted : const Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+          isExpanded: true,
+          icon: Icon(
+            Icons.keyboard_arrow_down,
+            color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+          ),
+          dropdownColor: isDark ? colors.surface : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          items: cities.map((city) => DropdownMenuItem<CityModel>(
+            value: city,
+            child: Row(
+              children: [
+                Text(city.countryFlag, style: const TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Text(
+                  city.name,
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          )).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpandableAddressSection({
+    required TextEditingController exactAddressController,
+    required TextEditingController googleMapsController,
+    required AppColorsExtension colors,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? colors.surface : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Text(
+            context.l10n.packages_deliverySection,
+            style: TextStyle(
+              color: isDark ? colors.textSecondary : const Color(0xFF475569),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Exact address field
+          _FormField(
+            controller: exactAddressController,
+            label: context.l10n.packages_exactAddress,
+            hint: context.l10n.packages_deliveryAddressHint,
+            prefixIcon: Icons.home_outlined,
+          ),
+          const SizedBox(height: 12),
+
+          // Google Maps link field
+          _FormField(
+            controller: googleMapsController,
+            label: context.l10n.packages_googleMapsLink,
+            hint: 'https://maps.google.com/...',
+            prefixIcon: Icons.map_outlined,
+            keyboardType: TextInputType.url,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceCalculator(AppColorsExtension colors) {
+    final pricePerKg = _selectedRoute?.pricePerKg;
+    final hasPricing = pricePerKg != null;
+    final billingWeight = _volumetricWeight > (double.tryParse(_weightController.text) ?? 0)
+        ? _volumetricWeight
+        : (double.tryParse(_weightController.text) ?? 0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? colors.surface : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Weight + Quantity row
+          Row(
+            children: [
+              // Weight
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.packages_weightKg,
+                      style: TextStyle(
+                        color: isDark ? colors.textSecondary : const Color(0xFF475569),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _NumericInput(
+                      controller: _weightController,
+                      hint: '0.0',
+                      allowDecimal: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Quantity
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.packages_quantityPcs,
+                      style: TextStyle(
+                        color: isDark ? colors.textSecondary : const Color(0xFF475569),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _NumericInput(
+                      controller: _quantityController,
+                      hint: '1',
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Dimensions label
+          Text(
+            context.l10n.packages_dimensionsCm,
+            style: TextStyle(
+              color: isDark ? colors.textSecondary : const Color(0xFF475569),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Dimensions row (L x W x H)
+          Row(
+            children: [
+              Expanded(
+                child: _DimensionInput(
+                  controller: _lengthController,
+                  label: context.l10n.packages_lengthLabel,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _DimensionInput(
+                  controller: _widthController,
+                  label: context.l10n.packages_widthLabel,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _DimensionInput(
+                  controller: _heightController,
+                  label: context.l10n.packages_heightLabel,
+                ),
+              ),
+            ],
+          ),
+
+          if (hasPricing) ...[
+            const SizedBox(height: 20),
+            Divider(color: isDark ? colors.border : const Color(0xFFE2E8F0)),
+            const SizedBox(height: 16),
+
+            // Tariff info and total
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${context.l10n.packages_tariffLabel}: ${pricePerKg.toStringAsFixed(2)} €/kg',
+                      style: TextStyle(
+                        color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (_volumetricWeight > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          '${context.l10n.packages_volumetricWeight}: ${_volumetricWeight.toStringAsFixed(2)} kg',
+                          style: TextStyle(
+                            color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    if (billingWeight > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          '${context.l10n.packages_billingWeight}: ${billingWeight.toStringAsFixed(2)} kg',
+                          style: TextStyle(
+                            color: isDark ? colors.textSecondary : const Color(0xFF475569),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${_calculatedPrice.toStringAsFixed(2)} €',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton(AppColorsExtension colors) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? colors.surface : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? colors.border : const Color(0xFFE2E8F0),
+          ),
+        ),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleSubmit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
+              shadowColor: AppColors.primary.withValues(alpha: 0.4),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    context.l10n.packages_submitPackage,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
+// Form field widget - Clean, elevated design
 class _FormField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String? hint;
+  final IconData? prefixIcon;
   final TextInputType? keyboardType;
-  final int maxLines;
   final String? Function(String?)? validator;
-  final List<TextInputFormatter>? inputFormatters;
 
   const _FormField({
     required this.controller,
     required this.label,
     this.hint,
+    this.prefixIcon,
     this.keyboardType,
-    this.maxLines = 1,
     this.validator,
-    this.inputFormatters,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      validator: validator,
-      inputFormatters: inputFormatters,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        filled: true,
-        fillColor: colors.background,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: isDark ? null : [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        validator: validator,
+        style: TextStyle(
+          color: colors.textPrimary,
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error),
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          // Darker labels for better readability
+          labelStyle: TextStyle(
+            color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+            fontWeight: FontWeight.w500,
+          ),
+          floatingLabelStyle: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+          ),
+          hintStyle: TextStyle(
+            color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
+          ),
+          prefixIcon: prefixIcon != null
+              ? Icon(
+                  prefixIcon,
+                  size: 20,
+                  color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+                )
+              : null,
+          filled: true,
+          // White background for light theme, dark surface for dark theme
+          fillColor: isDark ? colors.surface : Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: isDark ? colors.border : const Color(0xFFE2E8F0),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: isDark ? colors.border : const Color(0xFFE2E8F0),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.error, width: 2),
+          ),
         ),
       ),
     );
   }
 }
 
-class _RouteDropdown extends StatelessWidget {
-  final List<RouteModel> routes;
-  final int? selectedRouteId;
-  final ValueChanged<int?> onChanged;
+// Numeric input for weight/quantity - Clean minimal style with glow effect
+class _NumericInput extends StatefulWidget {
+  final TextEditingController controller;
+  final String hint;
+  final bool allowDecimal;
 
-  const _RouteDropdown({
-    required this.routes,
-    required this.selectedRouteId,
-    required this.onChanged,
+  const _NumericInput({
+    required this.controller,
+    required this.hint,
+    this.allowDecimal = false,
   });
+
+  @override
+  State<_NumericInput> createState() => _NumericInputState();
+}
+
+class _NumericInputState extends State<_NumericInput> {
+  final _focusNode = FocusNode();
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() => _isFocused = _focusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: colors.background,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.border),
+        boxShadow: _isFocused
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  blurRadius: 12,
+                  spreadRadius: 0,
+                ),
+              ]
+            : null,
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int?>(
-          value: selectedRouteId,
-          hint: Text(
-            'Sin asignar',
-            style: TextStyle(color: colors.textMuted),
+      child: TextField(
+        controller: widget.controller,
+        focusNode: _focusNode,
+        keyboardType: TextInputType.numberWithOptions(decimal: widget.allowDecimal),
+        textAlign: TextAlign.center,
+        cursorWidth: 1.5,
+        cursorColor: AppColors.primary,
+        style: TextStyle(
+          color: colors.textPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 28,
+        ),
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          hintStyle: TextStyle(
+            color: isDark ? colors.textMuted : const Color(0xFFCBD5E1),
+            fontWeight: FontWeight.w400,
+            fontSize: 28,
           ),
-          isExpanded: true,
-          icon: Icon(Icons.keyboard_arrow_down, color: colors.textMuted),
-          items: [
-            DropdownMenuItem<int?>(
-              value: null,
-              child: Text(
-                'Sin asignar',
-                style: TextStyle(color: colors.textSecondary),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        ),
+        inputFormatters: [
+          widget.allowDecimal
+              ? FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+              : FilteringTextInputFormatter.digitsOnly,
+        ],
+      ),
+    );
+  }
+}
+
+// Dimension input field (L/W/H) - Clean minimal style with glow effect
+class _DimensionInput extends StatefulWidget {
+  final TextEditingController controller;
+  final String label;
+
+  const _DimensionInput({
+    required this.controller,
+    required this.label,
+  });
+
+  @override
+  State<_DimensionInput> createState() => _DimensionInputState();
+}
+
+class _DimensionInputState extends State<_DimensionInput> {
+  final _focusNode = FocusNode();
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() => _isFocused = _focusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          widget.label,
+          style: TextStyle(
+            color: isDark ? colors.textSecondary : const Color(0xFF94A3B8),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 70,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: _isFocused
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      spreadRadius: 0,
+                    ),
+                  ]
+                : null,
+          ),
+          child: TextField(
+            controller: widget.controller,
+            focusNode: _focusNode,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            cursorWidth: 1.5,
+            cursorColor: AppColors.primary,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+              isDense: true,
+              hintText: '0',
+              hintStyle: TextStyle(
+                color: isDark ? colors.textMuted : const Color(0xFFCBD5E1),
+                fontWeight: FontWeight.w400,
+                fontSize: 24,
               ),
             ),
-            ...routes.map((route) => DropdownMenuItem<int?>(
-              value: route.id,
-              child: Text(
-                '${route.name} (${route.status.displayName})',
-                style: TextStyle(color: colors.textPrimary),
-              ),
-            )),
-          ],
-          onChanged: onChanged,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

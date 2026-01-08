@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
 
@@ -19,6 +20,16 @@ class ApiService {
       },
     ));
 
+    // Add logging in debug mode
+    if (kDebugMode) {
+      _dio.interceptors.add(LogInterceptor(
+        requestBody: false,
+        responseBody: true,
+        error: true,
+        logPrint: (obj) => debugPrint('DIO: $obj'),
+      ));
+    }
+
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await getToken();
@@ -28,6 +39,7 @@ class ApiService {
         return handler.next(options);
       },
       onError: (error, handler) {
+        debugPrint('API Error: ${error.response?.statusCode} - ${error.message}');
         if (error.response?.statusCode == 401) {
           // Token expired, handle logout
           clearToken();

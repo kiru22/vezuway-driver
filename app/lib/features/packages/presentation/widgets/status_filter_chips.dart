@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../l10n/status_localizations.dart';
 import '../../data/models/package_model.dart';
 
 class StatusFilterChips extends StatelessWidget {
@@ -23,7 +25,7 @@ class StatusFilterChips extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
           _FilterChip(
-            label: 'Todos',
+            label: context.l10n.packages_filterAll,
             isSelected: selectedStatus == null,
             onTap: () => onStatusSelected(null),
           ),
@@ -31,7 +33,7 @@ class StatusFilterChips extends StatelessWidget {
           ...PackageStatus.values.map((status) => Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: _FilterChip(
-                  label: status.displayName,
+                  label: status.localizedName(context),
                   isSelected: selectedStatus == status,
                   onTap: () => onStatusSelected(status),
                 ),

@@ -1,5 +1,5 @@
+// ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -269,6 +269,165 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get packages_createTitle => 'Nuevo Paquete';
+
+  @override
+  String get packages_createSuccess => 'Paquete creado correctamente';
+
+  @override
+  String get packages_createError => 'Error al crear el paquete';
+
+  @override
+  String get packages_assignRoute => 'Asignar a ruta';
+
+  @override
+  String get packages_senderSection => 'Remitente';
+
+  @override
+  String get packages_senderNameLabel => 'Nombre *';
+
+  @override
+  String get packages_senderNameHint => 'Nombre del remitente';
+
+  @override
+  String get packages_nameRequired => 'El nombre es requerido';
+
+  @override
+  String get packages_phoneLabel => 'Telefono';
+
+  @override
+  String get packages_phoneHintSpain => '+34 600 000 000';
+
+  @override
+  String get packages_phoneHintUkraine => '+380 00 000 0000';
+
+  @override
+  String get packages_addressLabel => 'Direccion';
+
+  @override
+  String get packages_pickupAddressHint => 'Direccion de recogida';
+
+  @override
+  String get packages_receiverSection => 'Destinatario';
+
+  @override
+  String get packages_receiverNameHint => 'Nombre del destinatario';
+
+  @override
+  String get packages_deliveryAddressHint => 'Direccion de entrega';
+
+  @override
+  String get packages_detailsSection => 'Detalles del paquete';
+
+  @override
+  String get packages_contentHint => 'Contenido del paquete';
+
+  @override
+  String get packages_weightLabel => 'Peso (kg)';
+
+  @override
+  String get packages_declaredValueLabel => 'Valor declarado (EUR)';
+
+  @override
+  String get packages_notesLabel => 'Notas';
+
+  @override
+  String get packages_additionalNotesHint => 'Notas adicionales...';
+
+  @override
+  String get packages_unassigned => 'Sin asignar';
+
+  @override
+  String get packages_tabSender => 'Remitente';
+
+  @override
+  String get packages_tabReceiver => 'Destinatario';
+
+  @override
+  String get packages_widthLabel => 'An';
+
+  @override
+  String get packages_heightLabel => 'Al';
+
+  @override
+  String get packages_lengthLabel => 'La';
+
+  @override
+  String get packages_quantityLabel => 'Cantidad';
+
+  @override
+  String get packages_tariffLabel => 'TARIFA';
+
+  @override
+  String get packages_totalPrice => 'TOTAL';
+
+  @override
+  String get packages_noRoutesTitle => 'Sin rutas disponibles';
+
+  @override
+  String get packages_noRoutesMessage => 'Crea una ruta primero para poder registrar paquetes';
+
+  @override
+  String get packages_createRouteButton => 'Crear ruta';
+
+  @override
+  String get packages_submitPackage => 'Crear paquete';
+
+  @override
+  String get packages_addressRequired => 'La direccion es requerida';
+
+  @override
+  String get packages_routeRequired => 'Selecciona una ruta';
+
+  @override
+  String get packages_selectRoute => 'Seleccionar ruta';
+
+  @override
+  String get packages_volumetricWeight => 'Peso volumetrico';
+
+  @override
+  String get packages_toEurope => 'A EUROPA';
+
+  @override
+  String get packages_cityLabel => 'Ciudad';
+
+  @override
+  String get packages_addressButton => 'Direccion';
+
+  @override
+  String get packages_deliverySection => 'ENTREGA';
+
+  @override
+  String get packages_hide => 'Ocultar';
+
+  @override
+  String get packages_exactAddress => 'Direccion exacta';
+
+  @override
+  String get packages_googleMapsLink => 'Enlace a Google Maps';
+
+  @override
+  String get packages_weightKg => 'PESO (KG)';
+
+  @override
+  String get packages_quantityPcs => 'CANTIDAD (UDS)';
+
+  @override
+  String get packages_dimensionsCm => 'DIMENSIONES (CM)';
+
+  @override
+  String get packages_nameLabel => 'Nombre';
+
+  @override
+  String get packages_cityRequired => 'La ciudad es requerida';
+
+  @override
+  String get packages_mapsPrefix => 'Maps';
+
+  @override
+  String get packages_billingWeight => 'Peso facturable';
+
+  @override
   String get routes_title => 'Rutas';
 
   @override
@@ -382,6 +541,39 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_month => 'Mes';
 
   @override
+  String get routes_searchCity => 'Buscar ciudad...';
+
+  @override
+  String get routes_stopsOptional => 'Paradas intermedias (opcional)';
+
+  @override
+  String get routes_pricing => 'Tarifas';
+
+  @override
+  String get routes_pricePerKg => 'Precio/kg';
+
+  @override
+  String get routes_minimumPrice => 'Minimo';
+
+  @override
+  String get routes_multiplier => 'Multiplicador';
+
+  @override
+  String get routes_multiplierHint => 'Ajuste estacional (1.0 = precio base)';
+
+  @override
+  String get routes_deleteConfirmTitle => 'Eliminar ruta';
+
+  @override
+  String get routes_deleteConfirmMessage => '¿Estas seguro de eliminar esta ruta? Esta accion no se puede deshacer.';
+
+  @override
+  String get routes_deleteSuccess => 'Ruta eliminada';
+
+  @override
+  String get routes_deleteError => 'Error al eliminar la ruta';
+
+  @override
   String get nav_home => 'Inicio';
 
   @override
@@ -428,6 +620,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get userMenu_help => 'Ayuda';
+
+  @override
+  String get userMenu_language => 'Idioma';
+
+  @override
+  String get userMenu_theme => 'Tema';
 
   @override
   String get status_package_pending => 'Pendiente';
@@ -497,7 +695,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String tripCard_deliveryCount(int count) {
-    return '$count envios';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count envios',
+      one: '1 envio',
+    );
+    return '$_temp0';
   }
 
   @override

@@ -117,6 +117,8 @@ class _SimpleRouteCard extends StatelessWidget {
                 children: [
                   Text(
                     '${_extractCity(route.origin)} - ${_extractCity(route.destination)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -133,11 +135,15 @@ class _SimpleRouteCard extends StatelessWidget {
                         color: colors.textMuted,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        dateFormatter.format(route.nextDepartureDate ?? route.departureDate),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colors.textMuted,
+                      Flexible(
+                        child: Text(
+                          dateFormatter.format(route.nextDepartureDate ?? route.departureDate),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colors.textMuted,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -147,11 +153,15 @@ class _SimpleRouteCard extends StatelessWidget {
                         color: colors.textMuted,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        packagesLabel,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colors.textMuted,
+                      Flexible(
+                        child: Text(
+                          packagesLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colors.textMuted,
+                          ),
                         ),
                       ),
                     ],
@@ -159,11 +169,9 @@ class _SimpleRouteCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             // Status chip
-            Flexible(
-              flex: 0,
-              child: _StatusChip(status: route.status),
-            ),
+            _StatusChip(status: route.status),
           ],
         ),
       ),

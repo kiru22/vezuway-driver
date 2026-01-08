@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../l10n/status_localizations.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../../shared/widgets/status_chip.dart';
 import '../../data/models/route_model.dart';
@@ -76,8 +79,7 @@ class _RoutesScreenState extends ConsumerState<RoutesScreen>
         children: [
           // Header
           AppHeader(
-            title: 'Rutas',
-            showLanguageSelector: false,
+            title: context.l10n.routes_title,
             showMenu: false,
           ),
           // Tab bar
@@ -114,9 +116,9 @@ class _RoutesScreenState extends ConsumerState<RoutesScreen>
                 fontWeight: FontWeight.w500,
               ),
               tabs: [
-                Tab(text: 'Activas (${activeRoutes.length})'),
-                Tab(text: 'Próximas (${plannedRoutes.length})'),
-                Tab(text: 'Historial'),
+                Tab(text: context.l10n.routes_activeTab(activeRoutes.length)),
+                Tab(text: context.l10n.routes_upcomingTab(plannedRoutes.length)),
+                Tab(text: context.l10n.routes_historyTab),
               ],
             ),
           ),
@@ -130,31 +132,34 @@ class _RoutesScreenState extends ConsumerState<RoutesScreen>
                   routes: activeRoutes,
                   isLoading: routesState.isLoading,
                   error: routesState.error,
-                  emptyMessage: 'No hay rutas activas',
-                  emptySubtitle: 'Las rutas en progreso aparecerán aquí',
+                  emptyMessage: context.l10n.routes_emptyActive,
+                  emptySubtitle: context.l10n.routes_emptyActiveSubtitle,
                   onRefresh: () =>
                       ref.read(routesProvider.notifier).loadRoutes(),
                   onStatusChange: _handleStatusChange,
+                  onDelete: _handleDelete,
                 ),
                 _RoutesTabContent(
                   routes: plannedRoutes,
                   isLoading: routesState.isLoading,
                   error: routesState.error,
-                  emptyMessage: 'No hay rutas programadas',
-                  emptySubtitle: 'Crea una nueva ruta para empezar',
+                  emptyMessage: context.l10n.routes_emptyPlanned,
+                  emptySubtitle: context.l10n.routes_emptyPlannedSubtitle,
                   onRefresh: () =>
                       ref.read(routesProvider.notifier).loadRoutes(),
                   onStatusChange: _handleStatusChange,
+                  onDelete: _handleDelete,
                 ),
                 _RoutesTabContent(
                   routes: completedRoutes,
                   isLoading: routesState.isLoading,
                   error: routesState.error,
-                  emptyMessage: 'Sin historial',
-                  emptySubtitle: 'Las rutas completadas aparecerán aquí',
+                  emptyMessage: context.l10n.routes_emptyHistory,
+                  emptySubtitle: context.l10n.routes_emptyHistorySubtitle,
                   onRefresh: () =>
                       ref.read(routesProvider.notifier).loadRoutes(),
                   onStatusChange: _handleStatusChange,
+                  onDelete: _handleDelete,
                 ),
               ],
             ),
@@ -167,6 +172,43 @@ class _RoutesScreenState extends ConsumerState<RoutesScreen>
   void _handleStatusChange(RouteModel route, RouteStatus newStatus) {
     ref.read(routesProvider.notifier).updateStatus(route.id, newStatus);
   }
+
+  Future<void> _handleDelete(RouteModel route) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.routes_deleteConfirmTitle),
+        content: Text(l10n.routes_deleteConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.common_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text(l10n.common_delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final success =
+          await ref.read(routesProvider.notifier).deleteRoute(route.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success ? l10n.routes_deleteSuccess : l10n.routes_deleteError,
+            ),
+            backgroundColor: success ? AppColors.success : AppColors.error,
+          ),
+        );
+      }
+    }
+  }
 }
 
 class _RoutesTabContent extends StatelessWidget {
@@ -177,6 +219,7 @@ class _RoutesTabContent extends StatelessWidget {
   final String emptySubtitle;
   final Future<void> Function() onRefresh;
   final void Function(RouteModel, RouteStatus) onStatusChange;
+  final Future<void> Function(RouteModel) onDelete;
 
   const _RoutesTabContent({
     required this.routes,
@@ -186,6 +229,7 @@ class _RoutesTabContent extends StatelessWidget {
     required this.emptySubtitle,
     required this.onRefresh,
     required this.onStatusChange,
+    required this.onDelete,
   });
 
   @override
@@ -209,7 +253,7 @@ class _RoutesTabContent extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRefresh,
-              child: const Text('Reintentar'),
+              child: Text(context.l10n.common_retry),
             ),
           ],
         ),
@@ -267,6 +311,7 @@ class _RoutesTabContent extends StatelessWidget {
           return _RouteCard(
             route: route,
             onStatusChange: (status) => onStatusChange(route, status),
+            onDelete: () => onDelete(route),
           );
         },
       ),
@@ -277,10 +322,12 @@ class _RoutesTabContent extends StatelessWidget {
 class _RouteCard extends StatelessWidget {
   final RouteModel route;
   final void Function(RouteStatus) onStatusChange;
+  final VoidCallback onDelete;
 
   const _RouteCard({
     required this.route,
     required this.onStatusChange,
+    required this.onDelete,
   });
 
   @override
@@ -305,6 +352,8 @@ class _RouteCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   route.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -312,8 +361,9 @@ class _RouteCard extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
               StatusChip(
-                label: route.status.displayName.toUpperCase(),
+                label: route.status.localizedName(context).toUpperCase(),
                 variant: _getStatusVariant(route.status),
               ),
             ],
@@ -339,6 +389,8 @@ class _RouteCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   route.origin,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
                     color: colors.textPrimary,
@@ -374,6 +426,8 @@ class _RouteCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   route.destination,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
                     color: colors.textPrimary,
@@ -392,39 +446,23 @@ class _RouteCard extends StatelessWidget {
               // Packages count
               _InfoChip(
                 icon: Icons.inventory_2_outlined,
-                label: '${route.packagesCount} paquetes',
+                label: context.l10n.packages_count(route.packagesCount),
               ),
               const Spacer(),
-              // Actions menu
-              if (route.status != RouteStatus.completed &&
-                  route.status != RouteStatus.cancelled)
-                PopupMenuButton<RouteStatus>(
-                  icon: Icon(Icons.more_vert, color: colors.textMuted),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  onSelected: onStatusChange,
-                  itemBuilder: (context) => RouteStatus.values
-                      .where((s) => s != route.status)
-                      .map((status) => PopupMenuItem(
-                            value: status,
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: _getStatusColor(status),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(status.displayName),
-                              ],
-                            ),
-                          ))
-                      .toList(),
-                ),
+              // Change status button
+              _ActionButton(
+                icon: Icons.sync_alt_rounded,
+                label: context.l10n.packages_changeStatus,
+                onTap: () => _showStatusChangeSheet(context),
+              ),
+              const SizedBox(width: 8),
+              // Delete button
+              _ActionButton(
+                icon: Icons.delete_outline,
+                label: context.l10n.common_delete,
+                isDestructive: true,
+                onTap: onDelete,
+              ),
             ],
           ),
         ],
@@ -456,6 +494,60 @@ class _RouteCard extends StatelessWidget {
       case RouteStatus.cancelled:
         return AppColors.textMuted;
     }
+  }
+
+  void _showStatusChangeSheet(BuildContext context) {
+    final colors = context.colors;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              context.l10n.packages_selectNewStatus,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...RouteStatus.values
+                .where((s) => s != route.status)
+                .map((status) => _StatusOption(
+                      status: status,
+                      color: _getStatusColor(status),
+                      onTap: () {
+                        Navigator.pop(context);
+                        onStatusChange(status);
+                      },
+                    )),
+            SizedBox(height: MediaQuery.of(context).padding.bottom),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -491,6 +583,110 @@ class _InfoChip extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool isDestructive;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.isDestructive = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDestructive ? AppColors.error : AppColors.primary;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusOption extends StatelessWidget {
+  final RouteStatus status;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _StatusOption({
+    required this.status,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: colors.cardBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              status.localizedName(context),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: colors.textPrimary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

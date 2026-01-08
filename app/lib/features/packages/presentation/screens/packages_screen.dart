@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../domain/providers/package_provider.dart';
 import '../../data/models/package_model.dart';
@@ -58,8 +59,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
         children: [
           // Header
           AppHeader(
-            title: 'Pedidos',
-            showLanguageSelector: false,
+            title: context.l10n.packages_title,
             showMenu: false,
           ),
           // Search bar
@@ -69,7 +69,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
               controller: _searchController,
               onChanged: (value) => setState(() => _searchQuery = value),
               decoration: InputDecoration(
-                hintText: 'Buscar por código, remitente o destinatario...',
+                hintText: context.l10n.packages_searchPlaceholder,
                 prefixIcon: Icon(Icons.search, color: colors.textMuted),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -83,6 +83,14 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
                 filled: true,
                 fillColor: colors.background,
                 border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
@@ -192,7 +200,7 @@ class _ErrorState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Reintentar'),
+              label: Text(context.l10n.common_retry),
             ),
           ],
         ),
@@ -231,7 +239,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              hasFilter ? 'Sin resultados' : 'Sin paquetes',
+              hasFilter ? context.l10n.packages_emptyFilterTitle : context.l10n.packages_emptyTitle,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -241,8 +249,8 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               hasFilter
-                  ? 'No se encontraron paquetes con los filtros aplicados'
-                  : 'Usa el botón + para registrar un nuevo paquete',
+                  ? context.l10n.packages_emptyFilterMessage
+                  : context.l10n.packages_emptyMessage,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

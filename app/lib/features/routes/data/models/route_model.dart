@@ -1,3 +1,4 @@
+import '../../../../shared/models/city_model.dart';
 import 'route_schedule_model.dart';
 
 enum RouteStatus {
@@ -60,6 +61,10 @@ class RouteModel {
   final String? notes;
   final int packagesCount;
   final List<RouteScheduleModel> schedules;
+  final List<CityModel> stops;
+  final double? pricePerKg;
+  final double? minimumPrice;
+  final double? priceMultiplier;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -75,6 +80,10 @@ class RouteModel {
     this.notes,
     this.packagesCount = 0,
     this.schedules = const [],
+    this.stops = const [],
+    this.pricePerKg,
+    this.minimumPrice,
+    this.priceMultiplier,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -128,26 +137,82 @@ class RouteModel {
         .map((s) => RouteScheduleModel.fromJson(s as Map<String, dynamic>))
         .toList();
 
+    // Parse stops if present
+    final stopsJson = json['stops'] as List<dynamic>? ?? [];
+    final stops = stopsJson
+        .map((s) => CityModel.fromJson(s as Map<String, dynamic>))
+        .toList();
+
+    // Parse pricing - handle both String and num types
+    double? parsePrice(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
+    final pricing = json['pricing'] as Map<String, dynamic>?;
+    final pricePerKg = pricing != null
+        ? parsePrice(pricing['price_per_kg'])
+        : parsePrice(json['price_per_kg']);
+    final minimumPrice = pricing != null
+        ? parsePrice(pricing['minimum_price'])
+        : parsePrice(json['minimum_price']);
+    final priceMultiplier = pricing != null
+        ? parsePrice(pricing['multiplier'])
+        : parsePrice(json['price_multiplier']);
+
+    // Parse status - handle both string and enum object formats
+    String statusValue;
+    if (json['status'] is String) {
+      statusValue = json['status'];
+    } else if (json['status'] is Map) {
+      statusValue = json['status']['value'] ?? 'planned';
+    } else {
+      statusValue = 'planned';
+    }
+
+    // Parse dates with null safety
+    DateTime departureDate;
+    if (json['departure_date'] != null) {
+      departureDate = DateTime.parse(json['departure_date']);
+    } else if (schedules.isNotEmpty) {
+      departureDate = schedules.first.departureDate;
+    } else {
+      departureDate = DateTime.now();
+    }
+
+    DateTime? arrivalDate;
+    if (json['estimated_arrival_date'] != null) {
+      arrivalDate = DateTime.parse(json['estimated_arrival_date']);
+    } else if (json['arrival_date'] != null) {
+      arrivalDate = DateTime.parse(json['arrival_date']);
+    } else if (json['actual_arrival_date'] != null) {
+      arrivalDate = DateTime.parse(json['actual_arrival_date']);
+    }
+
     return RouteModel(
       id: json['id'],
       origin: originCity,
       originCountry: originCountry,
       destination: destCity,
       destinationCountry: destCountry,
-      status: RouteStatus.fromString(json['status'] is String
-          ? json['status']
-          : json['status']?['value'] ?? 'planned'),
-      departureDate: DateTime.parse(json['departure_date']),
-      arrivalDate: json['estimated_arrival_date'] != null
-          ? DateTime.parse(json['estimated_arrival_date'])
-          : (json['arrival_date'] != null
-              ? DateTime.parse(json['arrival_date'])
-              : null),
+      status: RouteStatus.fromString(statusValue),
+      departureDate: departureDate,
+      arrivalDate: arrivalDate,
       notes: json['notes'],
       packagesCount: json['packages_count'] ?? 0,
       schedules: schedules,
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      stops: stops,
+      pricePerKg: pricePerKg,
+      minimumPrice: minimumPrice,
+      priceMultiplier: priceMultiplier,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
+          : DateTime.now(),
     );
   }
 
@@ -162,6 +227,14 @@ class RouteModel {
       'departure_date': departureDate.toIso8601String().split('T')[0],
       'estimated_arrival_date': arrivalDate?.toIso8601String().split('T')[0],
       'notes': notes,
+      'price_per_kg': pricePerKg,
+      'minimum_price': minimumPrice,
+      'price_multiplier': priceMultiplier,
+      'stops': stops.asMap().entries.map((e) => {
+        'city': e.value.name,
+        'country': e.value.country,
+        'order': e.key,
+      }).toList(),
     };
   }
 
@@ -177,6 +250,10 @@ class RouteModel {
     String? notes,
     int? packagesCount,
     List<RouteScheduleModel>? schedules,
+    List<CityModel>? stops,
+    double? pricePerKg,
+    double? minimumPrice,
+    double? priceMultiplier,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -192,6 +269,10 @@ class RouteModel {
       notes: notes ?? this.notes,
       packagesCount: packagesCount ?? this.packagesCount,
       schedules: schedules ?? this.schedules,
+      stops: stops ?? this.stops,
+      pricePerKg: pricePerKg ?? this.pricePerKg,
+      minimumPrice: minimumPrice ?? this.minimumPrice,
+      priceMultiplier: priceMultiplier ?? this.priceMultiplier,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

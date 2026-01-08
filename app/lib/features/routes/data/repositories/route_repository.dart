@@ -1,4 +1,5 @@
 import '../../../../core/services/api_service.dart';
+import '../../../../shared/models/city_model.dart';
 import '../../../packages/data/models/package_model.dart';
 import '../models/route_model.dart';
 
@@ -30,6 +31,10 @@ class RouteRepository {
     String? notes,
     String originCountry = 'ES',
     String destinationCountry = 'UA',
+    List<CityModel>? stops,
+    double? pricePerKg,
+    double? minimumPrice,
+    double? priceMultiplier,
   }) async {
     final response = await _api.post('/routes', data: {
       'origin_city': origin,
@@ -41,6 +46,15 @@ class RouteRepository {
           .toList(),
       if (tripDurationHours != null) 'trip_duration_hours': tripDurationHours,
       if (notes != null) 'notes': notes,
+      if (pricePerKg != null) 'price_per_kg': pricePerKg,
+      if (minimumPrice != null) 'minimum_price': minimumPrice,
+      if (priceMultiplier != null) 'price_multiplier': priceMultiplier,
+      if (stops != null && stops.isNotEmpty)
+        'stops': stops.asMap().entries.map((e) => {
+          'city': e.value.name,
+          'country': e.value.country,
+          'order': e.key,
+        }).toList(),
     });
     final data = response.data['data'] ?? response.data;
     return RouteModel.fromJson(data);

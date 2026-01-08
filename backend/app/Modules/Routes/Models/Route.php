@@ -31,6 +31,9 @@ class Route extends Model
         'status',
         'vehicle_info',
         'notes',
+        'price_per_kg',
+        'minimum_price',
+        'price_multiplier',
     ];
 
     protected $casts = [
@@ -43,6 +46,9 @@ class Route extends Model
         'origin_longitude' => 'decimal:8',
         'destination_latitude' => 'decimal:8',
         'destination_longitude' => 'decimal:8',
+        'price_per_kg' => 'decimal:2',
+        'minimum_price' => 'decimal:2',
+        'price_multiplier' => 'decimal:2',
     ];
 
     public function transporter(): BelongsTo
@@ -58,6 +64,11 @@ class Route extends Model
     public function schedules(): HasMany
     {
         return $this->hasMany(RouteSchedule::class)->orderBy('departure_date');
+    }
+
+    public function stops(): HasMany
+    {
+        return $this->hasMany(RouteStop::class)->orderBy('order');
     }
 
     public function getPackagesCountAttribute(): int

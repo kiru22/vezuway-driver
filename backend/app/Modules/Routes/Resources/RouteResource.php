@@ -37,6 +37,19 @@ class RouteResource extends JsonResource
             'vehicle_info' => $this->vehicle_info,
             'notes' => $this->notes,
 
+            'pricing' => [
+                'price_per_kg' => $this->price_per_kg,
+                'minimum_price' => $this->minimum_price,
+                'multiplier' => $this->price_multiplier,
+            ],
+
+            'stops' => $this->whenLoaded('stops', fn () => $this->stops->map(fn ($stop) => [
+                'id' => $stop->id,
+                'city' => $stop->city,
+                'country' => $stop->country,
+                'order' => $stop->order,
+            ])),
+
             'packages_count' => $this->when(isset($this->packages_count), $this->packages_count),
 
             'schedules' => $this->whenLoaded('schedules', fn () => $this->schedules->map(fn ($schedule) => [

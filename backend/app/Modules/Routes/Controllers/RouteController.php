@@ -5,7 +5,9 @@ namespace App\Modules\Routes\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Packages\Models\Package;
 use App\Modules\Routes\Models\Route;
+use App\Modules\Packages\Resources\PackageResource;
 use App\Modules\Routes\Resources\RouteResource;
+use App\Shared\Enums\PackageStatus;
 use App\Shared\Enums\RouteStatus;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +19,7 @@ class RouteController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Route::forTransporter($request->user()->id)
-            ->with('schedules')
+            ->with(['schedules', 'stops'])
             ->withCount('packages');
 
         if ($request->filled('status')) {
@@ -57,6 +59,13 @@ class RouteController extends Controller
             'estimated_arrival_date' => 'nullable|date',
             'vehicle_info' => 'nullable|array',
             'notes' => 'nullable|string',
+            'price_per_kg' => 'nullable|numeric|min:0|max:9999.99',
+            'minimum_price' => 'nullable|numeric|min:0|max:9999.99',
+            'price_multiplier' => 'nullable|numeric|min:0.1|max:10',
+            'stops' => 'nullable|array',
+            'stops.*.city' => 'required_with:stops|string|max:100',
+            'stops.*.country' => 'required_with:stops|string|max:2',
+            'stops.*.order' => 'nullable|integer|min:0',
         ]);
 
         $validated['transporter_id'] = $request->user()->id;
@@ -74,10 +83,22 @@ class RouteController extends Controller
             $validated['estimated_arrival_date'] = Carbon::parse($firstDate)->addHours($tripDurationHours);
         }
 
+        // Extract stops before creating route
+        $stops = $validated['stops'] ?? [];
+
         // Remove array fields before creating route
-        unset($validated['departure_dates'], $validated['trip_duration_hours']);
+        unset($validated['departure_dates'], $validated['trip_duration_hours'], $validated['stops']);
 
         $route = Route::create($validated);
+
+        // Create stops for the route
+        foreach ($stops as $index => $stopData) {
+            $route->stops()->create([
+                'city' => $stopData['city'],
+                'country' => $stopData['country'],
+                'order' => $stopData['order'] ?? $index,
+            ]);
+        }
 
         // Create schedule entries for each date
         foreach ($departureDates as $date) {
@@ -92,14 +113,14 @@ class RouteController extends Controller
             ]);
         }
 
-        return response()->json(new RouteResource($route->load('schedules')), 201);
+        return response()->json(new RouteResource($route->load(['schedules', 'stops'])), 201);
     }
 
     public function show(Request $request, Route $route): JsonResponse
     {
         $this->authorize('view', $route);
 
-        return response()->json(new RouteResource($route->load('schedules')->loadCount('packages')));
+        return response()->json(new RouteResource($route->load(['schedules', 'stops'])->loadCount('packages')));
     }
 
     public function update(Request $request, Route $route): JsonResponse
@@ -120,7 +141,7 @@ class RouteController extends Controller
 
         $route->update($validated);
 
-        return response()->json(new RouteResource($route));
+        return response()->json(new RouteResource($route->load(['schedules', 'stops'])));
     }
 
     public function destroy(Request $request, Route $route): JsonResponse
@@ -148,18 +169,19 @@ class RouteController extends Controller
 
         $route->update($updateData);
 
-        return response()->json(new RouteResource($route));
+        return response()->json(new RouteResource($route->load(['schedules', 'stops'])));
     }
 
-    public function packages(Request $request, Route $route): JsonResponse
+    public function packages(Request $request, Route $route): AnonymousResourceCollection
     {
         $this->authorize('view', $route);
 
         $packages = $route->packages()
+            ->with(['route'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json($packages);
+        return PackageResource::collection($packages);
     }
 
     public function assignPackages(Request $request, Route $route): JsonResponse
@@ -171,13 +193,21 @@ class RouteController extends Controller
             'package_ids.*' => 'exists:packages,id',
         ]);
 
-        Package::whereIn('id', $validated['package_ids'])
+        // Only assign packages that are not delivered or cancelled
+        $nonAssignableStatuses = [
+            PackageStatus::DELIVERED->value,
+            PackageStatus::CANCELLED->value,
+        ];
+
+        $updated = Package::whereIn('id', $validated['package_ids'])
             ->where('transporter_id', $request->user()->id)
+            ->whereNotIn('status', $nonAssignableStatuses)
             ->update(['route_id' => $route->id]);
 
         return response()->json([
             'message' => 'Paquetes asignados correctamente',
-            'route' => new RouteResource($route->loadCount('packages')),
+            'assigned_count' => $updated,
+            'route' => new RouteResource($route->load(['schedules', 'stops'])->loadCount('packages')),
         ]);
     }
 }

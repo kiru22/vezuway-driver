@@ -593,6 +593,324 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{Sin paquetes} =1{1 paquete} other{{count} paquetes}}'**
   String packages_count(int count);
 
+  /// No description provided for @packages_createTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo Paquete'**
+  String get packages_createTitle;
+
+  /// No description provided for @packages_createSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Paquete creado correctamente'**
+  String get packages_createSuccess;
+
+  /// No description provided for @packages_createError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al crear el paquete'**
+  String get packages_createError;
+
+  /// No description provided for @packages_assignRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Asignar a ruta'**
+  String get packages_assignRoute;
+
+  /// No description provided for @packages_senderSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Remitente'**
+  String get packages_senderSection;
+
+  /// No description provided for @packages_senderNameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre *'**
+  String get packages_senderNameLabel;
+
+  /// No description provided for @packages_senderNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del remitente'**
+  String get packages_senderNameHint;
+
+  /// No description provided for @packages_nameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre es requerido'**
+  String get packages_nameRequired;
+
+  /// No description provided for @packages_phoneLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Telefono'**
+  String get packages_phoneLabel;
+
+  /// No description provided for @packages_phoneHintSpain.
+  ///
+  /// In es, this message translates to:
+  /// **'+34 600 000 000'**
+  String get packages_phoneHintSpain;
+
+  /// No description provided for @packages_phoneHintUkraine.
+  ///
+  /// In es, this message translates to:
+  /// **'+380 00 000 0000'**
+  String get packages_phoneHintUkraine;
+
+  /// No description provided for @packages_addressLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Direccion'**
+  String get packages_addressLabel;
+
+  /// No description provided for @packages_pickupAddressHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Direccion de recogida'**
+  String get packages_pickupAddressHint;
+
+  /// No description provided for @packages_receiverSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Destinatario'**
+  String get packages_receiverSection;
+
+  /// No description provided for @packages_receiverNameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre del destinatario'**
+  String get packages_receiverNameHint;
+
+  /// No description provided for @packages_deliveryAddressHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Direccion de entrega'**
+  String get packages_deliveryAddressHint;
+
+  /// No description provided for @packages_detailsSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalles del paquete'**
+  String get packages_detailsSection;
+
+  /// No description provided for @packages_contentHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Contenido del paquete'**
+  String get packages_contentHint;
+
+  /// No description provided for @packages_weightLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso (kg)'**
+  String get packages_weightLabel;
+
+  /// No description provided for @packages_declaredValueLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Valor declarado (EUR)'**
+  String get packages_declaredValueLabel;
+
+  /// No description provided for @packages_notesLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get packages_notesLabel;
+
+  /// No description provided for @packages_additionalNotesHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas adicionales...'**
+  String get packages_additionalNotesHint;
+
+  /// No description provided for @packages_unassigned.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin asignar'**
+  String get packages_unassigned;
+
+  /// No description provided for @packages_tabSender.
+  ///
+  /// In es, this message translates to:
+  /// **'Remitente'**
+  String get packages_tabSender;
+
+  /// No description provided for @packages_tabReceiver.
+  ///
+  /// In es, this message translates to:
+  /// **'Destinatario'**
+  String get packages_tabReceiver;
+
+  /// No description provided for @packages_widthLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'An'**
+  String get packages_widthLabel;
+
+  /// No description provided for @packages_heightLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Al'**
+  String get packages_heightLabel;
+
+  /// No description provided for @packages_lengthLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'La'**
+  String get packages_lengthLabel;
+
+  /// No description provided for @packages_quantityLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cantidad'**
+  String get packages_quantityLabel;
+
+  /// No description provided for @packages_tariffLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'TARIFA'**
+  String get packages_tariffLabel;
+
+  /// No description provided for @packages_totalPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'TOTAL'**
+  String get packages_totalPrice;
+
+  /// No description provided for @packages_noRoutesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin rutas disponibles'**
+  String get packages_noRoutesTitle;
+
+  /// No description provided for @packages_noRoutesMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea una ruta primero para poder registrar paquetes'**
+  String get packages_noRoutesMessage;
+
+  /// No description provided for @packages_createRouteButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear ruta'**
+  String get packages_createRouteButton;
+
+  /// No description provided for @packages_submitPackage.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear paquete'**
+  String get packages_submitPackage;
+
+  /// No description provided for @packages_addressRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'La direccion es requerida'**
+  String get packages_addressRequired;
+
+  /// No description provided for @packages_routeRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona una ruta'**
+  String get packages_routeRequired;
+
+  /// No description provided for @packages_selectRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar ruta'**
+  String get packages_selectRoute;
+
+  /// No description provided for @packages_volumetricWeight.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso volumetrico'**
+  String get packages_volumetricWeight;
+
+  /// No description provided for @packages_toEurope.
+  ///
+  /// In es, this message translates to:
+  /// **'A EUROPA'**
+  String get packages_toEurope;
+
+  /// No description provided for @packages_cityLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Ciudad'**
+  String get packages_cityLabel;
+
+  /// No description provided for @packages_addressButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Direccion'**
+  String get packages_addressButton;
+
+  /// No description provided for @packages_deliverySection.
+  ///
+  /// In es, this message translates to:
+  /// **'ENTREGA'**
+  String get packages_deliverySection;
+
+  /// No description provided for @packages_hide.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar'**
+  String get packages_hide;
+
+  /// No description provided for @packages_exactAddress.
+  ///
+  /// In es, this message translates to:
+  /// **'Direccion exacta'**
+  String get packages_exactAddress;
+
+  /// No description provided for @packages_googleMapsLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Enlace a Google Maps'**
+  String get packages_googleMapsLink;
+
+  /// No description provided for @packages_weightKg.
+  ///
+  /// In es, this message translates to:
+  /// **'PESO (KG)'**
+  String get packages_weightKg;
+
+  /// No description provided for @packages_quantityPcs.
+  ///
+  /// In es, this message translates to:
+  /// **'CANTIDAD (UDS)'**
+  String get packages_quantityPcs;
+
+  /// No description provided for @packages_dimensionsCm.
+  ///
+  /// In es, this message translates to:
+  /// **'DIMENSIONES (CM)'**
+  String get packages_dimensionsCm;
+
+  /// No description provided for @packages_nameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get packages_nameLabel;
+
+  /// No description provided for @packages_cityRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'La ciudad es requerida'**
+  String get packages_cityRequired;
+
+  /// No description provided for @packages_mapsPrefix.
+  ///
+  /// In es, this message translates to:
+  /// **'Maps'**
+  String get packages_mapsPrefix;
+
+  /// No description provided for @packages_billingWeight.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso facturable'**
+  String get packages_billingWeight;
+
   /// No description provided for @routes_title.
   ///
   /// In es, this message translates to:
@@ -779,6 +1097,72 @@ abstract class AppLocalizations {
   /// **'Mes'**
   String get routes_month;
 
+  /// No description provided for @routes_searchCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar ciudad...'**
+  String get routes_searchCity;
+
+  /// No description provided for @routes_stopsOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'Paradas intermedias (opcional)'**
+  String get routes_stopsOptional;
+
+  /// No description provided for @routes_pricing.
+  ///
+  /// In es, this message translates to:
+  /// **'Tarifas'**
+  String get routes_pricing;
+
+  /// No description provided for @routes_pricePerKg.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio/kg'**
+  String get routes_pricePerKg;
+
+  /// No description provided for @routes_minimumPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'Minimo'**
+  String get routes_minimumPrice;
+
+  /// No description provided for @routes_multiplier.
+  ///
+  /// In es, this message translates to:
+  /// **'Multiplicador'**
+  String get routes_multiplier;
+
+  /// No description provided for @routes_multiplierHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste estacional (1.0 = precio base)'**
+  String get routes_multiplierHint;
+
+  /// No description provided for @routes_deleteConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar ruta'**
+  String get routes_deleteConfirmTitle;
+
+  /// No description provided for @routes_deleteConfirmMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estas seguro de eliminar esta ruta? Esta accion no se puede deshacer.'**
+  String get routes_deleteConfirmMessage;
+
+  /// No description provided for @routes_deleteSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta eliminada'**
+  String get routes_deleteSuccess;
+
+  /// No description provided for @routes_deleteError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al eliminar la ruta'**
+  String get routes_deleteError;
+
   /// No description provided for @nav_home.
   ///
   /// In es, this message translates to:
@@ -874,6 +1258,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ayuda'**
   String get userMenu_help;
+
+  /// No description provided for @userMenu_language.
+  ///
+  /// In es, this message translates to:
+  /// **'Idioma'**
+  String get userMenu_language;
+
+  /// No description provided for @userMenu_theme.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema'**
+  String get userMenu_theme;
 
   /// No description provided for @status_package_pending.
   ///
@@ -1010,7 +1406,7 @@ abstract class AppLocalizations {
   /// No description provided for @tripCard_deliveryCount.
   ///
   /// In es, this message translates to:
-  /// **'{count} envios'**
+  /// **'{count, plural, =1{1 envio} other{{count} envios}}'**
   String tripCard_deliveryCount(int count);
 
   /// No description provided for @tripCard_call.

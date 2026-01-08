@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/services/api_service.dart';
 import '../models/package_model.dart';
 
@@ -16,9 +17,15 @@ class PackageRepository {
     if (routeId != null) queryParams['route_id'] = routeId;
     if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
-    final response = await _api.get('/packages', queryParameters: queryParams);
-    final List<dynamic> data = response.data['data'] ?? response.data;
-    return data.map((json) => PackageModel.fromJson(json)).toList();
+    try {
+      final response = await _api.get('/packages', queryParameters: queryParams);
+      final List<dynamic> data = response.data['data'] ?? response.data;
+      return data.map((json) => PackageModel.fromJson(json)).toList();
+    } catch (e, stack) {
+      debugPrint('PackageRepository.getPackages error: $e');
+      debugPrint('Stack: $stack');
+      rethrow;
+    }
   }
 
   Future<PackageModel> getPackage(int id) async {
@@ -37,6 +44,10 @@ class PackageRepository {
     String? receiverAddress,
     String? description,
     double? weight,
+    int? lengthCm,
+    int? widthCm,
+    int? heightCm,
+    int? quantity,
     double? declaredValue,
     String? notes,
   }) async {
@@ -49,7 +60,11 @@ class PackageRepository {
       if (receiverPhone != null) 'receiver_phone': receiverPhone,
       if (receiverAddress != null) 'receiver_address': receiverAddress,
       if (description != null) 'description': description,
-      if (weight != null) 'weight': weight,
+      if (weight != null) 'weight_kg': weight,
+      if (lengthCm != null) 'length_cm': lengthCm,
+      if (widthCm != null) 'width_cm': widthCm,
+      if (heightCm != null) 'height_cm': heightCm,
+      if (quantity != null) 'quantity': quantity,
       if (declaredValue != null) 'declared_value': declaredValue,
       if (notes != null) 'notes': notes,
     });

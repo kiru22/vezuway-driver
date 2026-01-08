@@ -5,6 +5,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/providers/locale_provider.dart';
+import '../../../../shared/providers/theme_provider.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../../routes/domain/providers/route_provider.dart';
@@ -277,7 +279,7 @@ class _ShimmerEffectState extends State<_ShimmerEffect>
   }
 }
 
-class _UserMenuSheet extends StatelessWidget {
+class _UserMenuSheet extends ConsumerWidget {
   final String userName;
   final String userEmail;
   final VoidCallback onLogout;
@@ -289,8 +291,10 @@ class _UserMenuSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final locale = ref.watch(localeProvider);
+    final isDarkMode = ref.watch(isDarkModeProvider);
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -360,6 +364,91 @@ class _UserMenuSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          // Language and Theme row
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.cardBackground,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border.all(color: colors.border),
+            ),
+            child: Row(
+              children: [
+                // Language selector
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.userMenu_language,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _LanguageChip(
+                            label: 'ES',
+                            isSelected: locale == AppLocale.es,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              ref.read(localeProvider.notifier).setLocale(AppLocale.es);
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          _LanguageChip(
+                            label: 'UA',
+                            isSelected: locale == AppLocale.uk,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              ref.read(localeProvider.notifier).setLocale(AppLocale.uk);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Theme toggle
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.userMenu_theme,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        ref.read(themeModeProvider.notifier).toggleTheme();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceLight,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: colors.border),
+                        ),
+                        child: Icon(
+                          isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                          color: isDarkMode ? AppColors.warning : colors.textSecondary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           // Menu options
           _MenuOption(
             icon: Icons.person_outline_rounded,
@@ -477,6 +566,45 @@ class _MenuOption extends StatelessWidget {
               size: 22,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LanguageChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: AppTheme.durationFast,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          color: isSelected ? null : colors.surfaceLight,
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected ? null : Border.all(color: colors.border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? Colors.white : colors.textSecondary,
+          ),
         ),
       ),
     );
