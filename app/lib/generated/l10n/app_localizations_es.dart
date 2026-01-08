@@ -126,7 +126,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get auth_passwordMismatch => 'Las contrasenas no coinciden';
 
   @override
-  String get auth_passwordMinLength => 'La contrasena debe tener al menos 8 caracteres';
+  String get auth_passwordMinLength =>
+      'La contrasena debe tener al menos 8 caracteres';
 
   @override
   String get auth_registerButton => 'Crear cuenta';
@@ -188,7 +189,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_title => 'Pedidos';
 
   @override
-  String get packages_searchPlaceholder => 'Buscar por codigo, remitente o destinatario...';
+  String get packages_searchPlaceholder =>
+      'Buscar por codigo, remitente o destinatario...';
 
   @override
   String get packages_filterAll => 'Todos';
@@ -197,19 +199,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_emptyTitle => 'Sin paquetes';
 
   @override
-  String get packages_emptyMessage => 'Usa el boton + para registrar un nuevo paquete';
+  String get packages_emptyMessage =>
+      'Usa el boton + para registrar un nuevo paquete';
 
   @override
   String get packages_emptyFilterTitle => 'Sin resultados';
 
   @override
-  String get packages_emptyFilterMessage => 'No se encontraron paquetes con los filtros aplicados';
+  String get packages_emptyFilterMessage =>
+      'No se encontraron paquetes con los filtros aplicados';
 
   @override
   String get packages_changeStatus => 'Cambiar estado';
 
   @override
-  String get packages_selectNewStatus => 'Selecciona el nuevo estado del paquete';
+  String get packages_selectNewStatus =>
+      'Selecciona el nuevo estado del paquete';
 
   @override
   String get packages_detailTitle => 'Detalle del Paquete';
@@ -447,7 +452,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_emptyActive => 'No hay rutas activas';
 
   @override
-  String get routes_emptyActiveSubtitle => 'Las rutas en progreso apareceran aqui';
+  String get routes_emptyActiveSubtitle =>
+      'Las rutas en progreso apareceran aqui';
 
   @override
   String get routes_emptyPlanned => 'No hay rutas programadas';
@@ -459,7 +465,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_emptyHistory => 'Sin historial';
 
   @override
-  String get routes_emptyHistorySubtitle => 'Las rutas completadas apareceran aqui';
+  String get routes_emptyHistorySubtitle =>
+      'Las rutas completadas apareceran aqui';
 
   @override
   String get routes_createTitle => 'Nueva Ruta';
@@ -483,7 +490,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_departureDates => 'Fechas de salida';
 
   @override
-  String get routes_departureDatesHint => 'Selecciona una o mas fechas en el calendario';
+  String get routes_departureDatesHint =>
+      'Selecciona una o mas fechas en el calendario';
 
   @override
   String get routes_atLeastOneDate => 'Selecciona al menos una fecha de salida';
@@ -495,7 +503,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_tripDurationHint => 'Numero de horas';
 
   @override
-  String get routes_tripDurationDescription => 'Tiempo estimado de viaje en horas';
+  String get routes_tripDurationDescription =>
+      'Tiempo estimado de viaje en horas';
 
   @override
   String get routes_notesOptional => 'Notas (opcional)';
@@ -524,7 +533,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_createError => 'Error al crear la ruta';
 
   @override
-  String get routes_selectDatesPrompt => 'Toca los dias en el calendario para seleccionar';
+  String get routes_selectDatesPrompt =>
+      'Toca los dias en el calendario para seleccionar';
 
   @override
   String routes_selectedDatesCount(int count) {
