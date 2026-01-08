@@ -1,5 +1,5 @@
 # Build stage
-FROM ghcr.io/cirruslabs/flutter:3.29.3 AS build
+FROM ghcr.io/cirruslabs/flutter:3.27.2 AS build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN flutter pub get
 COPY . .
 
 # Build for web with API URL
-RUN flutter build web --release --web-renderer html --dart-define=API_URL=${API_URL}
+RUN flutter build web --release --dart-define=API_URL=${API_URL}
 
 # Production stage
 FROM nginx:alpine
@@ -28,8 +28,8 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY --from=build /app/build/web /usr/share/nginx/html
 
 # Add healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1/ || exit 1
 
 EXPOSE 80
 
