@@ -62,6 +62,10 @@ COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
 # Configure Supervisor
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy entrypoint script
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Set working directory
 WORKDIR /var/www/html
 
@@ -79,4 +83,4 @@ RUN mkdir -p /var/run/php \
 
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/local/bin/entrypoint.sh"]
