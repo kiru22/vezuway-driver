@@ -141,3 +141,31 @@ cd app && flutter run -d chrome --web-port=3000
 ### Flutter en Docker (Para CI/CD o testing)
 - Usar `make up-dev` para iniciar todos los servicios incluyendo frontend en Docker
 - Hot reload no es automático en Docker - requiere `docker restart logistics-frontend`
+
+## Deployment (Dokploy)
+
+Dokploy está desplegado en este mismo servidor para gestionar los despliegues de producción.
+
+### Ubicaciones importantes
+- **Logs de build**: `/etc/dokploy/logs/`
+  - Frontend: `/etc/dokploy/logs/vezuwaydriver-frontend-q9vie7/`
+  - Backend: `/etc/dokploy/logs/vezuwaydriver-backend-*/`
+- **Código desplegado**: `/etc/dokploy/applications/`
+- **Screenshots**: `/home/ubuntu/screenshots/` - capturas de pantalla del sistema
+
+### Comandos útiles
+```bash
+# Ver logs del último build del frontend
+ls -lt /etc/dokploy/logs/vezuwaydriver-frontend-q9vie7/ | head -5
+cat /etc/dokploy/logs/vezuwaydriver-frontend-q9vie7/<archivo-más-reciente>.log
+
+# Ver contenedores de Dokploy
+docker ps --filter "name=dokploy"
+
+# Ver última captura de pantalla
+ls -t /home/ubuntu/screenshots/ | head -1
+```
+
+### Notas de compatibilidad
+- El frontend usa Flutter beta (`ghcr.io/cirruslabs/flutter:beta`) porque `flutter_form_builder ^10.2.0` requiere Dart 3.8.0+
+- Flutter stable (3.29.x) solo tiene Dart 3.7.x, insuficiente para las dependencias actuales
