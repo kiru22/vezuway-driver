@@ -370,7 +370,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_noRoutesTitle => 'Sin rutas disponibles';
 
   @override
-  String get packages_noRoutesMessage => 'Crea una ruta primero para poder registrar paquetes';
+  String get packages_noRoutesMessage =>
+      'Crea una ruta primero para poder registrar paquetes';
 
   @override
   String get packages_createRouteButton => 'Crear ruta';
@@ -575,7 +576,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_deleteConfirmTitle => 'Eliminar ruta';
 
   @override
-  String get routes_deleteConfirmMessage => '¿Estas seguro de eliminar esta ruta? Esta accion no se puede deshacer.';
+  String get routes_deleteConfirmMessage =>
+      '¿Estas seguro de eliminar esta ruta? Esta accion no se puede deshacer.';
 
   @override
   String get routes_deleteSuccess => 'Ruta eliminada';

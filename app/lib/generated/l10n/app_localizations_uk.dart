@@ -370,7 +370,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_noRoutesTitle => 'Немає доступних маршрутiв';
 
   @override
-  String get packages_noRoutesMessage => 'Спочатку створiть маршрут, щоб реєструвати посилки';
+  String get packages_noRoutesMessage =>
+      'Спочатку створiть маршрут, щоб реєструвати посилки';
 
   @override
   String get packages_createRouteButton => 'Створити маршрут';
@@ -578,7 +579,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_deleteConfirmTitle => 'Видалити маршрут';
 
   @override
-  String get routes_deleteConfirmMessage => 'Ви впевненi, що хочете видалити цей маршрут? Цю дiю не можна скасувати.';
+  String get routes_deleteConfirmMessage =>
+      'Ви впевненi, що хочете видалити цей маршрут? Цю дiю не можна скасувати.';
 
   @override
   String get routes_deleteSuccess => 'Маршрут видалено';

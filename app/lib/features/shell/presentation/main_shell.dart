@@ -25,9 +25,11 @@ class MainShell extends ConsumerWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness:
+            context.isDarkMode ? Brightness.light : Brightness.dark,
         systemNavigationBarColor: colors.navBackground,
-        systemNavigationBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness:
+            context.isDarkMode ? Brightness.light : Brightness.dark,
       ),
       child: Scaffold(
         backgroundColor: context.theme.scaffoldBackgroundColor,
@@ -36,7 +38,8 @@ class MainShell extends ConsumerWidget {
             // Main content with bottom padding to avoid nav overlap
             Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.only(bottom: bottomNavHeight + bottomPadding),
+                padding:
+                    EdgeInsets.only(bottom: bottomNavHeight + bottomPadding),
                 child: child,
               ),
             ),
@@ -188,85 +191,82 @@ class _PremiumBottomNav extends StatelessWidget {
 
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            colors.surface.withValues(alpha: 0),
-            colors.surface.withValues(alpha: 0.8),
-            colors.surface,
-          ],
-          stops: const [0.0, 0.3, 1.0],
-        ),
-      ),
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
-      child: Row(
-        children: [
-          // Navigation bar
-          Expanded(
-            child: Container(
-              height: 60,
-              decoration: BoxDecoration(
-                color: isDark ? colors.navBackground : Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isDark
-                      ? colors.border.withValues(alpha: 0.5)
-                      : Colors.black.withValues(alpha: 0.06),
-                  width: 1,
+    return ClipRect(
+      child: BackdropFilter(
+        filter: AppTheme.glassBlurFilter,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: AppTheme.glassGradient(isDark: isDark),
+          ),
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
+          child: Row(
+            children: [
+              // Navigation bar
+              Expanded(
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: isDark ? colors.navBackground : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark
+                          ? colors.border.withValues(alpha: 0.5)
+                          : Colors.black.withValues(alpha: 0.06),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                        spreadRadius: -4,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _NavItem(
+                          icon: Icons.space_dashboard_outlined,
+                          activeIcon: Icons.space_dashboard_rounded,
+                          label: l10n.nav_home,
+                          isSelected: currentIndex == 0,
+                          onTap: () => onTap(0),
+                        ),
+                      ),
+                      Expanded(
+                        child: _NavItem(
+                          icon: Icons.inventory_2_outlined,
+                          activeIcon: Icons.inventory_2_rounded,
+                          label: l10n.nav_packages,
+                          isSelected: currentIndex == 1,
+                          onTap: () => onTap(1),
+                        ),
+                      ),
+                      Expanded(
+                        child: _NavItem(
+                          icon: Icons.timeline_outlined,
+                          activeIcon: Icons.timeline_rounded,
+                          label: l10n.nav_routes,
+                          isSelected: currentIndex == 2,
+                          onTap: () => onTap(2),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                    spreadRadius: -4,
-                  ),
-                ],
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _NavItem(
-                      icon: Icons.space_dashboard_outlined,
-                      activeIcon: Icons.space_dashboard_rounded,
-                      label: l10n.nav_home,
-                      isSelected: currentIndex == 0,
-                      onTap: () => onTap(0),
-                    ),
-                  ),
-                  Expanded(
-                    child: _NavItem(
-                      icon: Icons.inventory_2_outlined,
-                      activeIcon: Icons.inventory_2_rounded,
-                      label: l10n.nav_packages,
-                      isSelected: currentIndex == 1,
-                      onTap: () => onTap(1),
-                    ),
-                  ),
-                  Expanded(
-                    child: _NavItem(
-                      icon: Icons.timeline_outlined,
-                      activeIcon: Icons.timeline_rounded,
-                      label: l10n.nav_routes,
-                      isSelected: currentIndex == 2,
-                      onTap: () => onTap(2),
-                    ),
-                  ),
-                ],
+              const SizedBox(width: 12),
+              // FAB
+              SizedBox(
+                width: 60,
+                height: 60,
+                child: _FloatingAddButton(onPressed: onAddPressed),
               ),
-            ),
+            ],
           ),
-          const SizedBox(width: 12),
-          // FAB
-          SizedBox(
-            width: 60,
-            height: 60,
-            child: _FloatingAddButton(onPressed: onAddPressed),
-          ),
-        ],
+        ),
       ),
     );
   }

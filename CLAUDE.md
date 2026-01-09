@@ -169,3 +169,48 @@ ls -t /home/ubuntu/screenshots/ | head -1
 ### Notas de compatibilidad
 - El frontend usa Flutter beta (`ghcr.io/cirruslabs/flutter:beta`) porque `flutter_form_builder ^10.2.0` requiere Dart 3.8.0+
 - Flutter stable (3.29.x) solo tiene Dart 3.7.x, insuficiente para las dependencias actuales
+
+## Design System (IMPORTANTE)
+
+**Regla fundamental**: Todo cambio de estilos DEBE reflejarse en el Design System y ser documentado para que elementos posteriores lo implementen.
+
+### Archivos del Design System
+```
+app/lib/core/theme/
+├── app_colors.dart           # Paleta de colores (tokens)
+├── app_theme.dart            # Temas, tipografía, geometría, decoraciones
+├── app_colors_extension.dart # Extensión semántica para dark/light
+└── theme_extensions.dart     # BuildContext extensions
+```
+
+### Tokens actuales (Design System v1.3)
+
+**Colores principales:**
+- Primary: `#10B981` (emerald-500) → `#0D9488` (teal-600)
+- Titanium: `#111827` (dark background)
+- Surface: `#F0F1F3` (light background)
+
+**Status Badges:**
+- Info: bg `#DBEAFE`, text `#1D4ED8`
+- Success: bg `#DCFCE7`, text `#15803D`
+- Warning: bg `#FFEDD5`, text `#C2410C`
+- Error: bg `#FEE2E2`, text `#B91C1C`
+
+**Geometría:**
+- `radiusSm`: 12px (chips, botones pequeños)
+- `radiusMd`: 16px (inputs, botones)
+- `radiusLg`: 24px (cards)
+- `radiusXl`: 32px (modales, bottom sheets)
+
+**Efectos:**
+- `shadowSoft`: Sombra suave general
+- `shadowColored`: Sombra con glow emerald para CTAs
+- `glassDecoration`: Efecto glassmorphism (blur 20px + transparencia)
+
+**Tipografía:** Inter (Google Fonts)
+
+### Workflow para cambios de estilo
+1. Definir el nuevo token/decoración en `app_theme.dart` o `app_colors.dart`
+2. Documentar el uso en este archivo (CLAUDE.md)
+3. Implementar usando el token, NO valores hardcodeados
+4. Verificar con `flutter analyze`

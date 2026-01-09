@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,13 +13,13 @@ class AppTheme {
   // DESIGN TOKENS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Border Radius
+  // Border Radius (Design System v1.3)
   static const double radiusXs = 8.0;
-  static const double radiusSm = 12.0;
-  static const double radiusMd = 16.0;
-  static const double radiusLg = 20.0;
-  static const double radiusXl = 24.0;
-  static const double radiusXxl = 32.0;
+  static const double radiusSm = 12.0;  // Botones pequeños, chips
+  static const double radiusMd = 16.0;  // Inputs, botones
+  static const double radiusLg = 24.0;  // Cards, containers
+  static const double radiusXl = 32.0;  // Modales, bottom sheets
+  static const double radiusXxl = 40.0; // Contenedores principales
   static const double radiusFull = 100.0;
 
   // Spacing
@@ -35,13 +37,71 @@ class AppTheme {
   static const Duration durationSlow = Duration(milliseconds: 400);
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // SHADOWS (Design System v1.3)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Soft shadow for general use
+  static List<BoxShadow> get shadowSoft => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.05),
+      blurRadius: 2,
+      offset: const Offset(0, 1),
+    ),
+  ];
+
+  /// Colored shadow with emerald glow for primary buttons
+  static List<BoxShadow> get shadowColored => [
+    BoxShadow(
+      color: const Color(0xFF10B981).withValues(alpha: 0.2),
+      blurRadius: 15,
+      offset: const Offset(0, 10),
+    ),
+  ];
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GLASSMORPHISM (Design System v1.3)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /// Blur intensity for glassmorphism effect
+  static const double glassBlurSigma = 20.0;
+
+  /// ImageFilter for glassmorphism backdrop
+  static ImageFilter get glassBlurFilter =>
+      ImageFilter.blur(sigmaX: glassBlurSigma, sigmaY: glassBlurSigma);
+
+  /// Creates a glassmorphism gradient for navbars/overlays
+  /// [isDark] - whether to use dark or light theme colors
+  static LinearGradient glassGradient({
+    required bool isDark,
+  }) {
+    final baseColor = isDark
+        ? const Color(0xFF111827) // Titanium
+        : const Color(0xFFF0F1F3); // Surface
+
+    return LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        baseColor.withValues(alpha: 0),
+        baseColor.withValues(alpha: 0),
+        baseColor.withValues(alpha: 0),
+        baseColor.withValues(alpha: 0.05),
+        baseColor.withValues(alpha: 0.2),
+        baseColor.withValues(alpha: 0.5),
+        baseColor.withValues(alpha: 0.7),
+      ],
+      stops: const [0.0, 0.2, 0.4, 0.55, 0.7, 0.85, 1.0],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // DARK THEME (Primary Theme)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Typography - Outfit: Modern geometric sans-serif with warmth
-  static String get _fontFamily => GoogleFonts.outfit().fontFamily!;
+  // Typography - Inter: Clean modern sans-serif
+  static String get _fontFamily => GoogleFonts.inter().fontFamily!;
 
-  static TextTheme get _textTheme => GoogleFonts.outfitTextTheme(
+  static TextTheme get _textTheme => GoogleFonts.interTextTheme(
     const TextTheme(
       displayLarge: TextStyle(
         fontSize: 40,
@@ -488,7 +548,7 @@ class AppTheme {
   // LIGHT THEME
   // ═══════════════════════════════════════════════════════════════════════════
 
-  static TextTheme get _lightTextTheme => GoogleFonts.outfitTextTheme(
+  static TextTheme get _lightTextTheme => GoogleFonts.interTextTheme(
     const TextTheme(
       displayLarge: TextStyle(
         fontSize: 40,
@@ -851,14 +911,6 @@ class AppTheme {
   static BoxDecoration primaryButtonDecoration({bool isPressed = false}) => BoxDecoration(
         gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(radiusMd),
-        boxShadow: isPressed
-            ? null
-            : [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+        boxShadow: isPressed ? null : shadowColored,
       );
 }

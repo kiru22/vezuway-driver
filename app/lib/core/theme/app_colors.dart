@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de colores premium oscura con acentos azules
-/// Inspirada en el diseño de vezuway.com
+/// Paleta de colores premium con acentos Emerald/Teal
+/// Design System v1.3 - Clean Modern
 class AppColors {
   AppColors._();
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PRIMARY - Azul Vezuway
+  // PRIMARY - Emerald/Teal Gradient
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color primary = Color(0xFF2563EB);
-  static const Color primaryLight = Color(0xFF3B82F6);
-  static const Color primaryDark = Color(0xFF1D4ED8);
-  static const Color primaryMuted = Color(0xFF2563EB);
+  static const Color primary = Color(0xFF10B981);      // emerald-500
+  static const Color primaryLight = Color(0xFF34D399); // emerald-400
+  static const Color primaryDark = Color(0xFF0D9488);  // teal-600
+  static const Color primaryMuted = Color(0xFF10B981);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // BACKGROUNDS - Escala de Grises Oscuros
+  // BACKGROUNDS - Titanium Dark (Design System v1.3)
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color background = Color(0xFF0A0A0A);
-  static const Color surface = Color(0xFF121212);
-  static const Color surfaceLight = Color(0xFF1A1A1A);
-  static const Color surfaceElevated = Color(0xFF1E1E1E);
-  static const Color cardBackground = Color(0xFF1A1A1A);
-  static const Color cardBackgroundElevated = Color(0xFF252525);
+  static const Color background = Color(0xFF111827);       // Titanium - slate-900
+  static const Color surface = Color(0xFF1F2937);          // slate-800
+  static const Color surfaceLight = Color(0xFF374151);     // slate-700
+  static const Color surfaceElevated = Color(0xFF1F2937);  // slate-800
+  static const Color cardBackground = Color(0xFF1F2937);   // slate-800
+  static const Color cardBackgroundElevated = Color(0xFF374151); // slate-700
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TEXT
@@ -33,7 +33,7 @@ class AppColors {
   static const Color textOnDark = Color(0xFFE5E5E5);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // STATUS COLORS
+  // STATUS COLORS (base)
   // ═══════════════════════════════════════════════════════════════════════════
   static const Color success = Color(0xFF22C55E);
   static const Color successLight = Color(0xFF4ADE80);
@@ -45,15 +45,38 @@ class AppColors {
   static const Color infoLight = Color(0xFF60A5FA);
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // STATUS BADGES (Design System v1.3 - Feedback & Estados)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Info - "En Camino" (blue)
+  static const Color statusInfoBg = Color(0xFFDBEAFE);      // blue-100
+  static const Color statusInfoText = Color(0xFF1D4ED8);    // blue-700
+
+  // Success - "Completado" (green)
+  static const Color statusSuccessBg = Color(0xFFDCFCE7);   // green-100
+  static const Color statusSuccessText = Color(0xFF15803D); // green-700
+
+  // Warning (orange)
+  static const Color statusWarningBg = Color(0xFFFFEDD5);   // orange-100
+  static const Color statusWarningText = Color(0xFFC2410C); // orange-700
+
+  // Error (red)
+  static const Color statusErrorBg = Color(0xFFFEE2E2);     // red-100
+  static const Color statusErrorText = Color(0xFFB91C1C);   // red-700
+
+  // Neutral (slate)
+  static const Color statusNeutralBg = Color(0xFFF1F5F9);   // slate-100
+  static const Color statusNeutralText = Color(0xFF475569); // slate-600
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // CHIP BACKGROUNDS - Estilo oscuro con borde sutil
   // ═══════════════════════════════════════════════════════════════════════════
   static const Color chipOrange = Color(0xFF2D1F17);
   static const Color chipOrangeText = Color(0xFFFF8A5C);
   static const Color chipOrangeBorder = Color(0xFF4D3326);
 
-  static const Color chipBlue = Color(0xFF172033);
-  static const Color chipBlueText = Color(0xFF60A5FA);
-  static const Color chipBlueBorder = Color(0xFF1E3A5F);
+  static const Color chipBlue = Color(0xFF14261A);        // emerald dark bg
+  static const Color chipBlueText = Color(0xFF34D399);    // emerald-400
+  static const Color chipBlueBorder = Color(0xFF1A3D26);  // emerald dark border
 
   static const Color chipGreen = Color(0xFF14261A);
   static const Color chipGreenText = Color(0xFF4ADE80);
@@ -70,11 +93,11 @@ class AppColors {
   // ═══════════════════════════════════════════════════════════════════════════
   // BORDERS & DIVIDERS
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color border = Color(0xFF2A2A2A);
-  static const Color borderLight = Color(0xFF333333);
-  static const Color borderAccent = Color(0xFF1E3A5F);
-  static const Color divider = Color(0xFF262626);
-  static const Color dividerLight = Color(0xFF303030);
+  static const Color border = Color(0xFF374151);       // slate-700
+  static const Color borderLight = Color(0xFF4B5563);  // slate-600
+  static const Color borderAccent = Color(0xFF10B981); // emerald-500
+  static const Color divider = Color(0xFF374151);      // slate-700
+  static const Color dividerLight = Color(0xFF4B5563); // slate-600
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CAPACITY BAR
@@ -107,54 +130,54 @@ class AppColors {
   // GRADIENTS
   // ═══════════════════════════════════════════════════════════════════════════
   static const LinearGradient primaryGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF3B82F6), Color(0xFF2563EB), Color(0xFF1D4ED8)],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [Color(0xFF10B981), Color(0xFF0D9488)], // emerald-500 → teal-600
   );
 
   static const LinearGradient cardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1E1E1E), Color(0xFF1A1A1A)],
+    colors: [Color(0xFF1F2937), Color(0xFF111827)], // slate-800 → Titanium
   );
 
   static const LinearGradient surfaceGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF141414), Color(0xFF0A0A0A)],
+    colors: [Color(0xFF1F2937), Color(0xFF111827)], // slate-800 → Titanium
   );
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SPECIAL EFFECTS
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color glowPrimary = Color(0x402563EB);
+  static const Color glowPrimary = Color(0x4010B981);  // emerald glow
   static const Color glowSuccess = Color(0x4022C55E);
-  static const Color shimmerBase = Color(0xFF1A1A1A);
-  static const Color shimmerHighlight = Color(0xFF2A2A2A);
+  static const Color shimmerBase = Color(0xFF1F2937);     // slate-800
+  static const Color shimmerHighlight = Color(0xFF374151); // slate-700
 
   // ═══════════════════════════════════════════════════════════════════════════
   // NAVIGATION
   // ═══════════════════════════════════════════════════════════════════════════
-  static const Color navBackground = Color(0xFF141414);
-  static const Color navItemActive = Color(0xFF2563EB);
-  static const Color navItemInactive = Color(0xFF666666);
-  static const Color navIndicator = Color(0xFF2563EB);
+  static const Color navBackground = Color(0xFF111827);   // Titanium
+  static const Color navItemActive = Color(0xFF10B981);   // emerald-500
+  static const Color navItemInactive = Color(0xFF6B7280); // gray-500
+  static const Color navIndicator = Color(0xFF10B981);    // emerald-500
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LIGHT THEME COLORS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Light Backgrounds
-  static const Color lightBackground = Color(0xFFF8F9FA);
-  static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightSurfaceLight = Color(0xFFF3F4F6);
+  // Light Backgrounds (Design System v1.3)
+  static const Color lightBackground = Color(0xFFF0F1F3);  // bgMain
+  static const Color lightSurface = Color(0xFFFFFFFF);     // bgCard
+  static const Color lightSurfaceLight = Color(0xFFF1F5F9); // neutral bg
   static const Color lightSurfaceElevated = Color(0xFFFFFFFF);
   static const Color lightCardBackground = Color(0xFFFFFFFF);
 
-  // Light Text
-  static const Color lightTextPrimary = Color(0xFF0F172A);
-  static const Color lightTextSecondary = Color(0xFF475569);
-  static const Color lightTextMuted = Color(0xFF94A3B8);
+  // Light Text (Design System v1.3)
+  static const Color lightTextPrimary = Color(0xFF1E293B);   // slate-800
+  static const Color lightTextSecondary = Color(0xFF64748B); // slate-500
+  static const Color lightTextMuted = Color(0xFF94A3B8);     // slate-400
 
   // Light Borders
   static const Color lightBorder = Color(0xFFE2E8F0);
@@ -166,9 +189,9 @@ class AppColors {
   static const Color lightChipOrangeText = Color(0xFFEA580C);
   static const Color lightChipOrangeBorder = Color(0xFFFED7AA);
 
-  static const Color lightChipBlue = Color(0xFFEFF6FF);
-  static const Color lightChipBlueText = Color(0xFF2563EB);
-  static const Color lightChipBlueBorder = Color(0xFFBFDBFE);
+  static const Color lightChipBlue = Color(0xFFD1FAE5);     // emerald-100
+  static const Color lightChipBlueText = Color(0xFF10B981);  // emerald-500
+  static const Color lightChipBlueBorder = Color(0xFFA7F3D0); // emerald-200
 
   static const Color lightChipGreen = Color(0xFFF0FDF4);
   static const Color lightChipGreenText = Color(0xFF16A34A);

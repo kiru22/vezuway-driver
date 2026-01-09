@@ -441,27 +441,35 @@ class _RouteCard extends StatelessWidget {
           RouteDatesCarousel(dates: route.allDepartureDates),
           const SizedBox(height: 12),
           // Info row
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
             children: [
               // Packages count
               _InfoChip(
                 icon: Icons.inventory_2_outlined,
                 label: context.l10n.packages_count(route.packagesCount),
               ),
-              const Spacer(),
-              // Change status button
-              _ActionButton(
-                icon: Icons.sync_alt_rounded,
-                label: context.l10n.packages_changeStatus,
-                onTap: () => _showStatusChangeSheet(context),
-              ),
-              const SizedBox(width: 8),
-              // Delete button
-              _ActionButton(
-                icon: Icons.delete_outline,
-                label: context.l10n.common_delete,
-                isDestructive: true,
-                onTap: onDelete,
+              // Action buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Change status button
+                  _ActionButton(
+                    icon: Icons.sync_alt_rounded,
+                    label: context.l10n.packages_changeStatus,
+                    onTap: () => _showStatusChangeSheet(context),
+                  ),
+                  const SizedBox(width: 8),
+                  // Delete button
+                  _ActionButton(
+                    icon: Icons.delete_outline,
+                    label: context.l10n.common_delete,
+                    isDestructive: true,
+                    onTap: onDelete,
+                  ),
+                ],
               ),
             ],
           ),
