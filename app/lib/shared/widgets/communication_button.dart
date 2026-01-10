@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// Botón de comunicación reutilizable para WhatsApp, Viber, Telegram y teléfono.
+/// Botón de comunicación para WhatsApp, Viber, Telegram y teléfono.
 ///
 /// Uso:
 /// ```dart
-/// CommunicationButton.whatsApp(
-///   iconColor: colors.success,
-///   onTap: () => _openWhatsApp(phone),
+/// CommunicationButton(
+///   bgColor: AppColors.whatsappBg,
+///   iconColor: AppColors.whatsappText,
+///   borderColor: AppColors.whatsappBorder,
+///   type: CommunicationButtonType.whatsApp,
+///   onTap: () => ContactLauncher.openWhatsApp(phone),
 /// )
 /// ```
 class CommunicationButton extends StatelessWidget {
@@ -26,78 +29,6 @@ class CommunicationButton extends StatelessWidget {
     required this.onTap,
     required this.type,
   });
-
-  /// Constructor para WhatsApp
-  factory CommunicationButton.whatsApp({
-    Key? key,
-    required Color iconColor,
-    required VoidCallback onTap,
-    Color? bgColor,
-    Color? borderColor,
-  }) {
-    return CommunicationButton(
-      key: key,
-      bgColor: bgColor ?? Colors.transparent,
-      iconColor: iconColor,
-      borderColor: borderColor ?? iconColor.withValues(alpha: 0.2),
-      onTap: onTap,
-      type: CommunicationButtonType.whatsApp,
-    );
-  }
-
-  /// Constructor para Viber
-  factory CommunicationButton.viber({
-    Key? key,
-    required Color iconColor,
-    required VoidCallback onTap,
-    Color? bgColor,
-    Color? borderColor,
-  }) {
-    return CommunicationButton(
-      key: key,
-      bgColor: bgColor ?? Colors.transparent,
-      iconColor: iconColor,
-      borderColor: borderColor ?? iconColor.withValues(alpha: 0.2),
-      onTap: onTap,
-      type: CommunicationButtonType.viber,
-    );
-  }
-
-  /// Constructor para Telegram
-  factory CommunicationButton.telegram({
-    Key? key,
-    required Color iconColor,
-    required VoidCallback onTap,
-    Color? bgColor,
-    Color? borderColor,
-  }) {
-    return CommunicationButton(
-      key: key,
-      bgColor: bgColor ?? Colors.transparent,
-      iconColor: iconColor,
-      borderColor: borderColor ?? iconColor.withValues(alpha: 0.2),
-      onTap: onTap,
-      type: CommunicationButtonType.telegram,
-    );
-  }
-
-  /// Constructor para teléfono
-  factory CommunicationButton.phone({
-    Key? key,
-    required Color iconColor,
-    required VoidCallback onTap,
-    Color? bgColor,
-    Color? borderColor,
-  }) {
-    return CommunicationButton(
-      key: key,
-      bgColor: bgColor ?? Colors.transparent,
-      iconColor: iconColor,
-      borderColor: borderColor ?? iconColor.withValues(alpha: 0.2),
-      onTap: onTap,
-      type: CommunicationButtonType.phone,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

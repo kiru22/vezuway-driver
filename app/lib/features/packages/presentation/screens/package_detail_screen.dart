@@ -7,8 +7,11 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/extensions/package_status_extensions.dart';
+import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/utils/contact_launcher.dart';
-import '../../../../shared/widgets/communication_button.dart';
+import '../../../../shared/widgets/communication_button_row.dart';
+import '../../../../shared/widgets/map_button.dart';
+import '../../../../shared/widgets/status_badge.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/status_localizations.dart';
@@ -149,7 +152,7 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                   title: context.l10n.packages_receiver,
                   name: package.receiverName,
                   phone: package.receiverPhone,
-                  address: _buildFullAddress(package.receiverAddress, package.receiverCity),
+                  address: AddressUtils.buildFullAddress(package.receiverAddress, package.receiverCity),
                 ),
               ),
               const SizedBox(height: 16),
@@ -162,7 +165,7 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                   title: context.l10n.packages_sender,
                   name: package.senderName,
                   phone: package.senderPhone,
-                  address: _buildFullAddress(package.senderAddress, package.senderCity),
+                  address: AddressUtils.buildFullAddress(package.senderAddress, package.senderCity),
                 ),
               ),
               if (package.description != null || package.notes != null) ...[
@@ -174,13 +177,6 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
         ),
       ),
     );
-  }
-
-  String? _buildFullAddress(String? address, String? city) {
-    if (address == null && city == null) return null;
-    if (address == null) return city;
-    if (city == null) return address;
-    return '$address, $city';
   }
 }
 
@@ -361,15 +357,9 @@ class _TrackingStatusCard extends StatelessWidget {
     // Use package route info or fallback to package cities
     final originCity = package.route?.origin ?? package.senderCity ?? 'Origin';
     final destinationCity = package.route?.destination ?? package.receiverCity ?? 'Destination';
-    final departureDate = package.route?.departureDate != null 
-        ? _formatDate(package.route!.departureDate!) 
+    final departureDate = package.route?.departureDate != null
+        ? _formatDate(package.route!.departureDate!)
         : '';
-        
-    // For destination date, we might not have it in the route object based on current model viewing.
-    // Assuming RouteInfo has arrivalDate or similar, but viewing file showed `destination` but only `departureDate` in the example usage in `_RouteCard` (lines 330-344).
-    // The previous code only showed departure date. I'll leave destination date empty or use something if available. 
-    // Checking previous _RouteCard, it only showed one date next to origin.
-    // I will show departure date under Origin.
 
     return Container(
       width: double.infinity,
@@ -422,12 +412,12 @@ class _TrackingStatusCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 40),
-          
+
           // Route Visualizer
           LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
-              
+
               return SizedBox(
                 height: 40,
                 child: Stack(
@@ -440,22 +430,21 @@ class _TrackingStatusCard extends StatelessWidget {
                       (index) => Expanded(
                         child: Container(
                           height: 2,
-                          color: index % 2 == 0 
-                              ? Colors.white.withValues(alpha: 0.3) 
+                          color: index % 2 == 0
+                              ? Colors.white.withValues(alpha: 0.3)
                               : Colors.transparent,
                         ),
                       ),
                     ),
                   ),
-                  
+
                   // Progress Line (Solid)
                   Container(
                     width: width * progress,
                     height: 2,
                     color: Colors.white,
                   ),
-                  
-                  // Icons (Start, End, Current)
+
                   // Start Dot
                   Container(
                     width: 12,
@@ -466,7 +455,7 @@ class _TrackingStatusCard extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  
+
                   // End Dot
                   Positioned(
                     right: 0,
@@ -480,7 +469,7 @@ class _TrackingStatusCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   // Current Position Icon (Box)
                   Positioned(
                     left: (width * progress).clamp(0, width - 36),
@@ -502,7 +491,7 @@ class _TrackingStatusCard extends StatelessWidget {
                       child: Icon(
                         Icons.inventory_2_outlined,
                         size: 20,
-                        color: package.status.color, // Use status color for icon
+                        color: package.status.color,
                       ),
                     ),
                   ),
@@ -511,9 +500,9 @@ class _TrackingStatusCard extends StatelessWidget {
               );
             },
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Cities
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -573,7 +562,6 @@ class _TrackingStatusCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    // If we had arrival date
                   ],
                 ),
               ),
@@ -583,7 +571,7 @@ class _TrackingStatusCard extends StatelessWidget {
       ),
     );
   }
-  
+
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
@@ -603,46 +591,6 @@ class _TrackingStatusCard extends StatelessWidget {
   }
 }
 
-/// Status badge mejorado
-class _StatusBadge extends StatelessWidget {
-  final PackageStatus status;
-
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = status.color;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(status.icon, size: 16, color: color),
-          const SizedBox(width: 6),
-          Text(
-            status.localizedName(context),
-            style: TextStyle(
-              color: color,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _DetailsCard extends StatelessWidget {
   final PackageModel package;
@@ -813,14 +761,26 @@ class _ContactCard extends StatelessWidget {
               ],
             ),
           ],
-
+          // Botones de comunicación
+          if (hasPhone) ...[
+            const SizedBox(height: 16),
+            CommunicationButtonRow(phone: phone!),
+          ],
+          // Botón de mapa
+          if (hasAddress) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: MapButton(
+                onTap: () => ContactLauncher.openMaps(address!),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
-
-
 
 void _showActionsBottomSheet(
     BuildContext context, WidgetRef ref, PackageModel package) {

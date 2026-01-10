@@ -26,34 +26,7 @@ class StatusChip extends StatelessWidget {
     this.isCompact = false,
   });
 
-  factory StatusChip.inTransit({String? label}) {
-    return StatusChip(
-      label: label ?? 'EN TRANSITO',
-      variant: ChipVariant.orange,
-    );
-  }
-
-  factory StatusChip.delivered({String? label}) {
-    return StatusChip(
-      label: label ?? 'ENTREGADO',
-      variant: ChipVariant.green,
-    );
-  }
-
-  factory StatusChip.pending({String? label}) {
-    return StatusChip(
-      label: label ?? 'PENDIENTE',
-      variant: ChipVariant.gray,
-    );
-  }
-
-  factory StatusChip.planned({String? label}) {
-    return StatusChip(
-      label: label ?? 'PLANIFICADA',
-      variant: ChipVariant.blue,
-    );
-  }
-
+  /// Factory para mostrar fecha con icono de calendario
   factory StatusChip.date(String date) {
     return StatusChip(
       label: date,
@@ -63,6 +36,7 @@ class StatusChip extends StatelessWidget {
     );
   }
 
+  /// Factory para mostrar hora con icono de reloj
   factory StatusChip.time(String time) {
     return StatusChip(
       label: time,
@@ -151,87 +125,5 @@ class StatusChip extends StatelessWidget {
           border: AppColors.chipPurpleBorder,
         );
     }
-  }
-}
-
-/// Premium animated status indicator with glow effect
-class StatusIndicator extends StatefulWidget {
-  final bool isActive;
-  final Color? activeColor;
-  final double size;
-
-  const StatusIndicator({
-    super.key,
-    this.isActive = true,
-    this.activeColor,
-    this.size = 8,
-  });
-
-  @override
-  State<StatusIndicator> createState() => _StatusIndicatorState();
-}
-
-class _StatusIndicatorState extends State<StatusIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    _animation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-    if (widget.isActive) {
-      _controller.repeat(reverse: true);
-    }
-  }
-
-  @override
-  void didUpdateWidget(StatusIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isActive && !_controller.isAnimating) {
-      _controller.repeat(reverse: true);
-    } else if (!widget.isActive && _controller.isAnimating) {
-      _controller.stop();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final color = widget.activeColor ?? AppColors.success;
-
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            boxShadow: widget.isActive
-                ? [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.5 * _animation.value),
-                      blurRadius: 8 * _animation.value,
-                      spreadRadius: 2 * _animation.value,
-                    ),
-                  ]
-                : null,
-          ),
-        );
-      },
-    );
   }
 }
