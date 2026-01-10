@@ -6,8 +6,11 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/status_localizations.dart';
 import '../../../../shared/extensions/package_status_extensions.dart';
+import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/utils/contact_launcher.dart';
-import '../../../../shared/widgets/communication_button.dart';
+import '../../../../shared/widgets/communication_button_row.dart';
+import '../../../../shared/widgets/map_button.dart';
+import '../../../../shared/widgets/status_badge.dart';
 import '../../data/models/package_model.dart';
 
 /// Tarjeta de paquete con comportamiento de doble click.
@@ -134,9 +137,9 @@ class _PackageCardV2State extends State<PackageCardV2>
                       ],
                     ),
                   ),
-                  _StatusBadge(
+                  StatusBadge(
                     status: widget.package.status,
-                    color: widget.package.status.color,
+                    size: StatusBadgeSize.compact,
                   ),
                 ],
               ),
@@ -159,7 +162,7 @@ class _PackageCardV2State extends State<PackageCardV2>
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            _extractCity(widget.package.receiverAddress),
+                            AddressUtils.extractCity(widget.package.receiverAddress),
                             style: TextStyle(
                               fontSize: 14,
                               color: colors.textPrimary,
@@ -190,55 +193,9 @@ class _PackageCardV2State extends State<PackageCardV2>
                 children: [
                   // Communication buttons (orden: Llamar, Viber, WhatsApp, Telegram)
                   if (hasPhone)
-                    Padding(
+                    CommunicationButtonRow(
+                      phone: widget.package.receiverPhone!,
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: CommunicationButton(
-                              bgColor: AppColors.phoneBg,
-                              iconColor: AppColors.phoneText,
-                              borderColor: AppColors.phoneBorder,
-                              type: CommunicationButtonType.phone,
-                              onTap: () =>
-                                  ContactLauncher.makePhoneCall(widget.package.receiverPhone!),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: CommunicationButton(
-                              bgColor: AppColors.viberBg,
-                              iconColor: AppColors.viberText,
-                              borderColor: AppColors.viberBorder,
-                              type: CommunicationButtonType.viber,
-                              onTap: () =>
-                                  ContactLauncher.openViber(widget.package.receiverPhone!),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: CommunicationButton(
-                              bgColor: AppColors.whatsappBg,
-                              iconColor: AppColors.whatsappText,
-                              borderColor: AppColors.whatsappBorder,
-                              type: CommunicationButtonType.whatsApp,
-                              onTap: () =>
-                                  ContactLauncher.openWhatsApp(widget.package.receiverPhone!),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: CommunicationButton(
-                              bgColor: AppColors.telegramBg,
-                              iconColor: AppColors.telegramText,
-                              borderColor: AppColors.telegramBorder,
-                              type: CommunicationButtonType.telegram,
-                              onTap: () =>
-                                  ContactLauncher.openTelegram(widget.package.receiverPhone!),
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
 
                   // Action buttons row: Open map + Change status
@@ -249,11 +206,9 @@ class _PackageCardV2State extends State<PackageCardV2>
                         // Open map button (izquierda)
                         if (hasAddress)
                           Expanded(
-                            child: _MapButton(
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                ContactLauncher.openMaps(widget.package.receiverAddress!);
-                              },
+                            child: MapButton(
+                              style: MapButtonStyle.outlined,
+                              onTap: () => ContactLauncher.openMaps(widget.package.receiverAddress!),
                             ),
                           ),
                         if (hasAddress &&
@@ -279,46 +234,6 @@ class _PackageCardV2State extends State<PackageCardV2>
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  String _extractCity(String? address) {
-    if (address == null || address.isEmpty) return '-';
-    final parts = address.split(',');
-    if (parts.length > 1) {
-      return parts.last.trim();
-    }
-    return address;
-  }
-
-}
-
-class _StatusBadge extends StatelessWidget {
-  final PackageStatus status;
-  final Color color;
-
-  const _StatusBadge({
-    required this.status,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        status.localizedName(context).toUpperCase(),
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.3,
         ),
       ),
     );
@@ -358,7 +273,7 @@ class _MetricsRow extends StatelessWidget {
       }
       parts.add(TextSpan(text: '$quantity'));
       parts.add(TextSpan(
-        text: 'шт',
+        text: context.l10n.common_pcs,
         style: TextStyle(color: textColor.withValues(alpha: 0.7)),
       ));
     }
@@ -391,52 +306,6 @@ class _MetricsRow extends StatelessWidget {
   }
 }
 
-class _MapButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _MapButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: colors.border),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 18,
-              color: AppColors.primary,
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                context.l10n.action_openMap,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ChangeStatusButton extends StatelessWidget {
   final PackageStatus currentStatus;
   final VoidCallback onTap;
@@ -446,22 +315,9 @@ class _ChangeStatusButton extends StatelessWidget {
     required this.onTap,
   });
 
-  PackageStatus? get _nextStatus {
-    switch (currentStatus) {
-      case PackageStatus.registered:
-        return PackageStatus.inTransit;
-      case PackageStatus.inTransit:
-        return PackageStatus.delivered;
-      case PackageStatus.delivered:
-        return null;
-      case PackageStatus.delayed:
-        return PackageStatus.delivered;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final nextStatus = _nextStatus;
+    final nextStatus = currentStatus.nextStatus;
     if (nextStatus == null) return const SizedBox.shrink();
 
     return GestureDetector(

@@ -228,6 +228,11 @@ class AppColors {
   static const Color lightNavBackground = Color(0xFFFFFFFF);
   static const Color lightNavItemInactive = Color(0xFF94A3B8);
 
+  // Light Input Fields
+  static const Color lightInputBg = Color(0xFFF8FAFC);      // slate-50
+  static const Color lightInputMuted = Color(0xFFCBD5E1);   // slate-300
+  static const Color lightAccentBg = Color(0xFFEFF6FF);     // blue-50
+
   // Light Shadows
   static const Color lightShadow = Color(0x1A000000);
 

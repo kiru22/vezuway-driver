@@ -9,6 +9,7 @@ import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/models/city_model.dart';
+import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/widgets/form_app_bar.dart';
 import '../../data/models/package_model.dart';
 import '../../domain/providers/package_provider.dart';
@@ -240,25 +241,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     setState(() => _selectedTabIndex = index);
   }
 
-  String _buildFullAddress(CityModel? city, String exactAddress, String? googleMapsLink) {
-    final parts = <String>[];
-
-    if (city != null) {
-      parts.add(city.name);
-    }
-
-    if (exactAddress.isNotEmpty) {
-      parts.add(exactAddress);
-    }
-
-    // Append Google Maps link if provided
-    if (googleMapsLink != null && googleMapsLink.isNotEmpty) {
-      parts.add('Maps: $googleMapsLink');
-    }
-
-    return parts.join(', ');
-  }
-
   Future<void> _handleSubmit() async {
     if (_selectedRoute == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -299,15 +281,15 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     final quantity = int.tryParse(_quantityController.text);
 
     // Build full addresses combining city + exact address + Google Maps link
-    final senderAddress = _buildFullAddress(
-      _senderCity,
-      _senderExactAddressController.text.trim(),
-      _senderGoogleMapsController.text.trim(),
+    final senderAddress = AddressUtils.buildAddressFromParts(
+      cityName: _senderCity?.name,
+      exactAddress: _senderExactAddressController.text.trim(),
+      googleMapsLink: _senderGoogleMapsController.text.trim(),
     );
-    final receiverAddress = _buildFullAddress(
-      _receiverCity,
-      _receiverExactAddressController.text.trim(),
-      _receiverGoogleMapsController.text.trim(),
+    final receiverAddress = AddressUtils.buildAddressFromParts(
+      cityName: _receiverCity?.name,
+      exactAddress: _receiverExactAddressController.text.trim(),
+      googleMapsLink: _receiverGoogleMapsController.text.trim(),
     );
 
     final bool success;
@@ -409,13 +391,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       );
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
     final screenHeight = MediaQuery.of(context).size.height;
     final isCompact = screenHeight < 750;
 
     return Scaffold(
       // Subtle gray background for light theme so white cards pop
-      backgroundColor: isDark ? colors.surface : const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
       appBar: _buildAppBar(),
       body: Form(
         key: _formKey,
@@ -535,7 +517,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }
 
   Widget _buildRouteSelector(List<RouteModel> routes, AppColorsExtension colors) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -543,7 +525,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         color: isDark ? colors.surface : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+          color: isDark ? colors.border : AppColors.lightBorder,
         ),
         boxShadow: isDark ? null : [
           BoxShadow(
@@ -559,13 +541,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           hint: Text(
             context.l10n.packages_selectRoute,
             style: TextStyle(
-              color: isDark ? colors.textMuted : const Color(0xFF64748B),
+              color: isDark ? colors.textMuted : AppColors.lightTextSecondary,
             ),
           ),
           isExpanded: true,
           icon: Icon(
             Icons.keyboard_arrow_down,
-            color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+            color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
           ),
           dropdownColor: isDark ? colors.surface : Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -598,7 +580,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                       Text(
                         DateFormat('dd/MM/yyyy').format(route.departureDate),
                         style: TextStyle(
-                          color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
+                          color: isDark ? colors.textMuted : AppColors.lightTextMuted,
                           fontSize: 13,
                         ),
                       ),
@@ -611,7 +593,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                     decoration: BoxDecoration(
                       color: isDark
                           ? AppColors.primary.withValues(alpha: 0.2)
-                          : const Color(0xFFEFF6FF),
+                          : AppColors.lightAccentBg,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -641,15 +623,15 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }
 
   Widget _buildPillTabs(AppColorsExtension colors) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: isDark ? colors.surface : const Color(0xFFF1F5F9),
+        color: isDark ? colors.surface : AppColors.lightSurfaceLight,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+          color: isDark ? colors.border : AppColors.lightBorder,
         ),
       ),
       child: LayoutBuilder(
@@ -695,7 +677,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                             style: TextStyle(
                               color: _selectedTabIndex == 0
                                   ? Colors.white
-                                  : (isDark ? colors.textSecondary : const Color(0xFF475569)),
+                                  : (isDark ? colors.textSecondary : AppColors.statusNeutralText),
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),
@@ -718,7 +700,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                             style: TextStyle(
                               color: _selectedTabIndex == 1
                                   ? Colors.white
-                                  : (isDark ? colors.textSecondary : const Color(0xFF475569)),
+                                  : (isDark ? colors.textSecondary : AppColors.statusNeutralText),
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),
@@ -863,7 +845,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }) {
     // If no stops defined, show disabled text (cities come from route stops)
     if (cities.isEmpty) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final isDark = context.isDarkMode;
       return Container(
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -871,7 +853,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           color: isDark ? colors.surface : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isDark ? colors.border : const Color(0xFFE2E8F0),
+            color: isDark ? colors.border : AppColors.lightBorder,
           ),
         ),
         child: Row(
@@ -879,7 +861,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             Icon(
               Icons.location_city_outlined,
               size: 20,
-              color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+              color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -888,7 +870,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                 style: TextStyle(
                   color: selectedCity != null
                       ? colors.textPrimary
-                      : (isDark ? colors.textMuted : const Color(0xFF64748B)),
+                      : (isDark ? colors.textMuted : AppColors.lightTextSecondary),
                   fontWeight: selectedCity != null ? FontWeight.w500 : FontWeight.w400,
                 ),
               ),
@@ -898,7 +880,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       );
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     return Container(
       height: 48,
@@ -907,7 +889,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         color: isDark ? colors.surface : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+          color: isDark ? colors.border : AppColors.lightBorder,
         ),
         boxShadow: isDark ? null : [
           BoxShadow(
@@ -925,13 +907,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               Icon(
                 Icons.location_city_outlined,
                 size: 20,
-                color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+                color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
               ),
               const SizedBox(width: 12),
               Text(
                 context.l10n.packages_cityLabel,
                 style: TextStyle(
-                  color: isDark ? colors.textMuted : const Color(0xFF64748B),
+                  color: isDark ? colors.textMuted : AppColors.lightTextSecondary,
                 ),
               ),
             ],
@@ -939,7 +921,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           isExpanded: true,
           icon: Icon(
             Icons.keyboard_arrow_down,
-            color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+            color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
           ),
           dropdownColor: isDark ? colors.surface : Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -971,16 +953,16 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     required TextEditingController googleMapsController,
     required AppColorsExtension colors,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? colors.surface : const Color(0xFFF8FAFC),
+        color: isDark ? colors.surface : AppColors.lightInputBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+          color: isDark ? colors.border : AppColors.lightBorder,
         ),
       ),
       child: Column(
@@ -990,7 +972,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           Text(
             context.l10n.packages_deliverySection,
             style: TextStyle(
-              color: isDark ? colors.textSecondary : const Color(0xFF475569),
+              color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
@@ -1026,7 +1008,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     final billingWeight = _volumetricWeight > (double.tryParse(_weightController.text) ?? 0)
         ? _volumetricWeight
         : (double.tryParse(_weightController.text) ?? 0);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
     final padding = isCompact ? 12.0 : 20.0;
     final gap = isCompact ? 10.0 : 20.0;
     final smallGap = isCompact ? 4.0 : 8.0;
@@ -1037,7 +1019,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         color: isDark ? colors.surface : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? colors.border : const Color(0xFFE2E8F0),
+          color: isDark ? colors.border : AppColors.lightBorder,
         ),
         boxShadow: isDark ? null : [
           BoxShadow(
@@ -1061,7 +1043,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                     Text(
                       context.l10n.packages_weightKg,
                       style: TextStyle(
-                        color: isDark ? colors.textSecondary : const Color(0xFF475569),
+                        color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.3,
@@ -1086,7 +1068,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                     Text(
                       context.l10n.packages_quantityPcs,
                       style: TextStyle(
-                        color: isDark ? colors.textSecondary : const Color(0xFF475569),
+                        color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.3,
@@ -1109,7 +1091,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           Text(
             context.l10n.packages_dimensionsCm,
             style: TextStyle(
-              color: isDark ? colors.textSecondary : const Color(0xFF475569),
+              color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.3,
@@ -1148,7 +1130,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
           if (hasPricing) ...[
             SizedBox(height: gap),
-            Divider(color: isDark ? colors.border : const Color(0xFFE2E8F0)),
+            Divider(color: isDark ? colors.border : AppColors.lightBorder),
             SizedBox(height: isCompact ? 8 : 16),
 
             // Tariff info and total
@@ -1162,7 +1144,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                       Text(
                         '${context.l10n.packages_tariffLabel}: ${pricePerKg.toStringAsFixed(2)} €/kg',
                         style: TextStyle(
-                          color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+                          color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
                           fontSize: isCompact ? 12 : 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1173,7 +1155,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                           child: Text(
                             '${context.l10n.packages_volumetricWeight}: ${_volumetricWeight.toStringAsFixed(2)} kg',
                             style: TextStyle(
-                              color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
+                              color: isDark ? colors.textMuted : AppColors.lightTextMuted,
                               fontSize: isCompact ? 11 : 12,
                             ),
                           ),
@@ -1184,7 +1166,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                           child: Text(
                             '${context.l10n.packages_billingWeight}: ${billingWeight.toStringAsFixed(2)} kg',
                             style: TextStyle(
-                              color: isDark ? colors.textSecondary : const Color(0xFF475569),
+                              color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
                               fontSize: isCompact ? 12 : 13,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1221,7 +1203,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }
 
   Widget _buildSubmitButton(AppColorsExtension colors) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1229,7 +1211,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         color: isDark ? colors.surface : Colors.white,
         border: Border(
           top: BorderSide(
-            color: isDark ? colors.border : const Color(0xFFE2E8F0),
+            color: isDark ? colors.border : AppColors.lightBorder,
           ),
         ),
         boxShadow: isDark ? null : [
@@ -1300,7 +1282,7 @@ class _FormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     return Container(
       decoration: BoxDecoration(
@@ -1327,7 +1309,7 @@ class _FormField extends StatelessWidget {
           hintText: hint,
           // Darker labels for better readability
           labelStyle: TextStyle(
-            color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+            color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
             fontWeight: FontWeight.w500,
           ),
           floatingLabelStyle: TextStyle(
@@ -1335,13 +1317,13 @@ class _FormField extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
           hintStyle: TextStyle(
-            color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
+            color: isDark ? colors.textMuted : AppColors.lightTextMuted,
           ),
           prefixIcon: prefixIcon != null
               ? Icon(
                   prefixIcon,
                   size: 20,
-                  color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+                  color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
                 )
               : null,
           filled: true,
@@ -1351,13 +1333,13 @@ class _FormField extends StatelessWidget {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
-              color: isDark ? colors.border : const Color(0xFFE2E8F0),
+              color: isDark ? colors.border : AppColors.lightBorder,
             ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
-              color: isDark ? colors.border : const Color(0xFFE2E8F0),
+              color: isDark ? colors.border : AppColors.lightBorder,
             ),
           ),
           focusedBorder: OutlineInputBorder(
@@ -1417,7 +1399,7 @@ class _NumericInputState extends State<_NumericInput> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
     final fontSize = widget.isCompact ? 22.0 : 28.0;
     final verticalPadding = widget.isCompact ? 6.0 : 12.0;
 
@@ -1451,7 +1433,7 @@ class _NumericInputState extends State<_NumericInput> {
         decoration: InputDecoration(
           hintText: widget.hint,
           hintStyle: TextStyle(
-            color: isDark ? colors.textMuted : const Color(0xFFCBD5E1),
+            color: isDark ? colors.textMuted : AppColors.lightInputMuted,
             fontWeight: FontWeight.w400,
             fontSize: fontSize,
           ),
@@ -1505,7 +1487,7 @@ class _DimensionInputState extends State<_DimensionInput> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
     final fontSize = widget.isCompact ? 18.0 : 24.0;
     final inputWidth = widget.isCompact ? 55.0 : 70.0;
 
@@ -1515,7 +1497,7 @@ class _DimensionInputState extends State<_DimensionInput> {
         Text(
           widget.label,
           style: TextStyle(
-            color: isDark ? colors.textSecondary : const Color(0xFF94A3B8),
+            color: isDark ? colors.textSecondary : AppColors.lightTextMuted,
             fontSize: widget.isCompact ? 11 : 13,
             fontWeight: FontWeight.w500,
           ),
@@ -1555,7 +1537,7 @@ class _DimensionInputState extends State<_DimensionInput> {
               isDense: true,
               hintText: '0',
               hintStyle: TextStyle(
-                color: isDark ? colors.textMuted : const Color(0xFFCBD5E1),
+                color: isDark ? colors.textMuted : AppColors.lightInputMuted,
                 fontWeight: FontWeight.w400,
                 fontSize: fontSize,
               ),

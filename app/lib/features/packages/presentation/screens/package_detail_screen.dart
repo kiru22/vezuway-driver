@@ -7,8 +7,11 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/extensions/package_status_extensions.dart';
+import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/utils/contact_launcher.dart';
-import '../../../../shared/widgets/communication_button.dart';
+import '../../../../shared/widgets/communication_button_row.dart';
+import '../../../../shared/widgets/map_button.dart';
+import '../../../../shared/widgets/status_badge.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/status_localizations.dart';
@@ -151,7 +154,7 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                   title: context.l10n.packages_receiver,
                   name: package.receiverName,
                   phone: package.receiverPhone,
-                  address: _buildFullAddress(package.receiverAddress, package.receiverCity),
+                  address: AddressUtils.buildFullAddress(package.receiverAddress, package.receiverCity),
                 ),
               ),
               const SizedBox(height: 16),
@@ -164,7 +167,7 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                   title: context.l10n.packages_sender,
                   name: package.senderName,
                   phone: package.senderPhone,
-                  address: _buildFullAddress(package.senderAddress, package.senderCity),
+                  address: AddressUtils.buildFullAddress(package.senderAddress, package.senderCity),
                 ),
               ),
               if (package.description != null || package.notes != null) ...[
@@ -176,13 +179,6 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
         ),
       ),
     );
-  }
-
-  String? _buildFullAddress(String? address, String? city) {
-    if (address == null && city == null) return null;
-    if (address == null) return city;
-    if (city == null) return address;
-    return '$address, $city';
   }
 }
 
@@ -427,7 +423,7 @@ class _HeaderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _StatusBadge(status: package.status),
+              StatusBadge(status: package.status),
             ],
           ),
           const SizedBox(height: 20),
@@ -552,47 +548,6 @@ class _MetricItem extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Status badge mejorado
-class _StatusBadge extends StatelessWidget {
-  final PackageStatus status;
-
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = status.color;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(status.icon, size: 16, color: color),
-          const SizedBox(width: 6),
-          Text(
-            status.localizedName(context),
-            style: TextStyle(
-              color: color,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -766,104 +721,22 @@ class _ContactCard extends StatelessWidget {
               ],
             ),
           ],
-          // Botones de comunicación (igual que package_card_v2)
+          // Botones de comunicación
           if (hasPhone) ...[
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.phoneBg,
-                    iconColor: AppColors.phoneText,
-                    borderColor: AppColors.phoneBorder,
-                    type: CommunicationButtonType.phone,
-                    onTap: () => ContactLauncher.makePhoneCall(phone!),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.viberBg,
-                    iconColor: AppColors.viberText,
-                    borderColor: AppColors.viberBorder,
-                    type: CommunicationButtonType.viber,
-                    onTap: () => ContactLauncher.openViber(phone!),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.whatsappBg,
-                    iconColor: AppColors.whatsappText,
-                    borderColor: AppColors.whatsappBorder,
-                    type: CommunicationButtonType.whatsApp,
-                    onTap: () => ContactLauncher.openWhatsApp(phone!),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.telegramBg,
-                    iconColor: AppColors.telegramText,
-                    borderColor: AppColors.telegramBorder,
-                    type: CommunicationButtonType.telegram,
-                    onTap: () => ContactLauncher.openTelegram(phone!),
-                  ),
-                ),
-              ],
-            ),
+            CommunicationButtonRow(phone: phone!),
           ],
           // Botón de mapa
           if (hasAddress) ...[
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              child: _MapButton(
+              child: MapButton(
                 onTap: () => ContactLauncher.openMaps(address!),
               ),
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-/// Botón de mapa mejorado
-class _MapButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _MapButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.map_outlined, size: 20, color: AppColors.primary),
-            const SizedBox(width: 8),
-            Text(
-              context.l10n.action_viewOnMap,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
