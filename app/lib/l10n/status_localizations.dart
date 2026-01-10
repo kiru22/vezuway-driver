@@ -14,22 +14,28 @@ extension PackageStatusL10n on PackageStatus {
   String localizedName(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     switch (this) {
-      case PackageStatus.pending:
-        return l10n.status_package_pending;
-      case PackageStatus.pickedUp:
-        return l10n.status_package_pickedUp;
+      case PackageStatus.registered:
+        return l10n.status_package_registered;
       case PackageStatus.inTransit:
         return l10n.status_package_inTransit;
-      case PackageStatus.inWarehouse:
-        return l10n.status_package_inWarehouse;
-      case PackageStatus.outForDelivery:
-        return l10n.status_package_outForDelivery;
       case PackageStatus.delivered:
         return l10n.status_package_delivered;
-      case PackageStatus.cancelled:
-        return l10n.status_package_cancelled;
-      case PackageStatus.returned:
-        return l10n.status_package_returned;
+      case PackageStatus.delayed:
+        return l10n.status_package_delayed;
+    }
+  }
+
+  String localizedDescription(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (this) {
+      case PackageStatus.registered:
+        return l10n.status_package_registered_desc;
+      case PackageStatus.inTransit:
+        return l10n.status_package_inTransit_desc;
+      case PackageStatus.delivered:
+        return l10n.status_package_delivered_desc;
+      case PackageStatus.delayed:
+        return l10n.status_package_delayed_desc;
     }
   }
 }

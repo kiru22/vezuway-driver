@@ -8,7 +8,7 @@ import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../domain/providers/package_provider.dart';
 import '../../data/models/package_model.dart';
-import '../widgets/package_card.dart';
+import '../widgets/package_card_v2.dart';
 import '../widgets/status_filter_chips.dart';
 
 class PackagesScreen extends ConsumerStatefulWidget {
@@ -144,9 +144,9 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
       itemCount: packages.length,
       itemBuilder: (context, index) {
         final package = packages[index];
-        return PackageCard(
+        return PackageCardV2(
           package: package,
-          onTap: () => context.push('/packages/${package.id}'),
+          onTap: () => context.go('/packages/${package.id}'),
           onStatusChange: (status) {
             ref.read(packagesProvider.notifier).updateStatus(package.id, status);
           },

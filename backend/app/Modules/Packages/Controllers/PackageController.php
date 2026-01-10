@@ -42,9 +42,9 @@ class PackageController extends Controller
         $this->authorize('create', Package::class);
 
         $validated = $request->validate([
-            'sender_name' => 'required|string|max:255',
+            'sender_name' => 'nullable|string|max:255',
             'sender_phone' => 'nullable|string|max:50',
-            'sender_address' => 'required|string',
+            'sender_address' => 'nullable|string',
             'sender_city' => 'nullable|string|max:100',
             'sender_country' => 'nullable|string|max:2',
             'receiver_name' => 'required|string|max:255',
@@ -65,6 +65,7 @@ class PackageController extends Controller
         $validated['transporter_id'] = $request->user()->id;
         $validated['sender_country'] = $validated['sender_country'] ?? 'UA';
         $validated['receiver_country'] = $validated['receiver_country'] ?? 'ES';
+        $validated['status'] = PackageStatus::PENDING;
 
         $package = Package::create($validated);
 

@@ -21,6 +21,7 @@
   "common_noResults": "Sin resultados",
   "common_kg": "kg",
   "common_eur": "EUR",
+  "common_pcs": "uds",
 
   "@@_AUTH": "============ AUTHENTICATION ============",
   "auth_loginTitle": "Iniciar sesion",
@@ -86,6 +87,7 @@
   "packages_detailTitle": "Detalle del Paquete",
   "packages_trackingCode": "Codigo de Seguimiento",
   "packages_weight": "Peso",
+  "packages_dimensions": "Dimensiones",
   "packages_declaredValue": "Valor Declarado",
   "packages_notSpecified": "No especificado",
   "packages_senderReceiver": "Remitente y Destinatario",
@@ -97,6 +99,7 @@
   "packages_statusHistory": "Historial de Estados",
   "packages_noHistory": "Sin historial",
   "packages_historyError": "Error al cargar historial",
+  "packages_historyUnavailable": "Historial no disponible",
   "packages_loadError": "Error al cargar el paquete",
   "packages_count": "{count, plural, =0{Sin paquetes} =1{1 paquete} other{{count} paquetes}}",
   "@packages_count": {
@@ -157,6 +160,10 @@
   "packages_cityRequired": "La ciudad es requerida",
   "packages_mapsPrefix": "Maps",
   "packages_billingWeight": "Peso facturable",
+  "packages_route": "Ruta",
+  "packages_origin": "Origen",
+  "packages_destination": "Destino",
+  "packages_departureDate": "Fecha de salida",
 
   "@@_ROUTES": "============ ROUTES ============",
   "routes_title": "Rutas",
@@ -239,14 +246,14 @@
   "userMenu_theme": "Tema",
 
   "@@_STATUS_PACKAGE": "============ PACKAGE STATUS ============",
-  "status_package_pending": "Pendiente",
-  "status_package_pickedUp": "Recogido",
-  "status_package_inTransit": "En transito",
-  "status_package_inWarehouse": "En almacen",
-  "status_package_outForDelivery": "En reparto",
+  "status_package_registered": "Registrado",
+  "status_package_registered_desc": "Paquete registrado en el sistema",
+  "status_package_inTransit": "En camino",
+  "status_package_inTransit_desc": "Enviar en ruta",
   "status_package_delivered": "Entregado",
-  "status_package_cancelled": "Cancelado",
-  "status_package_returned": "Devuelto",
+  "status_package_delivered_desc": "Entregar al cliente",
+  "status_package_delayed": "Retrasado",
+  "status_package_delayed_desc": "Surgieron problemas con el envio",
 
   "@@_STATUS_ROUTE": "============ ROUTE STATUS ============",
   "status_route_planned": "Planificada",
@@ -278,5 +285,19 @@
 
   "@@_COUNTRIES": "============ COUNTRIES ============",
   "country_spain": "Espana",
-  "country_ukraine": "Ucrania"
+  "country_ukraine": "Ucrania",
+
+  "@@_ACTIONS": "============ CARD ACTIONS ============",
+  "action_changeStatusTo": "Cambiar a \"{status}\"",
+  "@action_changeStatusTo": {
+    "placeholders": {
+      "status": { "type": "String" }
+    }
+  },
+  "action_openMap": "Mapa",
+  "action_viewOnMap": "Ver en mapa",
+  "action_call": "Llamar",
+  "action_whatsapp": "WhatsApp",
+  "action_telegram": "Telegram",
+  "action_viber": "Viber"
 }

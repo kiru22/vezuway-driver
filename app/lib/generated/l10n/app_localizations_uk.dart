@@ -63,6 +63,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get common_eur => 'EUR';
 
   @override
+  String get common_pcs => 'шт';
+
+  @override
   String get auth_loginTitle => 'Увiйти';
 
   @override
@@ -225,6 +228,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_weight => 'Вага';
 
   @override
+  String get packages_dimensions => 'Габарити';
+
+  @override
   String get packages_declaredValue => 'Оголошена вартiсть';
 
   @override
@@ -256,6 +262,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get packages_historyError => 'Помилка завантаження iсторiї';
+
+  @override
+  String get packages_historyUnavailable => 'Iсторiя недоступна';
 
   @override
   String get packages_loadError => 'Помилка завантаження посилки';
@@ -432,6 +441,18 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get packages_billingWeight => 'Розрахункова вага';
+
+  @override
+  String get packages_route => 'Маршрут';
+
+  @override
+  String get packages_origin => 'Вiдправлення';
+
+  @override
+  String get packages_destination => 'Призначення';
+
+  @override
+  String get packages_departureDate => 'Дата вiдправлення';
 
   @override
   String get routes_title => 'Маршрути';
@@ -643,28 +664,29 @@ class AppLocalizationsUk extends AppLocalizations {
   String get userMenu_theme => 'Тема';
 
   @override
-  String get status_package_pending => 'Очiкує';
+  String get status_package_registered => 'Оформлено';
 
   @override
-  String get status_package_pickedUp => 'Забрано';
+  String get status_package_registered_desc =>
+      'Посилка зареєстрована в системi';
 
   @override
   String get status_package_inTransit => 'В дорозi';
 
   @override
-  String get status_package_inWarehouse => 'На складi';
+  String get status_package_inTransit_desc => 'Вiдправити посилку в рейс';
 
   @override
-  String get status_package_outForDelivery => 'Доставляється';
+  String get status_package_delivered => 'Видано';
 
   @override
-  String get status_package_delivered => 'Доставлено';
+  String get status_package_delivered_desc => 'Вручити посилку клiєнту';
 
   @override
-  String get status_package_cancelled => 'Скасовано';
+  String get status_package_delayed => 'Затримується';
 
   @override
-  String get status_package_returned => 'Повернено';
+  String get status_package_delayed_desc => 'Виникли проблеми з посилкою';
 
   @override
   String get status_route_planned => 'Заплановано';
@@ -737,4 +759,27 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get country_ukraine => 'Україна';
+
+  @override
+  String action_changeStatusTo(String status) {
+    return 'Змiнити на \"$status\"';
+  }
+
+  @override
+  String get action_openMap => 'Карта';
+
+  @override
+  String get action_viewOnMap => 'Переглянути на карті';
+
+  @override
+  String get action_call => 'Зателефонувати';
+
+  @override
+  String get action_whatsapp => 'WhatsApp';
+
+  @override
+  String get action_telegram => 'Telegram';
+
+  @override
+  String get action_viber => 'Viber';
 }

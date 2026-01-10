@@ -84,20 +84,18 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
 
   Future<bool> createPackage({
     int? routeId,
-    required String senderName,
+    String? senderName,
     String? senderPhone,
     String? senderAddress,
     required String receiverName,
     String? receiverPhone,
     String? receiverAddress,
-    String? description,
     double? weight,
     int? lengthCm,
     int? widthCm,
     int? heightCm,
     int? quantity,
     double? declaredValue,
-    String? notes,
   }) async {
     try {
       final newPackage = await _repository.createPackage(
@@ -108,21 +106,21 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         receiverName: receiverName,
         receiverPhone: receiverPhone,
         receiverAddress: receiverAddress,
-        description: description,
         weight: weight,
         lengthCm: lengthCm,
         widthCm: widthCm,
         heightCm: heightCm,
         quantity: quantity,
         declaredValue: declaredValue,
-        notes: notes,
       );
       state = state.copyWith(
         packages: [newPackage, ...state.packages],
       );
       return true;
     } catch (e, stack) {
-      debugPrint('PackagesNotifier.createPackage error: $e\n$stack');
+      debugPrint('PackagesNotifier.createPackage error: $e');
+      debugPrint('Stack trace: $stack');
+      state = state.copyWith(error: e.toString());
       return false;
     }
   }
@@ -137,6 +135,53 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
       return true;
     } catch (e, stack) {
       debugPrint('PackagesNotifier.updateStatus error: $e\n$stack');
+      return false;
+    }
+  }
+
+  Future<bool> updatePackage({
+    required int id,
+    int? routeId,
+    String? senderName,
+    String? senderPhone,
+    String? senderAddress,
+    required String receiverName,
+    String? receiverPhone,
+    String? receiverAddress,
+    double? weight,
+    int? lengthCm,
+    int? widthCm,
+    int? heightCm,
+    int? quantity,
+    double? declaredValue,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        if (routeId != null) 'route_id': routeId,
+        if (senderName != null && senderName.isNotEmpty) 'sender_name': senderName,
+        if (senderPhone != null && senderPhone.isNotEmpty) 'sender_phone': senderPhone,
+        if (senderAddress != null && senderAddress.isNotEmpty) 'sender_address': senderAddress,
+        'receiver_name': receiverName,
+        if (receiverPhone != null) 'receiver_phone': receiverPhone,
+        if (receiverAddress != null) 'receiver_address': receiverAddress,
+        if (weight != null) 'weight_kg': weight,
+        if (lengthCm != null) 'length_cm': lengthCm,
+        if (widthCm != null) 'width_cm': widthCm,
+        if (heightCm != null) 'height_cm': heightCm,
+        if (quantity != null) 'quantity': quantity,
+        if (declaredValue != null) 'declared_value': declaredValue,
+      };
+
+      final updated = await _repository.updatePackage(id, data);
+      final packages = state.packages.map((p) {
+        return p.id == id ? updated : p;
+      }).toList();
+      state = state.copyWith(packages: packages);
+      return true;
+    } catch (e, stack) {
+      debugPrint('PackagesNotifier.updatePackage error: $e');
+      debugPrint('Stack trace: $stack');
+      state = state.copyWith(error: e.toString());
       return false;
     }
   }

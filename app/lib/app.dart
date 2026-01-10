@@ -71,6 +71,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/packages/new',
         builder: (context, state) => const CreatePackageScreen(),
       ),
+      // Package detail and edit routes outside ShellRoute (no navbar)
+      GoRoute(
+        path: '/packages/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return PackageDetailScreen(packageId: id);
+        },
+      ),
+      GoRoute(
+        path: '/packages/:id/edit',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return CreatePackageScreen(packageId: id);
+        },
+      ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
@@ -85,15 +100,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => const NoTransitionPage(
               child: PackagesScreen(),
             ),
-            routes: [
-              GoRoute(
-                path: ':id',
-                builder: (context, state) {
-                  final id = int.parse(state.pathParameters['id']!);
-                  return PackageDetailScreen(packageId: id);
-                },
-              ),
-            ],
           ),
           GoRoute(
             path: '/routes',

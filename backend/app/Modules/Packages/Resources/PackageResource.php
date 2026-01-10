@@ -42,6 +42,8 @@ class PackageResource extends JsonResource
                 'height_cm' => $this->height_cm,
             ],
 
+            'quantity' => $this->quantity ?? 1,
+
             'description' => $this->description,
             'declared_value' => $this->declared_value,
             'status' => $this->status,

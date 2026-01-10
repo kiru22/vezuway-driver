@@ -206,6 +206,12 @@ abstract class AppLocalizations {
   /// **'EUR'**
   String get common_eur;
 
+  /// No description provided for @common_pcs.
+  ///
+  /// In es, this message translates to:
+  /// **'uds'**
+  String get common_pcs;
+
   /// No description provided for @auth_loginTitle.
   ///
   /// In es, this message translates to:
@@ -518,6 +524,12 @@ abstract class AppLocalizations {
   /// **'Peso'**
   String get packages_weight;
 
+  /// No description provided for @packages_dimensions.
+  ///
+  /// In es, this message translates to:
+  /// **'Dimensiones'**
+  String get packages_dimensions;
+
   /// No description provided for @packages_declaredValue.
   ///
   /// In es, this message translates to:
@@ -583,6 +595,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Error al cargar historial'**
   String get packages_historyError;
+
+  /// No description provided for @packages_historyUnavailable.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial no disponible'**
+  String get packages_historyUnavailable;
 
   /// No description provided for @packages_loadError.
   ///
@@ -913,6 +931,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Peso facturable'**
   String get packages_billingWeight;
+
+  /// No description provided for @packages_route.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta'**
+  String get packages_route;
+
+  /// No description provided for @packages_origin.
+  ///
+  /// In es, this message translates to:
+  /// **'Origen'**
+  String get packages_origin;
+
+  /// No description provided for @packages_destination.
+  ///
+  /// In es, this message translates to:
+  /// **'Destino'**
+  String get packages_destination;
+
+  /// No description provided for @packages_departureDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de salida'**
+  String get packages_departureDate;
 
   /// No description provided for @routes_title.
   ///
@@ -1274,35 +1316,29 @@ abstract class AppLocalizations {
   /// **'Tema'**
   String get userMenu_theme;
 
-  /// No description provided for @status_package_pending.
+  /// No description provided for @status_package_registered.
   ///
   /// In es, this message translates to:
-  /// **'Pendiente'**
-  String get status_package_pending;
+  /// **'Registrado'**
+  String get status_package_registered;
 
-  /// No description provided for @status_package_pickedUp.
+  /// No description provided for @status_package_registered_desc.
   ///
   /// In es, this message translates to:
-  /// **'Recogido'**
-  String get status_package_pickedUp;
+  /// **'Paquete registrado en el sistema'**
+  String get status_package_registered_desc;
 
   /// No description provided for @status_package_inTransit.
   ///
   /// In es, this message translates to:
-  /// **'En transito'**
+  /// **'En camino'**
   String get status_package_inTransit;
 
-  /// No description provided for @status_package_inWarehouse.
+  /// No description provided for @status_package_inTransit_desc.
   ///
   /// In es, this message translates to:
-  /// **'En almacen'**
-  String get status_package_inWarehouse;
-
-  /// No description provided for @status_package_outForDelivery.
-  ///
-  /// In es, this message translates to:
-  /// **'En reparto'**
-  String get status_package_outForDelivery;
+  /// **'Enviar en ruta'**
+  String get status_package_inTransit_desc;
 
   /// No description provided for @status_package_delivered.
   ///
@@ -1310,17 +1346,23 @@ abstract class AppLocalizations {
   /// **'Entregado'**
   String get status_package_delivered;
 
-  /// No description provided for @status_package_cancelled.
+  /// No description provided for @status_package_delivered_desc.
   ///
   /// In es, this message translates to:
-  /// **'Cancelado'**
-  String get status_package_cancelled;
+  /// **'Entregar al cliente'**
+  String get status_package_delivered_desc;
 
-  /// No description provided for @status_package_returned.
+  /// No description provided for @status_package_delayed.
   ///
   /// In es, this message translates to:
-  /// **'Devuelto'**
-  String get status_package_returned;
+  /// **'Retrasado'**
+  String get status_package_delayed;
+
+  /// No description provided for @status_package_delayed_desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Surgieron problemas con el envio'**
+  String get status_package_delayed_desc;
 
   /// No description provided for @status_route_planned.
   ///
@@ -1447,6 +1489,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ucrania'**
   String get country_ukraine;
+
+  /// No description provided for @action_changeStatusTo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar a \"{status}\"'**
+  String action_changeStatusTo(String status);
+
+  /// No description provided for @action_openMap.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapa'**
+  String get action_openMap;
+
+  /// No description provided for @action_viewOnMap.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver en mapa'**
+  String get action_viewOnMap;
+
+  /// No description provided for @action_call.
+  ///
+  /// In es, this message translates to:
+  /// **'Llamar'**
+  String get action_call;
+
+  /// No description provided for @action_whatsapp.
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp'**
+  String get action_whatsapp;
+
+  /// No description provided for @action_telegram.
+  ///
+  /// In es, this message translates to:
+  /// **'Telegram'**
+  String get action_telegram;
+
+  /// No description provided for @action_viber.
+  ///
+  /// In es, this message translates to:
+  /// **'Viber'**
+  String get action_viber;
 }
 
 class _AppLocalizationsDelegate

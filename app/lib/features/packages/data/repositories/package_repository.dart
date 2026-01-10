@@ -36,37 +36,33 @@ class PackageRepository {
 
   Future<PackageModel> createPackage({
     int? routeId,
-    required String senderName,
+    String? senderName,
     String? senderPhone,
     String? senderAddress,
     required String receiverName,
     String? receiverPhone,
     String? receiverAddress,
-    String? description,
     double? weight,
     int? lengthCm,
     int? widthCm,
     int? heightCm,
     int? quantity,
     double? declaredValue,
-    String? notes,
   }) async {
     final response = await _api.post('/packages', data: {
       if (routeId != null) 'route_id': routeId,
-      'sender_name': senderName,
-      if (senderPhone != null) 'sender_phone': senderPhone,
-      if (senderAddress != null) 'sender_address': senderAddress,
+      if (senderName != null && senderName.isNotEmpty) 'sender_name': senderName,
+      if (senderPhone != null && senderPhone.isNotEmpty) 'sender_phone': senderPhone,
+      if (senderAddress != null && senderAddress.isNotEmpty) 'sender_address': senderAddress,
       'receiver_name': receiverName,
       if (receiverPhone != null) 'receiver_phone': receiverPhone,
       if (receiverAddress != null) 'receiver_address': receiverAddress,
-      if (description != null) 'description': description,
       if (weight != null) 'weight_kg': weight,
       if (lengthCm != null) 'length_cm': lengthCm,
       if (widthCm != null) 'width_cm': widthCm,
       if (heightCm != null) 'height_cm': heightCm,
       if (quantity != null) 'quantity': quantity,
       if (declaredValue != null) 'declared_value': declaredValue,
-      if (notes != null) 'notes': notes,
     });
     final data = response.data['data'] ?? response.data;
     return PackageModel.fromJson(data);

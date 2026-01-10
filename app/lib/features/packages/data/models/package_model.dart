@@ -1,90 +1,82 @@
 enum PackageStatus {
-  pending,
-  pickedUp,
-  inTransit,
-  inWarehouse,
-  outForDelivery,
-  delivered,
-  cancelled,
-  returned;
-
-  String get displayName {
-    switch (this) {
-      case PackageStatus.pending:
-        return 'Pendiente';
-      case PackageStatus.pickedUp:
-        return 'Recogido';
-      case PackageStatus.inTransit:
-        return 'En transito';
-      case PackageStatus.inWarehouse:
-        return 'En almacen';
-      case PackageStatus.outForDelivery:
-        return 'En reparto';
-      case PackageStatus.delivered:
-        return 'Entregado';
-      case PackageStatus.cancelled:
-        return 'Cancelado';
-      case PackageStatus.returned:
-        return 'Devuelto';
-    }
-  }
+  registered,  // Оформлено
+  inTransit,   // В дорозі
+  delivered,   // Видано
+  delayed;     // Затримується
 
   String get apiValue {
     switch (this) {
-      case PackageStatus.pending:
-        return 'pending';
-      case PackageStatus.pickedUp:
-        return 'picked_up';
+      case PackageStatus.registered:
+        return 'registered';
       case PackageStatus.inTransit:
         return 'in_transit';
-      case PackageStatus.inWarehouse:
-        return 'in_warehouse';
-      case PackageStatus.outForDelivery:
-        return 'out_for_delivery';
       case PackageStatus.delivered:
         return 'delivered';
-      case PackageStatus.cancelled:
-        return 'cancelled';
-      case PackageStatus.returned:
-        return 'returned';
+      case PackageStatus.delayed:
+        return 'delayed';
     }
   }
 
-  static PackageStatus fromString(String value) {
-    switch (value) {
+  static PackageStatus fromString(String? value) {
+    switch (value ?? 'pending') {
+      case 'registered':
       case 'pending':
-        return PackageStatus.pending;
       case 'picked_up':
-        return PackageStatus.pickedUp;
+        return PackageStatus.registered;
       case 'in_transit':
-        return PackageStatus.inTransit;
       case 'in_warehouse':
-        return PackageStatus.inWarehouse;
       case 'out_for_delivery':
-        return PackageStatus.outForDelivery;
+        return PackageStatus.inTransit;
       case 'delivered':
         return PackageStatus.delivered;
-      case 'cancelled':
-        return PackageStatus.cancelled;
-      case 'returned':
-        return PackageStatus.returned;
+      case 'delayed':
+        return PackageStatus.delayed;
       default:
-        return PackageStatus.pending;
+        return PackageStatus.registered;
     }
+  }
+}
+
+/// Información resumida de la ruta asociada al paquete
+class RouteInfo {
+  final int id;
+  final String origin;
+  final String destination;
+  final String? departureDate;
+
+  RouteInfo({
+    required this.id,
+    required this.origin,
+    required this.destination,
+    this.departureDate,
+  });
+
+  factory RouteInfo.fromJson(Map<String, dynamic> json) {
+    return RouteInfo(
+      id: json['id'],
+      origin: json['origin'] ?? '',
+      destination: json['destination'] ?? '',
+      departureDate: json['departure_date'],
+    );
   }
 }
 
 class PackageModel {
   final int id;
   final int? routeId;
+  final RouteInfo? route;
   final String trackingCode;
   final PackageStatus status;
   final String senderName;
   final String? senderPhone;
   final String? senderAddress;
+  final String? senderCity;
+  final String? senderCountry;
   final String receiverName;
   final String? receiverPhone;
   final String? receiverAddress;
+  final String? receiverCity;
+  final String? receiverCountry;
   final String? description;
   final double? weight;
   final int? lengthCm;
@@ -101,14 +93,19 @@ class PackageModel {
   PackageModel({
     required this.id,
     this.routeId,
+    this.route,
     required this.trackingCode,
     required this.status,
     required this.senderName,
     this.senderPhone,
     this.senderAddress,
+    this.senderCity,
+    this.senderCountry,
     required this.receiverName,
     this.receiverPhone,
     this.receiverAddress,
+    this.receiverCity,
+    this.receiverCountry,
     this.description,
     this.weight,
     this.lengthCm,
@@ -129,18 +126,24 @@ class PackageModel {
     final receiver = json['receiver'] as Map<String, dynamic>?;
     final dimensions = json['dimensions'] as Map<String, dynamic>?;
     final ocr = json['ocr'] as Map<String, dynamic>?;
+    final routeJson = json['route'] as Map<String, dynamic>?;
 
     return PackageModel(
       id: json['id'],
       routeId: json['route_id'],
+      route: routeJson != null ? RouteInfo.fromJson(routeJson) : null,
       trackingCode: json['tracking_code'],
       status: PackageStatus.fromString(json['status']),
       senderName: sender?['name'] ?? json['sender_name'] ?? '',
       senderPhone: sender?['phone'] ?? json['sender_phone'],
       senderAddress: sender?['address'] ?? json['sender_address'],
+      senderCity: sender?['city'] ?? json['sender_city'],
+      senderCountry: sender?['country'] ?? json['sender_country'],
       receiverName: receiver?['name'] ?? json['receiver_name'] ?? '',
       receiverPhone: receiver?['phone'] ?? json['receiver_phone'],
       receiverAddress: receiver?['address'] ?? json['receiver_address'],
+      receiverCity: receiver?['city'] ?? json['receiver_city'],
+      receiverCountry: receiver?['country'] ?? json['receiver_country'],
       description: json['description'],
       weight: _parseDouble(json['weight'] ?? dimensions?['weight_kg']),
       lengthCm: _parseInt(json['length_cm'] ?? dimensions?['length_cm']),
@@ -182,9 +185,13 @@ class PackageModel {
       'sender_name': senderName,
       'sender_phone': senderPhone,
       'sender_address': senderAddress,
+      'sender_city': senderCity,
+      'sender_country': senderCountry,
       'receiver_name': receiverName,
       'receiver_phone': receiverPhone,
       'receiver_address': receiverAddress,
+      'receiver_city': receiverCity,
+      'receiver_country': receiverCountry,
       'description': description,
       'weight': weight,
       'length_cm': lengthCm,
@@ -199,14 +206,19 @@ class PackageModel {
   PackageModel copyWith({
     int? id,
     int? routeId,
+    RouteInfo? route,
     String? trackingCode,
     PackageStatus? status,
     String? senderName,
     String? senderPhone,
     String? senderAddress,
+    String? senderCity,
+    String? senderCountry,
     String? receiverName,
     String? receiverPhone,
     String? receiverAddress,
+    String? receiverCity,
+    String? receiverCountry,
     String? description,
     double? weight,
     int? lengthCm,
@@ -223,14 +235,19 @@ class PackageModel {
     return PackageModel(
       id: id ?? this.id,
       routeId: routeId ?? this.routeId,
+      route: route ?? this.route,
       trackingCode: trackingCode ?? this.trackingCode,
       status: status ?? this.status,
       senderName: senderName ?? this.senderName,
       senderPhone: senderPhone ?? this.senderPhone,
       senderAddress: senderAddress ?? this.senderAddress,
+      senderCity: senderCity ?? this.senderCity,
+      senderCountry: senderCountry ?? this.senderCountry,
       receiverName: receiverName ?? this.receiverName,
       receiverPhone: receiverPhone ?? this.receiverPhone,
       receiverAddress: receiverAddress ?? this.receiverAddress,
+      receiverCity: receiverCity ?? this.receiverCity,
+      receiverCountry: receiverCountry ?? this.receiverCountry,
       description: description ?? this.description,
       weight: weight ?? this.weight,
       lengthCm: lengthCm ?? this.lengthCm,

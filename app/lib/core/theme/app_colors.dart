@@ -91,6 +91,29 @@ class AppColors {
   static const Color chipPurpleBorder = Color(0xFF2E2247);
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // COMMUNICATION BUTTONS (WhatsApp, Telegram, Viber)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WhatsApp - green
+  static const Color whatsappBg = Color(0xFFDCFCE7);       // green-100
+  static const Color whatsappText = Color(0xFF16A34A);     // green-600
+  static const Color whatsappBorder = Color(0xFFBBF7D0);   // green-200
+
+  // Viber - purple
+  static const Color viberBg = Color(0xFFF3E8FF);          // purple-100
+  static const Color viberText = Color(0xFF9333EA);        // purple-600
+  static const Color viberBorder = Color(0xFFE9D5FF);      // purple-200
+
+  // Telegram - blue
+  static const Color telegramBg = Color(0xFFDBEAFE);       // blue-100
+  static const Color telegramText = Color(0xFF2563EB);     // blue-600
+  static const Color telegramBorder = Color(0xFFBFDBFE);   // blue-200
+
+  // Phone call - gray
+  static const Color phoneBg = Color(0xFFF3F4F6);          // gray-100
+  static const Color phoneText = Color(0xFF4B5563);        // gray-600
+  static const Color phoneBorder = Color(0xFFE5E7EB);      // gray-200
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // BORDERS & DIVIDERS
   // ═══════════════════════════════════════════════════════════════════════════
   static const Color border = Color(0xFF374151);       // slate-700

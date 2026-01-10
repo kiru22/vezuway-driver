@@ -19,6 +19,7 @@
   "common_noResults": "Немає результатiв",
   "common_kg": "кг",
   "common_eur": "EUR",
+  "common_pcs": "шт",
 
   "auth_loginTitle": "Увiйти",
   "auth_loginButton": "Увiйти",
@@ -75,6 +76,7 @@
   "packages_detailTitle": "Деталi посилки",
   "packages_trackingCode": "Код вiдстеження",
   "packages_weight": "Вага",
+  "packages_dimensions": "Габарити",
   "packages_declaredValue": "Оголошена вартiсть",
   "packages_notSpecified": "Не вказано",
   "packages_senderReceiver": "Вiдправник та Отримувач",
@@ -86,6 +88,7 @@
   "packages_statusHistory": "Iсторiя статусiв",
   "packages_noHistory": "Немає iсторiї",
   "packages_historyError": "Помилка завантаження iсторiї",
+  "packages_historyUnavailable": "Iсторiя недоступна",
   "packages_loadError": "Помилка завантаження посилки",
   "packages_count": "{count, plural, =0{Немає посилок} =1{1 посилка} few{{count} посилки} other{{count} посилок}}",
   "packages_createTitle": "Нова посилка",
@@ -141,6 +144,10 @@
   "packages_cityRequired": "Місто обов''язкове",
   "packages_mapsPrefix": "Карти",
   "packages_billingWeight": "Розрахункова вага",
+  "packages_route": "Маршрут",
+  "packages_origin": "Вiдправлення",
+  "packages_destination": "Призначення",
+  "packages_departureDate": "Дата вiдправлення",
 
   "routes_title": "Маршрути",
   "routes_activeTab": "Активнi ({count})",
@@ -206,14 +213,14 @@
   "userMenu_language": "Мова",
   "userMenu_theme": "Тема",
 
-  "status_package_pending": "Очiкує",
-  "status_package_pickedUp": "Забрано",
+  "status_package_registered": "Оформлено",
+  "status_package_registered_desc": "Посилка зареєстрована в системi",
   "status_package_inTransit": "В дорозi",
-  "status_package_inWarehouse": "На складi",
-  "status_package_outForDelivery": "Доставляється",
-  "status_package_delivered": "Доставлено",
-  "status_package_cancelled": "Скасовано",
-  "status_package_returned": "Повернено",
+  "status_package_inTransit_desc": "Вiдправити посилку в рейс",
+  "status_package_delivered": "Видано",
+  "status_package_delivered_desc": "Вручити посилку клiєнту",
+  "status_package_delayed": "Затримується",
+  "status_package_delayed_desc": "Виникли проблеми з посилкою",
 
   "status_route_planned": "Заплановано",
   "status_route_inProgress": "В процесi",
@@ -238,5 +245,13 @@
   "tripCard_deliveries": "Доставки",
 
   "country_spain": "Iспанiя",
-  "country_ukraine": "Україна"
+  "country_ukraine": "Україна",
+
+  "action_changeStatusTo": "Змiнити на \"{status}\"",
+  "action_openMap": "Карта",
+  "action_viewOnMap": "Переглянути на карті",
+  "action_call": "Зателефонувати",
+  "action_whatsapp": "WhatsApp",
+  "action_telegram": "Telegram",
+  "action_viber": "Viber"
 }

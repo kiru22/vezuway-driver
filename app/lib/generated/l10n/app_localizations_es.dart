@@ -63,6 +63,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get common_eur => 'EUR';
 
   @override
+  String get common_pcs => 'uds';
+
+  @override
   String get auth_loginTitle => 'Iniciar sesion';
 
   @override
@@ -226,6 +229,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_weight => 'Peso';
 
   @override
+  String get packages_dimensions => 'Dimensiones';
+
+  @override
   String get packages_declaredValue => 'Valor Declarado';
 
   @override
@@ -257,6 +263,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get packages_historyError => 'Error al cargar historial';
+
+  @override
+  String get packages_historyUnavailable => 'Historial no disponible';
 
   @override
   String get packages_loadError => 'Error al cargar el paquete';
@@ -432,6 +441,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get packages_billingWeight => 'Peso facturable';
+
+  @override
+  String get packages_route => 'Ruta';
+
+  @override
+  String get packages_origin => 'Origen';
+
+  @override
+  String get packages_destination => 'Destino';
+
+  @override
+  String get packages_departureDate => 'Fecha de salida';
 
   @override
   String get routes_title => 'Rutas';
@@ -640,28 +661,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get userMenu_theme => 'Tema';
 
   @override
-  String get status_package_pending => 'Pendiente';
+  String get status_package_registered => 'Registrado';
 
   @override
-  String get status_package_pickedUp => 'Recogido';
+  String get status_package_registered_desc =>
+      'Paquete registrado en el sistema';
 
   @override
-  String get status_package_inTransit => 'En transito';
+  String get status_package_inTransit => 'En camino';
 
   @override
-  String get status_package_inWarehouse => 'En almacen';
-
-  @override
-  String get status_package_outForDelivery => 'En reparto';
+  String get status_package_inTransit_desc => 'Enviar en ruta';
 
   @override
   String get status_package_delivered => 'Entregado';
 
   @override
-  String get status_package_cancelled => 'Cancelado';
+  String get status_package_delivered_desc => 'Entregar al cliente';
 
   @override
-  String get status_package_returned => 'Devuelto';
+  String get status_package_delayed => 'Retrasado';
+
+  @override
+  String get status_package_delayed_desc => 'Surgieron problemas con el envio';
 
   @override
   String get status_route_planned => 'Planificada';
@@ -733,4 +755,27 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get country_ukraine => 'Ucrania';
+
+  @override
+  String action_changeStatusTo(String status) {
+    return 'Cambiar a \"$status\"';
+  }
+
+  @override
+  String get action_openMap => 'Mapa';
+
+  @override
+  String get action_viewOnMap => 'Ver en mapa';
+
+  @override
+  String get action_call => 'Llamar';
+
+  @override
+  String get action_whatsapp => 'WhatsApp';
+
+  @override
+  String get action_telegram => 'Telegram';
+
+  @override
+  String get action_viber => 'Viber';
 }

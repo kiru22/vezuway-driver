@@ -10,12 +10,17 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/models/city_model.dart';
 import '../../../../shared/widgets/form_app_bar.dart';
+import '../../data/models/package_model.dart';
 import '../../domain/providers/package_provider.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 import '../../../routes/data/models/route_model.dart';
 
 class CreatePackageScreen extends ConsumerStatefulWidget {
-  const CreatePackageScreen({super.key});
+  final int? packageId;
+
+  const CreatePackageScreen({super.key, this.packageId});
+
+  bool get isEditMode => packageId != null;
 
   @override
   ConsumerState<CreatePackageScreen> createState() => _CreatePackageScreenState();
@@ -23,7 +28,7 @@ class CreatePackageScreen extends ConsumerStatefulWidget {
 
 class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _formKey = GlobalKey<FormState>();
-  int _selectedTabIndex = 0;
+  int _selectedTabIndex = 1; // Default to receiver tab
 
   // Sender fields
   final _senderNameController = TextEditingController();
@@ -70,8 +75,84 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
     // Preselect route after frame renders
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _preselectClosestRoute();
+      if (widget.isEditMode) {
+        _loadExistingPackage();
+      } else {
+        _preselectClosestRoute();
+      }
     });
+  }
+
+  Future<void> _loadExistingPackage() async {
+    if (widget.packageId == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final package = await ref.read(packageRepositoryProvider).getPackage(widget.packageId!);
+      _populateFieldsFromPackage(package);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.packages_loadError),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _populateFieldsFromPackage(PackageModel package) {
+    // Sender fields
+    _senderNameController.text = package.senderName;
+    _senderPhoneController.text = package.senderPhone ?? '';
+    // Parse address to extract city and exact address
+    if (package.senderAddress != null) {
+      _senderExactAddressController.text = package.senderAddress!;
+      _senderShowAddress = package.senderAddress!.isNotEmpty;
+    }
+
+    // Receiver fields
+    _receiverNameController.text = package.receiverName;
+    _receiverPhoneController.text = package.receiverPhone ?? '';
+    if (package.receiverAddress != null) {
+      _receiverExactAddressController.text = package.receiverAddress!;
+      _receiverShowAddress = package.receiverAddress!.isNotEmpty;
+    }
+
+    // Package details
+    if (package.weight != null) {
+      _weightController.text = package.weight.toString();
+    }
+    if (package.lengthCm != null) {
+      _lengthController.text = package.lengthCm.toString();
+    }
+    if (package.widthCm != null) {
+      _widthController.text = package.widthCm.toString();
+    }
+    if (package.heightCm != null) {
+      _heightController.text = package.heightCm.toString();
+    }
+    if (package.quantity != null) {
+      _quantityController.text = package.quantity.toString();
+    }
+
+    // Select route if assigned
+    if (package.routeId != null) {
+      final routesState = ref.read(routesProvider);
+      final route = routesState.routes.where((r) => r.id == package.routeId).firstOrNull;
+      if (route != null) {
+        _selectedRoute = route;
+      }
+    }
+
+    _updatePriceCalculation();
+    setState(() {});
   }
 
   @override
@@ -138,13 +219,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     final actualWeight = double.tryParse(_weightController.text) ?? 0;
     final volumetric = _calculateVolumetricWeight();
     final billingWeight = actualWeight > volumetric ? actualWeight : volumetric;
-    final qty = int.tryParse(_quantityController.text) ?? 1;
 
     final multiplier = route.priceMultiplier ?? 1.0;
     final minPrice = route.minimumPrice ?? 0;
 
-    final calculatedPrice = billingWeight * pricePerKg * multiplier * qty;
-    return calculatedPrice > (minPrice * qty) ? calculatedPrice : (minPrice * qty);
+    // Quantity is informational only, weight is already the total
+    final calculatedPrice = billingWeight * pricePerKg * multiplier;
+    return calculatedPrice > minPrice ? calculatedPrice : minPrice;
   }
 
   void _updatePriceCalculation() {
@@ -189,18 +270,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       return;
     }
 
-    // Validate cities (not covered by form validation)
-    if (_senderCity == null) {
-      setState(() => _selectedTabIndex = 0);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.packages_cityRequired),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
+    // Validate receiver city (sender is optional)
     if (_receiverCity == null) {
       setState(() => _selectedTabIndex = 1);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,10 +283,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     }
 
     if (!_formKey.currentState!.validate()) {
-      // Switch to tab with validation error
-      if (_senderNameController.text.isEmpty) {
-        setState(() => _selectedTabIndex = 0);
-      } else if (_receiverNameController.text.isEmpty) {
+      // Switch to receiver tab if validation error (receiver is required)
+      if (_receiverNameController.text.isEmpty) {
         setState(() => _selectedTabIndex = 1);
       }
       return;
@@ -242,24 +310,53 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       _receiverGoogleMapsController.text.trim(),
     );
 
-    final success = await ref.read(packagesProvider.notifier).createPackage(
-      routeId: _selectedRoute!.id,
-      senderName: _senderNameController.text.trim(),
-      senderPhone: _senderPhoneController.text.isNotEmpty
-          ? _senderPhoneController.text.trim()
-          : null,
-      senderAddress: senderAddress,
-      receiverName: _receiverNameController.text.trim(),
-      receiverPhone: _receiverPhoneController.text.isNotEmpty
-          ? _receiverPhoneController.text.trim()
-          : null,
-      receiverAddress: receiverAddress,
-      weight: weight,
-      lengthCm: length,
-      widthCm: width,
-      heightCm: height,
-      quantity: quantity,
-    );
+    final bool success;
+
+    if (widget.isEditMode) {
+      // Update existing package
+      success = await ref.read(packagesProvider.notifier).updatePackage(
+        id: widget.packageId!,
+        routeId: _selectedRoute!.id,
+        senderName: _senderNameController.text.trim(),
+        senderPhone: _senderPhoneController.text.isNotEmpty
+            ? _senderPhoneController.text.trim()
+            : null,
+        senderAddress: senderAddress,
+        receiverName: _receiverNameController.text.trim(),
+        receiverPhone: _receiverPhoneController.text.isNotEmpty
+            ? _receiverPhoneController.text.trim()
+            : null,
+        receiverAddress: receiverAddress,
+        weight: weight,
+        lengthCm: length,
+        widthCm: width,
+        heightCm: height,
+        quantity: quantity,
+        declaredValue: _calculatedPrice > 0 ? _calculatedPrice : null,
+      );
+
+    } else {
+      // Create new package
+      success = await ref.read(packagesProvider.notifier).createPackage(
+        routeId: _selectedRoute!.id,
+        senderName: _senderNameController.text.trim(),
+        senderPhone: _senderPhoneController.text.isNotEmpty
+            ? _senderPhoneController.text.trim()
+            : null,
+        senderAddress: senderAddress,
+        receiverName: _receiverNameController.text.trim(),
+        receiverPhone: _receiverPhoneController.text.isNotEmpty
+            ? _receiverPhoneController.text.trim()
+            : null,
+        receiverAddress: receiverAddress,
+        weight: weight,
+        lengthCm: length,
+        widthCm: width,
+        heightCm: height,
+        quantity: quantity,
+        declaredValue: _calculatedPrice > 0 ? _calculatedPrice : null,
+      );
+    }
 
     setState(() => _isLoading = false);
 
@@ -271,7 +368,11 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             backgroundColor: AppColors.success,
           ),
         );
-        context.pop();
+        if (widget.isEditMode) {
+          context.go('/packages/${widget.packageId}');
+        } else {
+          context.go('/packages');
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -301,7 +402,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.close, color: colors.textPrimary),
-            onPressed: () => context.pop(),
+            onPressed: () => context.go('/packages'),
           ),
         ),
         body: _buildEmptyRoutesState(colors),
@@ -309,6 +410,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isCompact = screenHeight < 750;
 
     return Scaffold(
       // Subtle gray background for light theme so white cards pop
@@ -320,23 +423,23 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(isCompact ? 12 : 20),
                 children: [
                   // Route selector
                   _buildRouteSelector(routes, colors),
-                  const SizedBox(height: 20),
+                  SizedBox(height: isCompact ? 12 : 20),
 
                   // Pill tabs for Sender/Receiver
                   _buildPillTabs(colors),
-                  const SizedBox(height: 16),
+                  SizedBox(height: isCompact ? 8 : 16),
 
                   // Person form (changes based on tab)
-                  _buildPersonForm(colors),
-                  const SizedBox(height: 24),
+                  _buildPersonForm(colors, isCompact),
+                  SizedBox(height: isCompact ? 12 : 24),
 
                   // Price Calculator
-                  _buildPriceCalculator(colors),
-                  const SizedBox(height: 24),
+                  _buildPriceCalculator(colors, isCompact),
+                  SizedBox(height: isCompact ? 12 : 24),
                 ],
               ),
             ),
@@ -351,8 +454,16 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return FormAppBar(
-      title: context.l10n.packages_createTitle,
-      onClose: () => context.pop(),
+      title: widget.isEditMode
+          ? context.l10n.common_edit
+          : context.l10n.packages_createTitle,
+      onClose: () {
+        if (widget.isEditMode) {
+          context.go('/packages/${widget.packageId}');
+        } else {
+          context.go('/packages');
+        }
+      },
     );
   }
 
@@ -626,7 +737,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
-  Widget _buildPersonForm(AppColorsExtension colors) {
+  Widget _buildPersonForm(AppColorsExtension colors, bool isCompact) {
     final isSender = _selectedTabIndex == 0;
     final nameController = isSender ? _senderNameController : _receiverNameController;
     final phoneController = isSender ? _senderPhoneController : _receiverPhoneController;
@@ -638,24 +749,27 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
     // Get available cities from route stops
     final availableCities = _selectedRoute?.stops ?? [];
+    final gap = isCompact ? 8.0 : 12.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Name field
+        // Name field (only required for receiver)
         _FormField(
           controller: nameController,
           label: context.l10n.packages_nameLabel,
           hint: isSender ? context.l10n.packages_senderNameHint : context.l10n.packages_receiverNameHint,
           prefixIcon: Icons.person_outline,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return context.l10n.packages_nameRequired;
-            }
-            return null;
-          },
+          validator: isSender
+              ? null // Sender name is optional
+              : (value) {
+                  if (value == null || value.isEmpty) {
+                    return context.l10n.packages_nameRequired;
+                  }
+                  return null;
+                },
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: gap),
 
         // Phone field
         _FormField(
@@ -665,7 +779,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: gap),
 
         // City dropdown + Address button row
         Row(
@@ -906,16 +1020,19 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
-  Widget _buildPriceCalculator(AppColorsExtension colors) {
+  Widget _buildPriceCalculator(AppColorsExtension colors, bool isCompact) {
     final pricePerKg = _selectedRoute?.pricePerKg;
     final hasPricing = pricePerKg != null;
     final billingWeight = _volumetricWeight > (double.tryParse(_weightController.text) ?? 0)
         ? _volumetricWeight
         : (double.tryParse(_weightController.text) ?? 0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final padding = isCompact ? 12.0 : 20.0;
+    final gap = isCompact ? 10.0 : 20.0;
+    final smallGap = isCompact ? 4.0 : 8.0;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: isDark ? colors.surface : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -950,11 +1067,12 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                         letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: smallGap),
                     _NumericInput(
                       controller: _weightController,
                       hint: '0.0',
                       allowDecimal: true,
+                      isCompact: isCompact,
                     ),
                   ],
                 ),
@@ -974,17 +1092,18 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                         letterSpacing: 0.3,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: smallGap),
                     _NumericInput(
                       controller: _quantityController,
                       hint: '1',
+                      isCompact: isCompact,
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: gap),
 
           // Dimensions label
           Text(
@@ -996,7 +1115,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: smallGap),
 
           // Dimensions row (L x W x H)
           Row(
@@ -1005,81 +1124,90 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                 child: _DimensionInput(
                   controller: _lengthController,
                   label: context.l10n.packages_lengthLabel,
+                  isCompact: isCompact,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: isCompact ? 8 : 12),
               Expanded(
                 child: _DimensionInput(
                   controller: _widthController,
                   label: context.l10n.packages_widthLabel,
+                  isCompact: isCompact,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: isCompact ? 8 : 12),
               Expanded(
                 child: _DimensionInput(
                   controller: _heightController,
                   label: context.l10n.packages_heightLabel,
+                  isCompact: isCompact,
                 ),
               ),
             ],
           ),
 
           if (hasPricing) ...[
-            const SizedBox(height: 20),
+            SizedBox(height: gap),
             Divider(color: isDark ? colors.border : const Color(0xFFE2E8F0)),
-            const SizedBox(height: 16),
+            SizedBox(height: isCompact ? 8 : 16),
 
             // Tariff info and total
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${context.l10n.packages_tariffLabel}: ${pricePerKg.toStringAsFixed(2)} €/kg',
-                      style: TextStyle(
-                        color: isDark ? colors.textSecondary : const Color(0xFF64748B),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    if (_volumetricWeight > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          '${context.l10n.packages_volumetricWeight}: ${_volumetricWeight.toStringAsFixed(2)} kg',
-                          style: TextStyle(
-                            color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
-                            fontSize: 12,
-                          ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${context.l10n.packages_tariffLabel}: ${pricePerKg.toStringAsFixed(2)} €/kg',
+                        style: TextStyle(
+                          color: isDark ? colors.textSecondary : const Color(0xFF64748B),
+                          fontSize: isCompact ? 12 : 13,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    if (billingWeight > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          '${context.l10n.packages_billingWeight}: ${billingWeight.toStringAsFixed(2)} kg',
-                          style: TextStyle(
-                            color: isDark ? colors.textSecondary : const Color(0xFF475569),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                      if (_volumetricWeight > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            '${context.l10n.packages_volumetricWeight}: ${_volumetricWeight.toStringAsFixed(2)} kg',
+                            style: TextStyle(
+                              color: isDark ? colors.textMuted : const Color(0xFF94A3B8),
+                              fontSize: isCompact ? 11 : 12,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                      if (billingWeight > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            '${context.l10n.packages_billingWeight}: ${billingWeight.toStringAsFixed(2)} kg',
+                            style: TextStyle(
+                              color: isDark ? colors.textSecondary : const Color(0xFF475569),
+                              fontSize: isCompact ? 12 : 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 10 : 12,
+                    vertical: isCompact ? 6 : 8,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${_calculatedPrice.toStringAsFixed(2)} €',
-                    style: const TextStyle(
+                    '${_calculatedPrice.toStringAsFixed(0)}€',
+                    style: TextStyle(
                       color: AppColors.primary,
-                      fontSize: 24,
+                      fontSize: isCompact ? 18 : 22,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1255,11 +1383,13 @@ class _NumericInput extends StatefulWidget {
   final TextEditingController controller;
   final String hint;
   final bool allowDecimal;
+  final bool isCompact;
 
   const _NumericInput({
     required this.controller,
     required this.hint,
     this.allowDecimal = false,
+    this.isCompact = false,
   });
 
   @override
@@ -1288,6 +1418,8 @@ class _NumericInputState extends State<_NumericInput> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fontSize = widget.isCompact ? 22.0 : 28.0;
+    final verticalPadding = widget.isCompact ? 6.0 : 12.0;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -1314,17 +1446,17 @@ class _NumericInputState extends State<_NumericInput> {
         style: TextStyle(
           color: colors.textPrimary,
           fontWeight: FontWeight.w700,
-          fontSize: 28,
+          fontSize: fontSize,
         ),
         decoration: InputDecoration(
           hintText: widget.hint,
           hintStyle: TextStyle(
             color: isDark ? colors.textMuted : const Color(0xFFCBD5E1),
             fontWeight: FontWeight.w400,
-            fontSize: 28,
+            fontSize: fontSize,
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: verticalPadding),
         ),
         inputFormatters: [
           widget.allowDecimal
@@ -1340,10 +1472,12 @@ class _NumericInputState extends State<_NumericInput> {
 class _DimensionInput extends StatefulWidget {
   final TextEditingController controller;
   final String label;
+  final bool isCompact;
 
   const _DimensionInput({
     required this.controller,
     required this.label,
+    this.isCompact = false,
   });
 
   @override
@@ -1372,6 +1506,8 @@ class _DimensionInputState extends State<_DimensionInput> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fontSize = widget.isCompact ? 18.0 : 24.0;
+    final inputWidth = widget.isCompact ? 55.0 : 70.0;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -1380,15 +1516,15 @@ class _DimensionInputState extends State<_DimensionInput> {
           widget.label,
           style: TextStyle(
             color: isDark ? colors.textSecondary : const Color(0xFF94A3B8),
-            fontSize: 13,
+            fontSize: widget.isCompact ? 11 : 13,
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: widget.isCompact ? 2 : 4),
         AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 70,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          width: inputWidth,
+          padding: EdgeInsets.symmetric(vertical: widget.isCompact ? 4 : 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             boxShadow: _isFocused
@@ -1411,7 +1547,7 @@ class _DimensionInputState extends State<_DimensionInput> {
             style: TextStyle(
               color: colors.textPrimary,
               fontWeight: FontWeight.w700,
-              fontSize: 24,
+              fontSize: fontSize,
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
@@ -1421,7 +1557,7 @@ class _DimensionInputState extends State<_DimensionInput> {
               hintStyle: TextStyle(
                 color: isDark ? colors.textMuted : const Color(0xFFCBD5E1),
                 fontWeight: FontWeight.w400,
-                fontSize: 24,
+                fontSize: fontSize,
               ),
             ),
             inputFormatters: [

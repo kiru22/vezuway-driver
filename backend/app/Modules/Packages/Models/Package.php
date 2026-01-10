@@ -38,6 +38,7 @@ class Package extends Model
         'length_cm',
         'width_cm',
         'height_cm',
+        'quantity',
         'description',
         'declared_value',
         'status',

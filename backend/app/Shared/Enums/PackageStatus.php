@@ -13,6 +13,7 @@ enum PackageStatus: string
     case DELIVERED = 'delivered';
     case RETURNED = 'returned';
     case CANCELLED = 'cancelled';
+    case DELAYED = 'delayed';
 
     public function label(): string
     {
@@ -26,6 +27,7 @@ enum PackageStatus: string
             self::DELIVERED => 'Entregado',
             self::RETURNED => 'Devuelto',
             self::CANCELLED => 'Cancelado',
+            self::DELAYED => 'Retrasado',
         };
     }
 
