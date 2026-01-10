@@ -56,6 +56,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   RouteModel? _selectedRoute;
   double _volumetricWeight = 0.0;
   double _calculatedPrice = 0.0;
+  double? _manualPrice; // Manually set price
+  bool _isManualPrice = false; // Flag to track if price is manual
   bool _isLoading = false;
 
   @override
@@ -232,7 +234,66 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     setState(() {
       _volumetricWeight = _calculateVolumetricWeight();
       _calculatedPrice = _calculatePrice();
+      // Don't override manual price with automatic calculation
     });
+  }
+
+  // Get the final price (manual or calculated)
+  double get _finalPrice => _isManualPrice && _manualPrice != null ? _manualPrice! : _calculatedPrice;
+
+  // Show dialog to edit price manually
+  Future<void> _showPriceEditDialog() async {
+    final controller = TextEditingController(
+      text: _isManualPrice && _manualPrice != null
+        ? _manualPrice!.toStringAsFixed(0)
+        : _calculatedPrice.toStringAsFixed(0),
+    );
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Редагувати ціну'),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Ціна (€)',
+              hintText: 'Введіть ціну або залиште порожнім',
+              suffixText: '€',
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Скасувати'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, controller.text),
+              child: const Text('Зберегти'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        if (result.trim().isEmpty) {
+          // Empty input - switch back to automatic calculation
+          _isManualPrice = false;
+          _manualPrice = null;
+        } else {
+          // Manual price entered
+          final price = double.tryParse(result.trim());
+          if (price != null && price >= 0) {
+            _isManualPrice = true;
+            _manualPrice = price;
+          }
+        }
+      });
+    }
   }
 
   void _switchTab(int index) {
@@ -332,7 +393,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         widthCm: width,
         heightCm: height,
         quantity: quantity,
-        declaredValue: _calculatedPrice > 0 ? _calculatedPrice : null,
+        declaredValue: _finalPrice > 0 ? _finalPrice : null,
       );
 
     } else {
@@ -354,7 +415,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         widthCm: width,
         heightCm: height,
         quantity: quantity,
-        declaredValue: _calculatedPrice > 0 ? _calculatedPrice : null,
+        declaredValue: _finalPrice > 0 ? _finalPrice : null,
       );
     }
 
@@ -1194,21 +1255,43 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isCompact ? 10 : 12,
-                    vertical: isCompact ? 6 : 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${_calculatedPrice.toStringAsFixed(0)}€',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: isCompact ? 18 : 22,
-                      fontWeight: FontWeight.w800,
+                GestureDetector(
+                  onTap: _showPriceEditDialog,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isCompact ? 10 : 12,
+                      vertical: isCompact ? 6 : 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _isManualPrice
+                          ? AppColors.warning.withValues(alpha: 0.15)
+                          : AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: _isManualPrice
+                          ? Border.all(color: AppColors.warning.withValues(alpha: 0.3), width: 1.5)
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_isManualPrice)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Icon(
+                              Icons.edit_outlined,
+                              size: isCompact ? 14 : 16,
+                              color: AppColors.warning,
+                            ),
+                          ),
+                        Text(
+                          '${_finalPrice.toStringAsFixed(0)}€',
+                          style: TextStyle(
+                            color: _isManualPrice ? AppColors.warning : AppColors.primary,
+                            fontSize: isCompact ? 18 : 22,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

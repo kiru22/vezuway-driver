@@ -1,5 +1,5 @@
 # Development Dockerfile for Flutter Web
-FROM ghcr.io/cirruslabs/flutter:3.27.2
+FROM ghcr.io/cirruslabs/flutter:beta
 
 WORKDIR /app
 
