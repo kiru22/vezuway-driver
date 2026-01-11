@@ -54,7 +54,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
     final filteredPackages = _filterPackages(packagesState.packages);
 
     return Scaffold(
-      backgroundColor: colors.surface,
+      backgroundColor: const Color(0xFFF4F5F6),
       body: Column(
         children: [
           // Header
