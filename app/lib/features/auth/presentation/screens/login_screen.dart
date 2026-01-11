@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/widgets/auth_divider.dart';
+import '../../../../shared/widgets/auth_link.dart';
+import '../../../../shared/widgets/auth_logo.dart';
+import '../../../../shared/widgets/auth_text_field.dart';
+import '../../../../shared/widgets/glass_card.dart';
+import '../../../../shared/widgets/gradient_button.dart';
+import '../../../../shared/widgets/login_background.dart';
+import '../../../../shared/widgets/social_button.dart';
 import '../../domain/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -82,154 +88,96 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Theme(
       data: AppTheme.lightTheme,
-      child: Builder(
-        builder: (context) {
-          final colors = context.colors;
-          return Scaffold(
-            backgroundColor: colors.surface,
-            body: SafeArea(
+      child: Scaffold(
+        backgroundColor: AppColors.loginBackground,
+        body: LoginBackground(
+          child: SafeArea(
+            child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 48),
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(20),
+                child: GlassCard(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const AuthLogo(),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.auth_loginTitle,
+                          textAlign: TextAlign.center,
+                          style: AppTheme.authTitle,
                         ),
-                        child: const Icon(
-                          Icons.local_shipping,
-                          size: 40,
-                          color: Colors.white,
+                        const SizedBox(height: 32),
+                        AuthTextField(
+                          controller: _emailController,
+                          hintText: l10n.auth_emailLabel,
+                          prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.auth_emailRequired;
+                            }
+                            if (!value.contains('@')) {
+                              return l10n.auth_emailInvalid;
+                            }
+                            return null;
+                          },
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        l10n.common_appName,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colors.textPrimary,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.common_appTagline,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: colors.textSecondary,
-                            ),
-                      ),
-                      const SizedBox(height: 48),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        autocorrect: false,
-                        decoration: InputDecoration(
-                          labelText: l10n.auth_emailLabel,
-                          prefixIcon: const Icon(Icons.email_outlined),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return l10n.auth_emailRequired;
-                          }
-                          if (!value.contains('@')) {
-                            return l10n.auth_emailInvalid;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          labelText: l10n.auth_passwordLabel,
-                          prefixIcon: const Icon(Icons.lock_outlined),
+                        const SizedBox(height: 16),
+                        AuthTextField(
+                          controller: _passwordController,
+                          hintText: l10n.auth_passwordLabel,
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: _obscurePassword,
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
+                              color: AppColors.lightTextMuted,
                             ),
                             onPressed: () {
                               setState(() => _obscurePassword = !_obscurePassword);
                             },
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.auth_passwordRequired;
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return l10n.auth_passwordRequired;
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _handleLogin,
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : Text(l10n.auth_loginButton),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: colors.textSecondary.withAlpha(77))),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              l10n.auth_continueWith,
-                              style: TextStyle(color: colors.textSecondary),
-                            ),
-                          ),
-                          Expanded(child: Divider(color: colors.textSecondary.withAlpha(77))),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
-                        onPressed: _isLoading ? null : _handleGoogleSignIn,
-                        icon: SvgPicture.asset(
-                          'assets/images/google-icon.svg',
-                          height: 20,
-                          width: 20,
+                        const SizedBox(height: 24),
+                        GradientButton(
+                          onPressed: _isLoading ? null : _handleLogin,
+                          label: l10n.auth_loginButton,
+                          isLoading: _isLoading,
                         ),
-                        label: Text(l10n.auth_continueWithGoogle),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: BorderSide(color: colors.textSecondary.withAlpha(77)),
+                        const SizedBox(height: 24),
+                        AuthDivider(text: l10n.auth_continueWith),
+                        const SizedBox(height: 24),
+                        SocialButton(
+                          onPressed: _handleGoogleSignIn,
+                          label: l10n.auth_continueWithGoogle,
+                          iconPath: 'assets/images/google-icon.svg',
+                          isLoading: _isLoading,
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(l10n.auth_noAccount),
-                          TextButton(
-                            onPressed: () => context.go('/register'),
-                            child: Text(l10n.auth_signUp),
-                          ),
-                        ],
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+                        AuthLink(
+                          text: l10n.auth_noAccount,
+                          linkText: l10n.auth_signUp,
+                          onTap: () => context.go('/register'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

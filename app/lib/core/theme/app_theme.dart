@@ -31,6 +31,22 @@ class AppTheme {
   static const double spaceXxl = 24.0;
   static const double spaceXxxl = 32.0;
 
+  // Auth Screens
+  static const double authCardMaxWidth = 400.0;
+  static const double authCardPadding = 32.0;
+
+  // Auth Typography
+  static const TextStyle authTitle = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.bold,
+    color: AppColors.lightTextPrimary,
+  );
+
+  static const TextStyle authSubtitle = TextStyle(
+    fontSize: 14,
+    color: AppColors.lightTextSecondary,
+  );
+
   // Animation Durations
   static const Duration durationFast = Duration(milliseconds: 150);
   static const Duration durationNormal = Duration(milliseconds: 250);

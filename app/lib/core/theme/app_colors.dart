@@ -145,9 +145,22 @@ class AppColors {
   static const Color overlay = Color(0x80000000);
   static const Color overlayLight = Color(0x40000000);
 
-  // Glassmorphism
+  // Glassmorphism (dark)
   static const Color glassBackground = Color(0x1AFFFFFF);
   static const Color glassBorder = Color(0x1AFFFFFF);
+
+  // Glassmorphism (light - for auth screens)
+  static const Color glassBackgroundLight = Color(0x80FFFFFF); // 50% white
+  static const Color glassBorderLight = Color(0x80FFFFFF);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LOGIN SCREEN COLORS
+  // ═══════════════════════════════════════════════════════════════════════════
+  static const Color loginBackground = Color(0xFFF4F7F9);   // gray-50
+  static const Color loginBlobGreen1 = Color(0xFF4ADE80);   // green-400
+  static const Color loginBlobBlue1 = Color(0xFF3B82F6);    // blue-500
+  static const Color loginBlobGreen2 = Color(0xFF22C55E);   // green-500
+  static const Color loginBlobBlue2 = Color(0xFF0EA5E9);    // sky-500
 
   // ═══════════════════════════════════════════════════════════════════════════
   // GRADIENTS
@@ -156,6 +169,24 @@ class AppColors {
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
     colors: [Color(0xFF10B981), Color(0xFF0D9488)], // emerald-500 → teal-600
+  );
+
+  static const LinearGradient loginButtonGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [Color(0xFF4ADE80), Color(0xFF0EA5E9)], // green-400 → sky-500
+  );
+
+  static const LinearGradient loginBlobGradient1 = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF4ADE80), Color(0xFF3B82F6)], // green-400 → blue-500
+  );
+
+  static const LinearGradient loginBlobGradient2 = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF22C55E), Color(0xFF0EA5E9)], // green-500 → sky-500
   );
 
   static const LinearGradient cardGradient = LinearGradient(
