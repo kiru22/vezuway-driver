@@ -11,7 +11,6 @@ import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/utils/contact_launcher.dart';
 import '../../../../shared/widgets/communication_button_row.dart';
 import '../../../../shared/widgets/map_button.dart';
-import '../../../../shared/widgets/status_badge.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/status_localizations.dart';
@@ -590,7 +589,6 @@ class _TrackingStatusCard extends StatelessWidget {
     };
   }
 }
-
 
 class _DetailsCard extends StatelessWidget {
   final PackageModel package;
