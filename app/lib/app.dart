@@ -3,7 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/navigation/page_transitions.dart';
 import 'core/theme/app_theme.dart';
+import 'shared/providers/tab_index_provider.dart';
 import 'features/auth/domain/providers/auth_provider.dart';
 import 'generated/l10n/app_localizations.dart';
 import 'shared/providers/locale_provider.dart';
@@ -57,33 +59,51 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const LoginScreen(),
+        ),
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegisterScreen(),
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const RegisterScreen(),
+        ),
       ),
       GoRoute(
         path: '/routes/create',
-        builder: (context, state) => const CreateRouteScreen(),
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const CreateRouteScreen(),
+        ),
       ),
       GoRoute(
         path: '/packages/new',
-        builder: (context, state) => const CreatePackageScreen(),
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const CreatePackageScreen(),
+        ),
       ),
       // Package detail and edit routes outside ShellRoute (no navbar)
       GoRoute(
         path: '/packages/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
-          return PackageDetailScreen(packageId: id);
+          return fadeSlideTransitionPage(
+            state: state,
+            child: PackageDetailScreen(packageId: id),
+          );
         },
       ),
       GoRoute(
         path: '/packages/:id/edit',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
-          return CreatePackageScreen(packageId: id);
+          return fadeSlideTransitionPage(
+            state: state,
+            child: CreatePackageScreen(packageId: id),
+          );
         },
       ),
       ShellRoute(
@@ -91,25 +111,68 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/home',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: HomeScreen(),
-            ),
+            pageBuilder: (context, state) {
+              const currentIndex = 0;
+              final container = ProviderScope.containerOf(context);
+              final prevIndex = container.read(currentTabIndexProvider);
+              final slideFromRight = shouldSlideFromRight(prevIndex, currentIndex);
+
+              // Demorar la actualización hasta después del build
+              Future.microtask(() {
+                container.read(currentTabIndexProvider.notifier).state = currentIndex;
+              });
+
+              return horizontalSlideTransitionPage(
+                state: state,
+                slideFromRight: slideFromRight,
+                child: const HomeScreen(),
+              );
+            },
           ),
           GoRoute(
             path: '/packages',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: PackagesScreen(),
-            ),
+            pageBuilder: (context, state) {
+              const currentIndex = 1;
+              final container = ProviderScope.containerOf(context);
+              final prevIndex = container.read(currentTabIndexProvider);
+              final slideFromRight = shouldSlideFromRight(prevIndex, currentIndex);
+
+              Future.microtask(() {
+                container.read(currentTabIndexProvider.notifier).state = currentIndex;
+              });
+
+              return horizontalSlideTransitionPage(
+                state: state,
+                slideFromRight: slideFromRight,
+                child: const PackagesScreen(),
+              );
+            },
           ),
           GoRoute(
             path: '/routes',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: RoutesScreen(),
-            ),
+            pageBuilder: (context, state) {
+              const currentIndex = 2;
+              final container = ProviderScope.containerOf(context);
+              final prevIndex = container.read(currentTabIndexProvider);
+              final slideFromRight = shouldSlideFromRight(prevIndex, currentIndex);
+
+              Future.microtask(() {
+                container.read(currentTabIndexProvider.notifier).state = currentIndex;
+              });
+
+              return horizontalSlideTransitionPage(
+                state: state,
+                slideFromRight: slideFromRight,
+                child: const RoutesScreen(),
+              );
+            },
           ),
           GoRoute(
             path: '/imports',
-            builder: (context, state) => const PackagesScreen(),
+            pageBuilder: (context, state) => fadeSlideTransitionPage(
+              state: state,
+              child: const PackagesScreen(),
+            ),
           ),
         ],
       ),
