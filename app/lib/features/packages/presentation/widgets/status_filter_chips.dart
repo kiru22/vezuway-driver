@@ -18,11 +18,11 @@ class StatusFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 36,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8), // Vertical padding for shadows
+      clipBehavior: Clip.none, // Allow shadows to overflow without clipping
+      child: Row(
         children: [
           _FilterChip(
             label: context.l10n.packages_filterAll,
@@ -58,22 +58,35 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : colors.background,
-          borderRadius: BorderRadius.circular(20),
-          border: isSelected ? null : Border.all(color: colors.border),
+          color: isSelected ? null : (isDark ? colors.surface : Colors.white),
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          borderRadius: BorderRadius.circular(30), // More rounded pill shape
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null, // Clean look for unselected, or maybe subtle shadow if needed
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : colors.textSecondary,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? colors.textSecondary : const Color(0xFF334155)), // Slate 700
+              fontWeight: FontWeight.w700, // Bold for all
               fontSize: 13,
               height: 1.0,
             ),

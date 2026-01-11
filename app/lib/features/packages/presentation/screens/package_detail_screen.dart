@@ -126,22 +126,20 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Header con glassmorphism
+              // 1. Tracking Status Card (Blue)
               _AnimatedCard(
                 fadeAnimation: _fadeAnimations[0],
                 slideAnimation: _slideAnimations[0],
-                child: _HeaderCard(package: package),
+                child: _TrackingStatusCard(package: package),
               ),
               const SizedBox(height: 16),
-              // 2. Ruta con timeline
-              if (package.route != null) ...[
-                _AnimatedCard(
-                  fadeAnimation: _fadeAnimations[1],
-                  slideAnimation: _slideAnimations[1],
-                  child: _RouteCard(route: package.route!),
-                ),
-                const SizedBox(height: 16),
-              ],
+              // 2. Package Specs (Weight, Dimensions, etc.)
+              _AnimatedCard(
+                fadeAnimation: _fadeAnimations[1],
+                slideAnimation: _slideAnimations[1],
+                child: _PackageSpecsCard(package: package),
+              ),
+              const SizedBox(height: 16),
               // 3. Destinatario
               _AnimatedCard(
                 fadeAnimation: _fadeAnimations[2],
@@ -211,174 +209,10 @@ class _AnimatedCard extends StatelessWidget {
   }
 }
 
-/// Ruta con diseño de timeline vertical
-class _RouteCard extends StatelessWidget {
-  final RouteInfo route;
-
-  const _RouteCard({required this.route});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowSoft,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.route, size: 20, color: AppColors.primary),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                context.l10n.packages_route,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Timeline vertical
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Timeline line and dots
-              SizedBox(
-                width: 24,
-                child: Column(
-                  children: [
-                    // Origen dot (hueco)
-                    Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primary,
-                          width: 3,
-                        ),
-                      ),
-                    ),
-                    // Línea conectora
-                    Container(
-                      width: 2,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            AppColors.primary,
-                            AppColors.primary.withValues(alpha: 0.3),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Destino dot (lleno)
-                    Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.primary,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Información de ruta
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Origen con fecha a la derecha
-                    Row(
-                      children: [
-                        Text(
-                          route.origin,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: colors.textPrimary,
-                          ),
-                        ),
-                        if (route.departureDate != null) ...[
-                          const Spacer(),
-                          Icon(
-                            Icons.calendar_today_outlined,
-                            size: 12,
-                            color: colors.textMuted,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _formatDate(route.departureDate!),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colors.textMuted,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 22),
-                    // Destino
-                    Text(
-                      route.destination,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: colors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('dd/MM/yyyy').format(date);
-    } catch (_) {
-      return dateStr;
-    }
-  }
-}
-
-/// Header card con glassmorphism y jerarquía mejorada
-class _HeaderCard extends StatelessWidget {
+class _PackageSpecsCard extends StatelessWidget {
   final PackageModel package;
 
-  const _HeaderCard({required this.package});
+  const _PackageSpecsCard({required this.package});
 
   @override
   Widget build(BuildContext context) {
@@ -390,48 +224,9 @@ class _HeaderCard extends StatelessWidget {
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         boxShadow: AppTheme.shadowSoft,
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
-        ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Tracking code y status
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.packages_trackingCode,
-                      style: TextStyle(
-                        color: colors.textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      package.trackingCode,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _StatusBadge(status: package.status),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Métricas en grid 2x2 con iconos
           Row(
             children: [
               Expanded(
@@ -441,7 +236,6 @@ class _HeaderCard extends StatelessWidget {
                   value: package.weight != null
                       ? '${package.weight} ${context.l10n.common_kg}'
                       : '-',
-                  isPrimary: true,
                 ),
               ),
               const SizedBox(width: 12),
@@ -452,12 +246,13 @@ class _HeaderCard extends StatelessWidget {
                   value: package.declaredValue != null
                       ? '${package.declaredValue?.toStringAsFixed(0)} ${context.l10n.common_eur}'
                       : '-',
-                  isPrimary: true,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
+          Container(height: 1, color: colors.divider),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
@@ -465,7 +260,6 @@ class _HeaderCard extends StatelessWidget {
                   icon: Icons.straighten_outlined,
                   label: context.l10n.packages_dimensions,
                   value: _buildDimensionsString(package),
-                  isPrimary: false,
                 ),
               ),
               const SizedBox(width: 12),
@@ -476,7 +270,6 @@ class _HeaderCard extends StatelessWidget {
                   value: package.quantity != null
                       ? '${package.quantity} ${context.l10n.common_pcs}'
                       : '-',
-                  isPrimary: false,
                 ),
               ),
             ],
@@ -497,18 +290,15 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
-/// Item de métrica con icono y jerarquía visual
 class _MetricItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final bool isPrimary;
 
   const _MetricItem({
     required this.icon,
     required this.label,
     required this.value,
-    required this.isPrimary,
   });
 
   @override
@@ -518,15 +308,19 @@ class _MetricItem extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 1),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Icon(
             icon,
-            size: 14,
-            color: colors.textMuted,
+            size: 20,
+            color: AppColors.primary,
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -535,16 +329,16 @@ class _MetricItem extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: colors.textMuted,
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: isPrimary ? 16 : 14,
-                  fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                   color: colors.textPrimary,
                 ),
               ),
@@ -553,6 +347,259 @@ class _MetricItem extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _TrackingStatusCard extends StatelessWidget {
+  final PackageModel package;
+
+  const _TrackingStatusCard({required this.package});
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _getProgress(package.status);
+    // Use package route info or fallback to package cities
+    final originCity = package.route?.origin ?? package.senderCity ?? 'Origin';
+    final destinationCity = package.route?.destination ?? package.receiverCity ?? 'Destination';
+    final departureDate = package.route?.departureDate != null 
+        ? _formatDate(package.route!.departureDate!) 
+        : '';
+        
+    // For destination date, we might not have it in the route object based on current model viewing.
+    // Assuming RouteInfo has arrivalDate or similar, but viewing file showed `destination` but only `departureDate` in the example usage in `_RouteCard` (lines 330-344).
+    // The previous code only showed departure date. I'll leave destination date empty or use something if available. 
+    // Checking previous _RouteCard, it only showed one date next to origin.
+    // I will show departure date under Origin.
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header: ID + Status
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ID: ${package.trackingCode}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  package.status.localizedName(context),
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 40),
+          
+          // Route Visualizer
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              
+              return SizedBox(
+                height: 40,
+                child: Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                  // Dotted Line (Background)
+                  Row(
+                    children: List.generate(
+                      15,
+                      (index) => Expanded(
+                        child: Container(
+                          height: 2,
+                          color: index % 2 == 0 
+                              ? Colors.white.withValues(alpha: 0.3) 
+                              : Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  // Progress Line (Solid)
+                  Container(
+                    width: width * progress,
+                    height: 2,
+                    color: Colors.white,
+                  ),
+                  
+                  // Icons (Start, End, Current)
+                  // Start Dot
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      border: Border.all(color: Colors.white, width: 2),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  
+                  // End Dot
+                  Positioned(
+                    right: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        border: Border.all(color: Colors.white, width: 2),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  
+                  // Current Position Icon (Box)
+                  Positioned(
+                    left: (width * progress).clamp(0, width - 36),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.inventory_2_outlined,
+                        size: 20,
+                        color: package.status.color, // Use status color for icon
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              );
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Cities
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.packages_origin,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      originCity,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (departureDate.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        departureDate,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                     Text(
+                      context.l10n.packages_destination,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      destinationCity,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    // If we had arrival date
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('dd MMM yyyy').format(date);
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  double _getProgress(PackageStatus status) {
+    return switch (status) {
+      PackageStatus.registered => 0.1,
+      PackageStatus.inTransit => 0.5,
+      PackageStatus.delivered => 1.0,
+      PackageStatus.delayed => 0.5,
+    };
   }
 }
 
@@ -766,108 +813,14 @@ class _ContactCard extends StatelessWidget {
               ],
             ),
           ],
-          // Botones de comunicación (igual que package_card_v2)
-          if (hasPhone) ...[
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.phoneBg,
-                    iconColor: AppColors.phoneText,
-                    borderColor: AppColors.phoneBorder,
-                    type: CommunicationButtonType.phone,
-                    onTap: () => ContactLauncher.makePhoneCall(phone!),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.viberBg,
-                    iconColor: AppColors.viberText,
-                    borderColor: AppColors.viberBorder,
-                    type: CommunicationButtonType.viber,
-                    onTap: () => ContactLauncher.openViber(phone!),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.whatsappBg,
-                    iconColor: AppColors.whatsappText,
-                    borderColor: AppColors.whatsappBorder,
-                    type: CommunicationButtonType.whatsApp,
-                    onTap: () => ContactLauncher.openWhatsApp(phone!),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: CommunicationButton(
-                    bgColor: AppColors.telegramBg,
-                    iconColor: AppColors.telegramText,
-                    borderColor: AppColors.telegramBorder,
-                    type: CommunicationButtonType.telegram,
-                    onTap: () => ContactLauncher.openTelegram(phone!),
-                  ),
-                ),
-              ],
-            ),
-          ],
-          // Botón de mapa
-          if (hasAddress) ...[
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: _MapButton(
-                onTap: () => ContactLauncher.openMaps(address!),
-              ),
-            ),
-          ],
+
         ],
       ),
     );
   }
 }
 
-/// Botón de mapa mejorado
-class _MapButton extends StatelessWidget {
-  final VoidCallback onTap;
 
-  const _MapButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.map_outlined, size: 20, color: AppColors.primary),
-            const SizedBox(width: 8),
-            Text(
-              context.l10n.action_viewOnMap,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 void _showActionsBottomSheet(
     BuildContext context, WidgetRef ref, PackageModel package) {

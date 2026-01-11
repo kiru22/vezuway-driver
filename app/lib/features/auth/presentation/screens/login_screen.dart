@@ -100,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(

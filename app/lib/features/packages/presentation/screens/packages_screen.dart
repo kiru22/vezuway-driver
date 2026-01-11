@@ -22,6 +22,9 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
 
+  final _scrollController = ScrollController(initialScrollOffset: 76.0);
+  final double _hiddenHeaderHeight = 76.0;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +36,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -69,39 +73,45 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
               onRefresh: () => ref.read(packagesProvider.notifier).loadPackages(),
               color: AppColors.primary,
               child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  // Search bar
+                  // Search bar (Hidden by default via initialScrollOffset)
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (value) => setState(() => _searchQuery = value),
-                        decoration: InputDecoration(
-                          hintText: context.l10n.packages_searchPlaceholder,
-                          prefixIcon: Icon(Icons.search, color: colors.textMuted),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(Icons.clear, color: colors.textMuted),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    setState(() => _searchQuery = '');
-                                  },
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: colors.background,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                    child: SizedBox(
+                      height: _hiddenHeaderHeight,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (value) => setState(() => _searchQuery = value),
+                          decoration: InputDecoration(
+                            hintText: context.l10n.packages_searchPlaceholder,
+                            prefixIcon: Icon(Icons.search, color: colors.textMuted),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(Icons.clear, color: colors.textMuted),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  )
+                                : null,
+                            filled: true,
+                            fillColor: colors.background,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
                           ),
                         ),
                       ),
@@ -117,8 +127,16 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                  
                   // Package list
                   _buildSliverBody(packagesState, filteredPackages),
+                  
+                  // Ensure content is always taller than viewport to allow hiding the search bar
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: SizedBox.shrink(),
+                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: _hiddenHeaderHeight)),
                 ],
               ),
             ),
@@ -155,7 +173,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
