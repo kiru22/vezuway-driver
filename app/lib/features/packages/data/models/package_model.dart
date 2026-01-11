@@ -7,7 +7,7 @@ enum PackageStatus {
   String get apiValue {
     switch (this) {
       case PackageStatus.registered:
-        return 'registered';
+        return 'pending';  // Changed from 'registered' to match DB
       case PackageStatus.inTransit:
         return 'in_transit';
       case PackageStatus.delivered:

@@ -237,8 +237,8 @@ class _PremiumBottomNav extends StatelessWidget {
                       ),
                       Expanded(
                         child: _NavItem(
-                          icon: Icons.inventory_2_outlined,
-                          activeIcon: Icons.inventory_2_rounded,
+                          icon: Icons.view_in_ar_outlined,
+                          activeIcon: Icons.view_in_ar_rounded,
                           label: l10n.nav_packages,
                           isSelected: currentIndex == 1,
                           onTap: () => onTap(1),
@@ -421,7 +421,7 @@ class _AddPackageSheet extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _QuickActionCard(
-                  icon: Icons.inventory_2_rounded,
+                  icon: Icons.view_in_ar_rounded,
                   title: l10n.quickAction_newPackage,
                   subtitle: l10n.quickAction_newPackageSubtitle,
                   gradient: [AppColors.primary, AppColors.primaryDark],

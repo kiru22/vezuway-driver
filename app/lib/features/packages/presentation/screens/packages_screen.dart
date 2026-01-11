@@ -50,68 +50,77 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final packagesState = ref.watch(packagesProvider);
     final filteredPackages = _filterPackages(packagesState.packages);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F5F6),
+      backgroundColor: isDark ? colors.background : const Color(0xFFF4F5F6),
       body: Column(
         children: [
-          // Header
+          // Header (fixed)
           AppHeader(
             title: context.l10n.packages_title,
             showMenu: false,
           ),
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) => setState(() => _searchQuery = value),
-              decoration: InputDecoration(
-                hintText: context.l10n.packages_searchPlaceholder,
-                prefixIcon: Icon(Icons.search, color: colors.textMuted),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.clear, color: colors.textMuted),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: colors.background,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Filter chips
-          StatusFilterChips(
-            selectedStatus: packagesState.filterStatus,
-            onStatusSelected: (status) {
-              ref.read(packagesProvider.notifier).filterByStatus(status);
-            },
-          ),
-          const SizedBox(height: 8),
-          // Package list
+          // Scrollable content
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => ref.read(packagesProvider.notifier).loadPackages(),
               color: AppColors.primary,
-              child: _buildBody(packagesState, filteredPackages),
+              child: CustomScrollView(
+                slivers: [
+                  // Search bar
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (value) => setState(() => _searchQuery = value),
+                        decoration: InputDecoration(
+                          hintText: context.l10n.packages_searchPlaceholder,
+                          prefixIcon: Icon(Icons.search, color: colors.textMuted),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear, color: colors.textMuted),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: colors.background,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Filter chips
+                  SliverToBoxAdapter(
+                    child: StatusFilterChips(
+                      selectedStatus: packagesState.filterStatus,
+                      onStatusSelected: (status) {
+                        ref.read(packagesProvider.notifier).filterByStatus(status);
+                      },
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                  // Package list
+                  _buildSliverBody(packagesState, filteredPackages),
+                ],
+              ),
             ),
           ),
         ],
@@ -119,39 +128,49 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen> {
     );
   }
 
-  Widget _buildBody(PackagesState state, List<PackageModel> packages) {
+  Widget _buildSliverBody(PackagesState state, List<PackageModel> packages) {
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return const SliverFillRemaining(
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
       );
     }
 
     if (state.error != null) {
-      return _ErrorState(
-        message: state.error!,
-        onRetry: () => ref.read(packagesProvider.notifier).loadPackages(),
+      return SliverFillRemaining(
+        child: _ErrorState(
+          message: state.error!,
+          onRetry: () => ref.read(packagesProvider.notifier).loadPackages(),
+        ),
       );
     }
 
     if (packages.isEmpty) {
-      return _EmptyState(
-        hasFilter: state.filterStatus != null || _searchQuery.isNotEmpty,
+      return SliverFillRemaining(
+        child: _EmptyState(
+          hasFilter: state.filterStatus != null || _searchQuery.isNotEmpty,
+        ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
-      itemCount: packages.length,
-      itemBuilder: (context, index) {
-        final package = packages[index];
-        return PackageCardV2(
-          package: package,
-          onTap: () => context.go('/packages/${package.id}'),
-          onStatusChange: (status) {
-            ref.read(packagesProvider.notifier).updateStatus(package.id, status);
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final package = packages[index];
+            return PackageCardV2(
+              package: package,
+              onTap: () => context.go('/packages/${package.id}'),
+              onStatusChange: (status) {
+                ref.read(packagesProvider.notifier).updateStatus(package.id, status);
+              },
+            );
           },
-        );
-      },
+          childCount: packages.length,
+        ),
+      ),
     );
   }
 }

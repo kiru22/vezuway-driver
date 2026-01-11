@@ -14,10 +14,10 @@ extension PackageStatusUI on PackageStatus {
   /// Color asociado al estado del paquete.
   Color get color {
     return switch (this) {
-      PackageStatus.registered => AppColors.primary,
-      PackageStatus.inTransit => AppColors.info,
-      PackageStatus.delivered => AppColors.success,
-      PackageStatus.delayed => AppColors.warning,
+      PackageStatus.registered => AppColors.chipGrayText, // Сірий
+      PackageStatus.inTransit => AppColors.warning, // Жовтий
+      PackageStatus.delivered => AppColors.success, // Зелений
+      PackageStatus.delayed => AppColors.error, // Червоний
     };
   }
 
