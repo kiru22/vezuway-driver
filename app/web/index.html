@@ -39,19 +39,15 @@
 <body>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then(function(reg) {
-        reg.update();
-        reg.onupdatefound = function() {
-          var newWorker = reg.installing;
-          newWorker.onstatechange = function() {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
-            }
-          };
-        };
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(reg) { reg.update(); });
       });
+      var refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', function() {
-        window.location.reload();
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
     }
   </script>
