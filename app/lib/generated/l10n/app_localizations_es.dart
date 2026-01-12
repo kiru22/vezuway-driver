@@ -661,6 +661,67 @@ class AppLocalizationsEs extends AppLocalizations {
   String get userMenu_theme => 'Tema';
 
   @override
+  String get profile_title => 'Mi perfil';
+
+  @override
+  String get profile_name => 'Nombre';
+
+  @override
+  String get profile_nameHint => 'Tu nombre completo';
+
+  @override
+  String get profile_nameRequired => 'El nombre es requerido';
+
+  @override
+  String get profile_saveName => 'Guardar nombre';
+
+  @override
+  String get profile_nameUpdated => 'Nombre actualizado correctamente';
+
+  @override
+  String get profile_nameError => 'Error al actualizar el nombre';
+
+  @override
+  String get profile_changePassword => 'Cambiar contrasena';
+
+  @override
+  String get profile_currentPassword => 'Contrasena actual';
+
+  @override
+  String get profile_newPassword => 'Nueva contrasena';
+
+  @override
+  String get profile_confirmPassword => 'Confirmar contrasena';
+
+  @override
+  String get profile_passwordRequired => 'La contrasena es requerida';
+
+  @override
+  String get profile_passwordMinLength =>
+      'La contrasena debe tener al menos 8 caracteres';
+
+  @override
+  String get profile_passwordMismatch => 'Las contrasenas no coinciden';
+
+  @override
+  String get profile_updatePassword => 'Actualizar contrasena';
+
+  @override
+  String get profile_passwordUpdated => 'Contrasena actualizada correctamente';
+
+  @override
+  String get profile_passwordError => 'Error al actualizar la contrasena';
+
+  @override
+  String get profile_changePhoto => 'Cambiar foto';
+
+  @override
+  String get profile_avatarUpdated => 'Foto de perfil actualizada';
+
+  @override
+  String get profile_avatarError => 'Error al subir la imagen';
+
+  @override
   String get status_package_registered => 'Registrado';
 
   @override

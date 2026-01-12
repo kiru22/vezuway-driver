@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
@@ -174,6 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       builder: (sheetContext) => _UserMenuSheet(
         userName: user?.name ?? context.l10n.common_user,
         userEmail: user?.email ?? '',
+        avatarUrl: user?.avatarUrl,
         onLogout: () {
           Navigator.pop(sheetContext);
           ref.read(authProvider.notifier).logout();
@@ -282,11 +284,13 @@ class _ShimmerEffectState extends State<_ShimmerEffect>
 class _UserMenuSheet extends ConsumerWidget {
   final String userName;
   final String userEmail;
+  final String? avatarUrl;
   final VoidCallback onLogout;
 
   const _UserMenuSheet({
     required this.userName,
     required this.userEmail,
+    this.avatarUrl,
     required this.onLogout,
   });
 
@@ -324,18 +328,19 @@ class _UserMenuSheet extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
+                  gradient: avatarUrl == null ? AppColors.primaryGradient : null,
                   shape: BoxShape.circle,
                 ),
-                child: Center(
-                  child: Text(
-                    userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
+                child: ClipOval(
+                  child: avatarUrl != null
+                      ? Image.network(
+                          avatarUrl!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildInitial(),
+                        )
+                      : _buildInitial(),
                 ),
               ),
               const SizedBox(width: 12),
@@ -453,7 +458,10 @@ class _UserMenuSheet extends ConsumerWidget {
           _MenuOption(
             icon: Icons.person_outline_rounded,
             label: context.l10n.userMenu_profile,
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              context.push('/profile');
+            },
           ),
           const SizedBox(height: 6),
           _MenuOption(
@@ -502,6 +510,27 @@ class _UserMenuSheet extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInitial() {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: const BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }

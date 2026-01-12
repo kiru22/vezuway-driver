@@ -177,6 +177,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     }
   }
+
+  void updateUser(UserModel user) {
+    state = state.copyWith(user: user);
+  }
 }
 
 // Auth Provider

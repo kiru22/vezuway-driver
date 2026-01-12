@@ -90,4 +90,13 @@ class ApiService {
   Future<Response> delete(String path) async {
     return await _dio.delete(path);
   }
+
+  // POST multipart request (for file uploads)
+  Future<Response> postMultipart(String path, {required FormData data}) async {
+    return await _dio.post(
+      path,
+      data: data,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+  }
 }

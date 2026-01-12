@@ -4,6 +4,7 @@ namespace App\Modules\Auth\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\Auth\Requests\UpdateAvatarRequest;
 use App\Modules\Auth\Resources\UserResource;
 use Google\Client as GoogleClient;
 use Illuminate\Http\JsonResponse;
@@ -119,6 +120,19 @@ class AuthController extends Controller
         $user->update(['password' => Hash::make($validated['password'])]);
 
         return response()->json(['message' => 'Contraseña actualizada correctamente']);
+    }
+
+    public function uploadAvatar(UpdateAvatarRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $user->clearMediaCollection('avatar');
+        $user->addMediaFromRequest('avatar')->toMediaCollection('avatar');
+
+        $avatarUrl = $user->getFirstMediaUrl('avatar', 'thumb');
+        $user->update(['avatar_url' => $avatarUrl]);
+
+        return response()->json(new UserResource($user->fresh()));
     }
 
     public function googleLogin(Request $request): JsonResponse

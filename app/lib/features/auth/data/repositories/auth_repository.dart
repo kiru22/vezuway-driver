@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+
 import '../../../../core/services/api_service.dart';
 import '../models/user_model.dart';
 
@@ -104,5 +108,29 @@ class AuthRepository {
     await _api.setToken(token);
 
     return (user: user, token: token);
+  }
+
+  Future<void> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    await _api.put('/profile/password', data: {
+      'current_password': currentPassword,
+      'password': newPassword,
+      'password_confirmation': newPasswordConfirmation,
+    });
+  }
+
+  Future<UserModel> uploadAvatar(File imageFile) async {
+    final fileName = imageFile.path.split('/').last;
+    final formData = FormData.fromMap({
+      'avatar': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+      ),
+    });
+    final response = await _api.postMultipart('/profile/avatar', data: formData);
+    return UserModel.fromJson(response.data);
   }
 }

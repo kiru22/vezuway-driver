@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/', [AuthController::class, 'updateProfile']);
             Route::put('password', [AuthController::class, 'updatePassword']);
             Route::put('fcm-token', [AuthController::class, 'updateFcmToken']);
+            Route::post('avatar', [AuthController::class, 'uploadAvatar']);
         });
 
         // Packages

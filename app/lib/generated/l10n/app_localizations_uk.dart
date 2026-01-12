@@ -664,6 +664,67 @@ class AppLocalizationsUk extends AppLocalizations {
   String get userMenu_theme => 'Тема';
 
   @override
+  String get profile_title => 'Мiй профiль';
+
+  @override
+  String get profile_name => 'Iм\'я';
+
+  @override
+  String get profile_nameHint => 'Ваше повне iм\'я';
+
+  @override
+  String get profile_nameRequired => 'Iм\'я обов\'язкове';
+
+  @override
+  String get profile_saveName => 'Зберегти iм\'я';
+
+  @override
+  String get profile_nameUpdated => 'Iм\'я успiшно оновлено';
+
+  @override
+  String get profile_nameError => 'Помилка оновлення iменi';
+
+  @override
+  String get profile_changePassword => 'Змiнити пароль';
+
+  @override
+  String get profile_currentPassword => 'Поточний пароль';
+
+  @override
+  String get profile_newPassword => 'Новий пароль';
+
+  @override
+  String get profile_confirmPassword => 'Пiдтвердити пароль';
+
+  @override
+  String get profile_passwordRequired => 'Пароль обов\'язковий';
+
+  @override
+  String get profile_passwordMinLength =>
+      'Пароль має мiстити щонайменше 8 символiв';
+
+  @override
+  String get profile_passwordMismatch => 'Паролi не збiгаються';
+
+  @override
+  String get profile_updatePassword => 'Оновити пароль';
+
+  @override
+  String get profile_passwordUpdated => 'Пароль успiшно оновлено';
+
+  @override
+  String get profile_passwordError => 'Помилка оновлення паролю';
+
+  @override
+  String get profile_changePhoto => 'Змiнити фото';
+
+  @override
+  String get profile_avatarUpdated => 'Фото профiлю оновлено';
+
+  @override
+  String get profile_avatarError => 'Помилка завантаження зображення';
+
+  @override
   String get status_package_registered => 'Оформлено';
 
   @override

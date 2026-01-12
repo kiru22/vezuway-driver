@@ -9,6 +9,8 @@ class UserResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $avatarUrl = $this->getFirstMediaUrl('avatar', 'thumb') ?: $this->avatar_url;
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -16,7 +18,8 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'locale' => $this->locale,
             'theme_preference' => $this->theme_preference ?? 'dark',
-            'avatar_url' => $this->avatar_url,
+            'avatar_url' => $avatarUrl,
+            'google_id' => $this->google_id,
             'email_verified_at' => $this->email_verified_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

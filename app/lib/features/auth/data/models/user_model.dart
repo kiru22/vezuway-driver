@@ -7,6 +7,7 @@ class UserModel {
   final String themePreference;
   final String? avatarUrl;
   final String? fcmToken;
+  final String? googleId;
   final DateTime? emailVerifiedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -20,6 +21,7 @@ class UserModel {
     required this.themePreference,
     this.avatarUrl,
     this.fcmToken,
+    this.googleId,
     this.emailVerifiedAt,
     required this.createdAt,
     required this.updatedAt,
@@ -35,6 +37,7 @@ class UserModel {
       themePreference: json['theme_preference'] ?? 'dark',
       avatarUrl: json['avatar_url'],
       fcmToken: json['fcm_token'],
+      googleId: json['google_id'],
       emailVerifiedAt: json['email_verified_at'] != null
           ? DateTime.parse(json['email_verified_at'])
           : null,
@@ -65,6 +68,7 @@ class UserModel {
     String? themePreference,
     String? avatarUrl,
     String? fcmToken,
+    String? googleId,
     DateTime? emailVerifiedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -78,6 +82,7 @@ class UserModel {
       themePreference: themePreference ?? this.themePreference,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       fcmToken: fcmToken ?? this.fcmToken,
+      googleId: googleId ?? this.googleId,
       emailVerifiedAt: emailVerifiedAt ?? this.emailVerifiedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

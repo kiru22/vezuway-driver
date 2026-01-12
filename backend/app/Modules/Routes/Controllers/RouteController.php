@@ -4,8 +4,8 @@ namespace App\Modules\Routes\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Packages\Models\Package;
-use App\Modules\Routes\Models\Route;
 use App\Modules\Packages\Resources\PackageResource;
+use App\Modules\Routes\Models\Route;
 use App\Modules\Routes\Resources\RouteResource;
 use App\Shared\Enums\PackageStatus;
 use App\Shared\Enums\RouteStatus;

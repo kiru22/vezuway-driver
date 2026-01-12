@@ -18,6 +18,7 @@ import 'features/packages/presentation/screens/package_detail_screen.dart';
 import 'features/packages/presentation/screens/create_package_screen.dart';
 import 'features/routes/presentation/screens/routes_screen.dart';
 import 'features/routes/presentation/screens/create_route_screen.dart';
+import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/shell/presentation/main_shell.dart';
 import 'shared/widgets/splash_screen.dart';
 
@@ -105,6 +106,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             child: CreatePackageScreen(packageId: id),
           );
         },
+      ),
+      GoRoute(
+        path: '/profile',
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const ProfileScreen(),
+        ),
       ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),

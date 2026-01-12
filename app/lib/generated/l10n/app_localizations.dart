@@ -1316,6 +1316,126 @@ abstract class AppLocalizations {
   /// **'Tema'**
   String get userMenu_theme;
 
+  /// No description provided for @profile_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi perfil'**
+  String get profile_title;
+
+  /// No description provided for @profile_name.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get profile_name;
+
+  /// No description provided for @profile_nameHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu nombre completo'**
+  String get profile_nameHint;
+
+  /// No description provided for @profile_nameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre es requerido'**
+  String get profile_nameRequired;
+
+  /// No description provided for @profile_saveName.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar nombre'**
+  String get profile_saveName;
+
+  /// No description provided for @profile_nameUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre actualizado correctamente'**
+  String get profile_nameUpdated;
+
+  /// No description provided for @profile_nameError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al actualizar el nombre'**
+  String get profile_nameError;
+
+  /// No description provided for @profile_changePassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar contrasena'**
+  String get profile_changePassword;
+
+  /// No description provided for @profile_currentPassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Contrasena actual'**
+  String get profile_currentPassword;
+
+  /// No description provided for @profile_newPassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva contrasena'**
+  String get profile_newPassword;
+
+  /// No description provided for @profile_confirmPassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar contrasena'**
+  String get profile_confirmPassword;
+
+  /// No description provided for @profile_passwordRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'La contrasena es requerida'**
+  String get profile_passwordRequired;
+
+  /// No description provided for @profile_passwordMinLength.
+  ///
+  /// In es, this message translates to:
+  /// **'La contrasena debe tener al menos 8 caracteres'**
+  String get profile_passwordMinLength;
+
+  /// No description provided for @profile_passwordMismatch.
+  ///
+  /// In es, this message translates to:
+  /// **'Las contrasenas no coinciden'**
+  String get profile_passwordMismatch;
+
+  /// No description provided for @profile_updatePassword.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar contrasena'**
+  String get profile_updatePassword;
+
+  /// No description provided for @profile_passwordUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Contrasena actualizada correctamente'**
+  String get profile_passwordUpdated;
+
+  /// No description provided for @profile_passwordError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al actualizar la contrasena'**
+  String get profile_passwordError;
+
+  /// No description provided for @profile_changePhoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar foto'**
+  String get profile_changePhoto;
+
+  /// No description provided for @profile_avatarUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Foto de perfil actualizada'**
+  String get profile_avatarUpdated;
+
+  /// No description provided for @profile_avatarError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al subir la imagen'**
+  String get profile_avatarError;
+
   /// No description provided for @status_package_registered.
   ///
   /// In es, this message translates to:
