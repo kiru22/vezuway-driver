@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/providers/locale_provider.dart';
 import '../../../../shared/widgets/auth_divider.dart';
 import '../../../../shared/widgets/auth_link.dart';
 import '../../../../shared/widgets/auth_logo.dart';
@@ -91,12 +92,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Scaffold(
         backgroundColor: AppColors.loginBackground,
         body: LoginBackground(
-          child: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: GlassCard(
-                  child: Form(
+          child: Stack(
+            children: [
+              Positioned(
+                top: 16,
+                right: 24,
+                child: const _LanguageSwitcher(),
+              ),
+              SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: GlassCard(
+                      child: Form(
                     key: _formKey,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -175,7 +183,80 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
               ),
-            ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageSwitcher extends ConsumerWidget {
+  const _LanguageSwitcher();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedLocale = ref.watch(localeProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _LanguageButton(
+            label: 'ES',
+            isSelected: selectedLocale == AppLocale.es,
+            onTap: () => ref.read(localeProvider.notifier).setLocale(AppLocale.es),
+          ),
+          const SizedBox(width: 2),
+          _LanguageButton(
+            label: 'UA',
+            isSelected: selectedLocale == AppLocale.uk,
+            onTap: () => ref.read(localeProvider.notifier).setLocale(AppLocale.uk),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LanguageButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LanguageButton({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          gradient: isSelected ? AppColors.primaryGradient : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? Colors.white : Colors.white60,
+            letterSpacing: 0.5,
           ),
         ),
       ),
