@@ -38,18 +38,28 @@
 </head>
 <body>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        regs.forEach(function(reg) { reg.update(); });
-      });
-      var refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', function() {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      });
-    }
+    (function() {
+      fetch('/version.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var newVersion = data.version + '.' + data.build_number;
+          var oldVersion = localStorage.getItem('app_version');
+          if (oldVersion && oldVersion !== newVersion) {
+            localStorage.setItem('app_version', newVersion);
+            var banner = document.createElement('div');
+            banner.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;background:#10B981;color:white;padding:16px;text-align:center;z-index:99999;font-family:sans-serif;"><b>Nueva versión disponible</b><br><small>Cierra la app completamente y vuelve a abrirla</small></div>';
+            document.body.appendChild(banner);
+            setTimeout(function() { banner.remove(); }, 10000);
+          } else if (!oldVersion) {
+            localStorage.setItem('app_version', newVersion);
+          }
+        }).catch(function() {});
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(reg) { reg.update(); });
+        });
+      }
+    })();
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

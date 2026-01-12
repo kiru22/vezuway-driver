@@ -170,6 +170,37 @@ ls -t /home/ubuntu/screenshots/ | head -1
 - El frontend usa Flutter beta (`ghcr.io/cirruslabs/flutter:beta`) porque `flutter_form_builder ^10.2.0` requiere Dart 3.8.0+
 - Flutter stable (3.29.x) solo tiene Dart 3.7.x, insuficiente para las dependencias actuales
 
+## Versionado y PWA (IMPORTANTE)
+
+### Regla fundamental para deploys
+**SIEMPRE incrementar la versión en `app/pubspec.yaml` antes de cada deploy a producción.**
+
+```yaml
+# Formato: version: X.Y.Z+build
+version: 1.0.1+2  # Incrementar el último número en cada deploy
+```
+
+### Por qué es necesario
+iOS Safari tiene dos capas de cache para PWAs:
+1. **Storage cache (SSD)** - se actualiza con reload
+2. **Memory cache (RAM)** - NO se actualiza con reload
+
+El script en `index.html` detecta cambios de versión comparando `version.json` con localStorage y muestra un banner al usuario indicando que debe cerrar y reabrir la app.
+
+### Archivos relacionados con PWA
+- `app/pubspec.yaml` - Versión de la app (genera `version.json`)
+- `app/web/index.html` - Script de detección de versión
+- `app/docker/nginx.conf` - Headers de cache (SW e index.html sin cache)
+- `app/web/manifest.json` - Configuración PWA
+
+### Flujo de deploy
+1. Incrementar versión en `pubspec.yaml`
+2. Build: `flutter build web --release`
+3. Commit y push
+4. Dokploy despliega automáticamente
+5. Usuarios ven banner "Nueva versión disponible"
+6. Al cerrar y reabrir la PWA, ven la versión nueva
+
 ## Design System (IMPORTANTE)
 
 **Regla fundamental**: Todo cambio de estilos DEBE reflejarse en el Design System y ser documentado para que elementos posteriores lo implementen.
