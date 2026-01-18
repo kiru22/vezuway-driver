@@ -103,7 +103,7 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
     }
   }
 
-  Future<bool> updateStatus(int id, RouteStatus status) async {
+  Future<bool> updateStatus(String id, RouteStatus status) async {
     try {
       final updated = await _repository.updateStatus(id, status);
       final routes = state.routes.map((r) {
@@ -116,7 +116,7 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
     }
   }
 
-  Future<bool> deleteRoute(int id) async {
+  Future<bool> deleteRoute(String id) async {
     try {
       await _repository.deleteRoute(id);
       final routes = state.routes.where((r) => r.id != id).toList();
@@ -134,7 +134,7 @@ final routesProvider = StateNotifierProvider<RoutesNotifier, RoutesState>((ref) 
 });
 
 // Single Route Provider
-final routeDetailProvider = FutureProvider.family<RouteModel, int>((ref, id) async {
+final routeDetailProvider = FutureProvider.family<RouteModel, String>((ref, id) async {
   final repository = ref.read(routeRepositoryProvider);
   return repository.getRoute(id);
 });

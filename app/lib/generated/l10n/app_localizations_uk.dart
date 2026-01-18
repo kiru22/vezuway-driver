@@ -455,6 +455,41 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_departureDate => 'Дата вiдправлення';
 
   @override
+  String get packages_imagesSection => 'Фото посилки';
+
+  @override
+  String get packages_addImage => 'Додати фото';
+
+  @override
+  String get packages_noImages => 'Немає фото';
+
+  @override
+  String get packages_imageAdded => 'Фото успiшно додано';
+
+  @override
+  String get packages_imageDeleted => 'Фото успiшно видалено';
+
+  @override
+  String get packages_imageError => 'Помилка обробки зображення';
+
+  @override
+  String get packages_deleteImageTitle => 'Видалити фото';
+
+  @override
+  String get packages_deleteImageConfirm =>
+      'Ви впевненi, що хочете видалити це фото?';
+
+  @override
+  String get packages_editPrice => 'Редагувати цiну';
+
+  @override
+  String get packages_priceLabel => 'Цiна (€)';
+
+  @override
+  String get packages_priceHint =>
+      'Введiть цiну або залиште порожнiм для автоматичного розрахунку';
+
+  @override
   String get routes_title => 'Маршрути';
 
   @override
@@ -843,4 +878,45 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get action_viber => 'Viber';
+
+  @override
+  String get ocr_scanButton => 'Сканувати';
+
+  @override
+  String get ocr_selectSource => 'Оберiть джерело';
+
+  @override
+  String get ocr_camera => 'Камера';
+
+  @override
+  String get ocr_gallery => 'Галерея';
+
+  @override
+  String get ocr_resultsTitle => 'Результати сканування';
+
+  @override
+  String get ocr_resultsSubtitle => 'Перевiрте та вiдредагуйте знайденi данi';
+
+  @override
+  String get ocr_apply => 'Застосувати';
+
+  @override
+  String get ocr_error => 'Помилка обробки зображення';
+
+  @override
+  String get ocr_noDataFound =>
+      'Не знайдено даних на зображеннi. Спробуйте iнше фото з чiткiшим текстом.';
+
+  @override
+  String get notifications_enableTitle => 'Увiмкнiть сповiщення';
+
+  @override
+  String get notifications_enableDescription =>
+      'Отримуйте сповiщення про вашi вiдправлення та маршрути';
+
+  @override
+  String get notifications_enable => 'Увiмкнути';
+
+  @override
+  String get notifications_notNow => 'Не зараз';
 }

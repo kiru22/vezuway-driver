@@ -50,7 +50,7 @@ enum RouteStatus {
 }
 
 class RouteModel {
-  final int id;
+  final String id;
   final String origin;
   final String originCountry;
   final String destination;
@@ -192,7 +192,7 @@ class RouteModel {
     }
 
     return RouteModel(
-      id: json['id'],
+      id: json['id'].toString(),
       origin: originCity,
       originCountry: originCountry,
       destination: destCity,
@@ -239,7 +239,7 @@ class RouteModel {
   }
 
   RouteModel copyWith({
-    int? id,
+    String? id,
     String? origin,
     String? originCountry,
     String? destination,

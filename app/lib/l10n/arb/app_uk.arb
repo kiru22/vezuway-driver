@@ -148,6 +148,17 @@
   "packages_origin": "Вiдправлення",
   "packages_destination": "Призначення",
   "packages_departureDate": "Дата вiдправлення",
+  "packages_imagesSection": "Фото посилки",
+  "packages_addImage": "Додати фото",
+  "packages_noImages": "Немає фото",
+  "packages_imageAdded": "Фото успiшно додано",
+  "packages_imageDeleted": "Фото успiшно видалено",
+  "packages_imageError": "Помилка обробки зображення",
+  "packages_deleteImageTitle": "Видалити фото",
+  "packages_deleteImageConfirm": "Ви впевненi, що хочете видалити це фото?",
+  "packages_editPrice": "Редагувати цiну",
+  "packages_priceLabel": "Цiна (€)",
+  "packages_priceHint": "Введiть цiну або залиште порожнiм для автоматичного розрахунку",
 
   "routes_title": "Маршрути",
   "routes_activeTab": "Активнi ({count})",
@@ -274,5 +285,20 @@
   "action_call": "Зателефонувати",
   "action_whatsapp": "WhatsApp",
   "action_telegram": "Telegram",
-  "action_viber": "Viber"
+  "action_viber": "Viber",
+
+  "ocr_scanButton": "Сканувати",
+  "ocr_selectSource": "Оберiть джерело",
+  "ocr_camera": "Камера",
+  "ocr_gallery": "Галерея",
+  "ocr_resultsTitle": "Результати сканування",
+  "ocr_resultsSubtitle": "Перевiрте та вiдредагуйте знайденi данi",
+  "ocr_apply": "Застосувати",
+  "ocr_error": "Помилка обробки зображення",
+  "ocr_noDataFound": "Не знайдено даних на зображеннi. Спробуйте iнше фото з чiткiшим текстом.",
+
+  "notifications_enableTitle": "Увiмкнiть сповiщення",
+  "notifications_enableDescription": "Отримуйте сповiщення про вашi вiдправлення та маршрути",
+  "notifications_enable": "Увiмкнути",
+  "notifications_notNow": "Не зараз"
 }

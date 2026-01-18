@@ -33,9 +33,10 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Create storage link if not exists
+# Create storage link (force recreate to ensure it exists)
 echo "🔗 Creating storage link..."
-php artisan storage:link 2>/dev/null || true
+rm -f /var/www/html/public/storage
+php artisan storage:link --force
 
 # Set permissions
 echo "🔐 Setting permissions..."

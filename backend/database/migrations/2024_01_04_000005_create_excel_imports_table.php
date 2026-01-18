@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('excel_imports', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('transporter_id')->constrained('users')->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('transporter_id')->constrained('users')->onDelete('cascade');
             $table->string('file_name');
             $table->text('file_url');
             $table->string('status', 50)->default('pending');

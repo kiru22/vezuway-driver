@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../core/services/api_service.dart';
 import '../models/package_model.dart';
@@ -9,7 +10,7 @@ class PackageRepository {
 
   Future<List<PackageModel>> getPackages({
     PackageStatus? status,
-    int? routeId,
+    String? routeId,
     String? search,
   }) async {
     final queryParams = <String, dynamic>{};
@@ -28,14 +29,14 @@ class PackageRepository {
     }
   }
 
-  Future<PackageModel> getPackage(int id) async {
+  Future<PackageModel> getPackage(String id) async {
     final response = await _api.get('/packages/$id');
     final data = response.data['data'] ?? response.data;
     return PackageModel.fromJson(data);
   }
 
   Future<PackageModel> createPackage({
-    int? routeId,
+    String? routeId,
     String? senderName,
     String? senderPhone,
     String? senderAddress,
@@ -48,8 +49,10 @@ class PackageRepository {
     int? heightCm,
     int? quantity,
     double? declaredValue,
+    List<Uint8List>? images,
   }) async {
-    final response = await _api.post('/packages', data: {
+    // Build FormData for multipart request
+    final formData = FormData.fromMap({
       if (routeId != null) 'route_id': routeId,
       if (senderName != null && senderName.isNotEmpty) 'sender_name': senderName,
       if (senderPhone != null && senderPhone.isNotEmpty) 'sender_phone': senderPhone,
@@ -64,17 +67,32 @@ class PackageRepository {
       if (quantity != null) 'quantity': quantity,
       if (declaredValue != null) 'declared_value': declaredValue,
     });
+
+    // Add images if provided
+    if (images != null && images.isNotEmpty) {
+      for (var i = 0; i < images.length; i++) {
+        formData.files.add(MapEntry(
+          'images[]',
+          MultipartFile.fromBytes(
+            images[i],
+            filename: 'image_$i.jpg',
+          ),
+        ));
+      }
+    }
+
+    final response = await _api.post('/packages', data: formData);
     final data = response.data['data'] ?? response.data;
     return PackageModel.fromJson(data);
   }
 
-  Future<PackageModel> updatePackage(int id, Map<String, dynamic> data) async {
+  Future<PackageModel> updatePackage(String id, Map<String, dynamic> data) async {
     final response = await _api.put('/packages/$id', data: data);
     final responseData = response.data['data'] ?? response.data;
     return PackageModel.fromJson(responseData);
   }
 
-  Future<PackageModel> updateStatus(int id, PackageStatus status, {String? notes}) async {
+  Future<PackageModel> updateStatus(String id, PackageStatus status, {String? notes}) async {
     final response = await _api.patch('/packages/$id/status', data: {
       'status': status.apiValue,
       if (notes != null) 'notes': notes,
@@ -83,13 +101,37 @@ class PackageRepository {
     return PackageModel.fromJson(data);
   }
 
-  Future<void> deletePackage(int id) async {
+  Future<void> deletePackage(String id) async {
     await _api.delete('/packages/$id');
   }
 
-  Future<List<Map<String, dynamic>>> getStatusHistory(int id) async {
+  Future<List<Map<String, dynamic>>> getStatusHistory(String id) async {
     final response = await _api.get('/packages/$id/history');
     final List<dynamic> data = response.data['data'] ?? response.data;
     return data.cast<Map<String, dynamic>>();
+  }
+
+  /// Añade imágenes a un paquete existente
+  Future<List<PackageImage>> addImages(String packageId, List<Uint8List> images) async {
+    final formData = FormData();
+
+    for (var i = 0; i < images.length; i++) {
+      formData.files.add(MapEntry(
+        'images[]',
+        MultipartFile.fromBytes(
+          images[i],
+          filename: 'image_$i.jpg',
+        ),
+      ));
+    }
+
+    final response = await _api.post('/packages/$packageId/images', data: formData);
+    final List<dynamic> imagesData = response.data['images'] ?? [];
+    return imagesData.map((img) => PackageImage.fromJson(img)).toList();
+  }
+
+  /// Elimina una imagen de un paquete
+  Future<void> deleteImage(String packageId, String mediaId) async {
+    await _api.delete('/packages/$packageId/images/$mediaId');
   }
 }

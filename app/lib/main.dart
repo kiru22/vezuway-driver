@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -5,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/services/push_notification_service.dart';
 import 'shared/providers/locale_provider.dart';
 
 void main() async {
@@ -21,6 +23,11 @@ void main() async {
 
   // Initialize SharedPreferences for locale persistence
   final prefs = await SharedPreferences.getInstance();
+
+  // Initialize push notifications service (web only)
+  if (kIsWeb) {
+    await PushNotificationService.instance.initialize();
+  }
 
   runApp(
     ProviderScope(

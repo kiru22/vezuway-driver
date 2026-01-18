@@ -39,6 +39,7 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_id_ios' => env('GOOGLE_CLIENT_ID_IOS'),
         'client_id_android' => env('GOOGLE_CLIENT_ID_ANDROID'),
+        'cloud_vision_key_file' => env('GOOGLE_CLOUD_VISION_KEY_FILE'),
     ],
 
 ];

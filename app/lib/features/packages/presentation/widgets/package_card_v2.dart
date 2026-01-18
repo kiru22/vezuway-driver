@@ -115,16 +115,43 @@ class _PackageCardV2State extends State<PackageCardV2>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '#${widget.package.trackingCode}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 17,
-                            color: colors.textPrimary,
-                            letterSpacing: -0.3,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0x0DFFFFFF)
+                                : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                                fontFamily: 'monospace',
+                                letterSpacing: 0.5,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '#',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: widget.package.trackingCode,
+                                  style: TextStyle(
+                                    color: colors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 8),
                         Text(
                           widget.package.receiverName,
                           style: TextStyle(
@@ -145,45 +172,14 @@ class _PackageCardV2State extends State<PackageCardV2>
               ),
             ),
 
-            // Location + Metrics row
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Row(
-                children: [
-                  // Location
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            AddressUtils.extractCity(widget.package.receiverAddress),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: colors.textPrimary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Metrics: weight, quantity, price
-                  _MetricsRow(
-                    weight: widget.package.weight,
-                    quantity: widget.package.quantity,
-                    price: widget.package.declaredValue,
-                    textColor: colors.textSecondary,
-                  ),
-                ],
-              ),
+            // Info Box con fondo sutil
+            _InfoBox(
+              location: AddressUtils.extractCity(widget.package.receiverAddress),
+              weight: widget.package.weight,
+              quantity: widget.package.quantity,
+              price: widget.package.declaredValue,
+              isDark: isDark,
+              colors: colors,
             ),
 
             // Expandable section
@@ -235,6 +231,87 @@ class _PackageCardV2State extends State<PackageCardV2>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Info box con fondo sutil que agrupa ubicación y métricas
+class _InfoBox extends StatelessWidget {
+  final String location;
+  final double? weight;
+  final int? quantity;
+  final double? price;
+  final bool isDark;
+  final dynamic colors;
+
+  const _InfoBox({
+    required this.location,
+    this.weight,
+    this.quantity,
+    this.price,
+    required this.isDark,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0x0DFFFFFF) // 5% white for dark mode
+            : const Color(0xFFF8FAFC), // slate-50 for light mode
+        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Fila 1: Ubicación
+          Row(
+            children: [
+              Icon(
+                Icons.location_on_outlined,
+                size: 16,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  location,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Fila 2: Peso + Cantidad + Precio
+          Row(
+            children: [
+              Icon(
+                Icons.inventory_2_outlined,
+                size: 16,
+                color: colors.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _MetricsRow(
+                  weight: weight,
+                  quantity: quantity,
+                  price: price,
+                  textColor: colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

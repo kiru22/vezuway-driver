@@ -2,13 +2,14 @@
 
 namespace App\Modules\Routes\Models;
 
+use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RouteStop extends Model
 {
-    use SoftDeletes;
+    use HasUuid, SoftDeletes;
 
     protected $fillable = [
         'route_id',

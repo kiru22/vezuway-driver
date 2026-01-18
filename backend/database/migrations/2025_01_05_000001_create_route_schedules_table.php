@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('route_schedules', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('route_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('route_id')->constrained()->onDelete('cascade');
             $table->date('departure_date');
             $table->date('estimated_arrival_date')->nullable();
             $table->string('status', 50)->default('planned');

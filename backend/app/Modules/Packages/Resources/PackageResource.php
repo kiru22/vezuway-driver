@@ -71,6 +71,12 @@ class PackageResource extends JsonResource
 
             'status_history' => $this->whenLoaded('statusHistory'),
 
+            'images' => $this->whenLoaded('media', fn () => $this->getMedia('images')->map(fn ($media) => [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'thumb_url' => $media->getUrl('thumb'),
+            ])->toArray()),
+
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

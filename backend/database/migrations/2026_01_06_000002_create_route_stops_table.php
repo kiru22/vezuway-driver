@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('route_stops', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('route_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('route_id')->constrained()->onDelete('cascade');
             $table->string('city', 100);
             $table->string('country', 2);
             $table->unsignedSmallInteger('order')->default(0);

@@ -164,6 +164,17 @@
   "packages_origin": "Origen",
   "packages_destination": "Destino",
   "packages_departureDate": "Fecha de salida",
+  "packages_imagesSection": "Imagenes del paquete",
+  "packages_addImage": "Anadir imagen",
+  "packages_noImages": "Sin imagenes",
+  "packages_imageAdded": "Imagen anadida correctamente",
+  "packages_imageDeleted": "Imagen eliminada correctamente",
+  "packages_imageError": "Error al procesar la imagen",
+  "packages_deleteImageTitle": "Eliminar imagen",
+  "packages_deleteImageConfirm": "Estas seguro de eliminar esta imagen?",
+  "packages_editPrice": "Editar precio",
+  "packages_priceLabel": "Precio (€)",
+  "packages_priceHint": "Introduce el precio o deja vacio para calculo automatico",
 
   "@@_ROUTES": "============ ROUTES ============",
   "routes_title": "Rutas",
@@ -321,5 +332,22 @@
   "action_call": "Llamar",
   "action_whatsapp": "WhatsApp",
   "action_telegram": "Telegram",
-  "action_viber": "Viber"
+  "action_viber": "Viber",
+
+  "@@_OCR": "============ OCR SCANNING ============",
+  "ocr_scanButton": "Escanear",
+  "ocr_selectSource": "Seleccionar origen",
+  "ocr_camera": "Camara",
+  "ocr_gallery": "Galeria",
+  "ocr_resultsTitle": "Resultados del escaneo",
+  "ocr_resultsSubtitle": "Revisa y edita los datos detectados",
+  "ocr_apply": "Aplicar datos",
+  "ocr_error": "Error al procesar la imagen",
+  "ocr_noDataFound": "No se encontraron datos en la imagen. Intenta con otra foto mas clara.",
+
+  "@@_NOTIFICATIONS": "============ NOTIFICATIONS ============",
+  "notifications_enableTitle": "Activa las notificaciones",
+  "notifications_enableDescription": "Recibe alertas sobre tus envios y rutas",
+  "notifications_enable": "Activar",
+  "notifications_notNow": "Ahora no"
 }

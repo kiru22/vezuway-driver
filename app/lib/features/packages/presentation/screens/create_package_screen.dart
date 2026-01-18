@@ -15,9 +15,13 @@ import '../../data/models/package_model.dart';
 import '../../domain/providers/package_provider.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 import '../../../routes/data/models/route_model.dart';
+import '../../../ocr/presentation/widgets/ocr_scan_button.dart';
+import '../widgets/package_image_gallery.dart';
+import '../widgets/add_image_button.dart';
+import '../../../../shared/widgets/styled_form_field.dart';
 
 class CreatePackageScreen extends ConsumerStatefulWidget {
-  final int? packageId;
+  final String? packageId;
 
   const CreatePackageScreen({super.key, this.packageId});
 
@@ -60,6 +64,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   double? _manualPrice; // Manually set price
   bool _isManualPrice = false; // Flag to track if price is manual
   bool _isLoading = false;
+
+  // Lista de imágenes locales para enviar con el paquete
+  final List<Uint8List> _packageImages = [];
 
   @override
   void initState() {
@@ -191,9 +198,10 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     final routesState = ref.read(routesProvider);
     final availableRoutes = routesState.routes
         .where((r) => r.status == RouteStatus.planned || r.status == RouteStatus.inProgress)
-        .where((r) => r.departureDate.isAfter(DateTime.now().subtract(const Duration(days: 1))))
+        .where((r) => r.hasUpcomingDates)
         .toList()
-      ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
+      ..sort((a, b) => (a.nextDepartureDate ?? a.departureDate)
+          .compareTo(b.nextDepartureDate ?? b.departureDate));
 
     if (availableRoutes.isNotEmpty) {
       setState(() {
@@ -252,54 +260,94 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
     final result = await showDialog<String>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Редагувати ціну'),
+          title: Text(dialogContext.l10n.packages_editPrice),
           content: TextField(
             controller: controller,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: 'Ціна (€)',
-              hintText: 'Введіть ціну або залиште порожнім',
+            decoration: InputDecoration(
+              labelText: dialogContext.l10n.packages_priceLabel,
+              hintText: dialogContext.l10n.packages_priceHint,
               suffixText: '€',
             ),
             autofocus: true,
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Скасувати'),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(dialogContext.l10n.common_cancel),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, controller.text),
-              child: const Text('Зберегти'),
+              onPressed: () => Navigator.pop(dialogContext, controller.text),
+              child: Text(dialogContext.l10n.common_save),
             ),
           ],
         );
       },
     );
 
-    if (result != null) {
-      setState(() {
-        if (result.trim().isEmpty) {
-          // Empty input - switch back to automatic calculation
-          _isManualPrice = false;
-          _manualPrice = null;
-        } else {
-          // Manual price entered
-          final price = double.tryParse(result.trim());
-          if (price != null && price >= 0) {
-            _isManualPrice = true;
-            _manualPrice = price;
-          }
-        }
-      });
-    }
+    if (result == null) return;
+
+    final trimmed = result.trim();
+    setState(() {
+      if (trimmed.isEmpty) {
+        // Empty input - switch back to automatic calculation
+        _isManualPrice = false;
+        _manualPrice = null;
+        return;
+      }
+
+      // Manual price entered
+      final price = double.tryParse(trimmed);
+      if (price != null && price >= 0) {
+        _isManualPrice = true;
+        _manualPrice = price;
+      }
+    });
   }
 
   void _switchTab(int index) {
     if (_selectedTabIndex == index) return;
     setState(() => _selectedTabIndex = index);
+  }
+
+  void _applyOcrResult(String? name, String? phone, String? city, Uint8List? imageBytes) {
+    setState(() {
+      if (_selectedTabIndex == 0) {
+        // Sender tab
+        if (name != null) _senderNameController.text = name;
+        if (phone != null) _senderPhoneController.text = phone;
+        if (city != null) {
+          _senderCity = _findCityByName(city);
+        }
+      } else {
+        // Receiver tab
+        if (name != null) _receiverNameController.text = name;
+        if (phone != null) _receiverPhoneController.text = phone;
+        if (city != null) {
+          _receiverCity = _findCityByName(city);
+        }
+      }
+      // Añadir la imagen escaneada a la galería
+      if (imageBytes != null) {
+        _packageImages.add(imageBytes);
+      }
+    });
+  }
+
+  CityModel? _findCityByName(String cityName) {
+    final availableCities = _selectedRoute?.stops ?? [];
+    final cityNameLower = cityName.toLowerCase();
+
+    for (final city in availableCities) {
+      if (city.name.toLowerCase() == cityNameLower ||
+          city.nameEs.toLowerCase() == cityNameLower ||
+          city.nameUk.toLowerCase() == cityNameLower) {
+        return city;
+      }
+    }
+    return null;
   }
 
   Future<void> _handleSubmit() async {
@@ -398,6 +446,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         heightCm: height,
         quantity: quantity,
         declaredValue: _finalPrice > 0 ? _finalPrice : null,
+        images: _packageImages.isNotEmpty ? _packageImages : null,
       );
     }
 
@@ -430,14 +479,25 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final routes = ref.watch(routesProvider).routes
+    var routes = ref.watch(routesProvider).routes
         .where((r) => r.status == RouteStatus.planned || r.status == RouteStatus.inProgress)
-        .where((r) => r.departureDate.isAfter(DateTime.now().subtract(const Duration(days: 1))))
+        .where((r) => r.hasUpcomingDates)
         .toList()
-      ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
+      ..sort((a, b) => (a.nextDepartureDate ?? a.departureDate)
+          .compareTo(b.nextDepartureDate ?? b.departureDate));
 
-    // Show empty state if no routes available
-    if (routes.isEmpty) {
+    // En modo edición, asegurar que la ruta actual del paquete esté disponible
+    // (aunque esté completada/cancelada o tenga fecha pasada)
+    if (widget.isEditMode && _selectedRoute != null) {
+      final currentRouteInList = routes.any((r) => r.id == _selectedRoute!.id);
+      if (!currentRouteInList) {
+        routes.insert(0, _selectedRoute!);
+      }
+    }
+
+    // Solo mostrar estado vacío en modo CREACIÓN cuando no hay rutas
+    // En modo EDICIÓN, permitir continuar (el paquete ya tiene ruta asignada)
+    if (routes.isEmpty && !widget.isEditMode) {
       return Scaffold(
         backgroundColor: colors.surface,
         appBar: AppBar(
@@ -482,6 +542,10 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
                   // Price Calculator
                   _buildPriceCalculator(colors, isCompact),
+                  SizedBox(height: isCompact ? 12 : 24),
+
+                  // Sección de imágenes del paquete
+                  _buildImagesSection(colors),
                   SizedBox(height: isCompact ? 12 : 24),
                 ],
               ),
@@ -597,7 +661,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         ],
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
+        child: DropdownButton<String>(
           value: _selectedRoute?.id,
           hint: Text(
             context.l10n.packages_selectRoute,
@@ -612,7 +676,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           ),
           dropdownColor: isDark ? colors.surface : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          items: routes.map((route) => DropdownMenuItem<int>(
+          items: routes.map((route) => DropdownMenuItem<String>(
             value: route.id,
             child: Row(
               children: [
@@ -639,7 +703,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                         ),
                       ),
                       Text(
-                        DateFormat('dd/MM/yyyy').format(route.departureDate),
+                        DateFormat('dd/MM/yyyy').format(route.nextDepartureDate ?? route.departureDate),
                         style: TextStyle(
                           color: isDark ? colors.textMuted : AppColors.lightTextMuted,
                           fontSize: 13,
@@ -797,8 +861,26 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // OCR scan button row
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                isSender ? context.l10n.packages_tabSender : context.l10n.packages_tabReceiver,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ),
+            OcrScanButton(onApply: _applyOcrResult),
+          ],
+        ),
+        SizedBox(height: gap),
+
         // Name field (only required for receiver)
-        _FormField(
+        StyledFormField(
           controller: nameController,
           label: context.l10n.packages_nameLabel,
           hint: isSender ? context.l10n.packages_senderNameHint : context.l10n.packages_receiverNameHint,
@@ -815,7 +897,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         SizedBox(height: gap),
 
         // Phone field
-        _FormField(
+        StyledFormField(
           controller: phoneController,
           label: context.l10n.packages_phoneLabel,
           hint: phoneHint,
@@ -1042,7 +1124,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           const SizedBox(height: 16),
 
           // Exact address field
-          _FormField(
+          StyledFormField(
             controller: exactAddressController,
             label: context.l10n.packages_exactAddress,
             hint: context.l10n.packages_deliveryAddressHint,
@@ -1051,7 +1133,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           const SizedBox(height: 12),
 
           // Google Maps link field
-          _FormField(
+          StyledFormField(
             controller: googleMapsController,
             label: context.l10n.packages_googleMapsLink,
             hint: 'https://maps.google.com/...',
@@ -1285,6 +1367,94 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
+  Widget _buildImagesSection(AppColorsExtension colors) {
+    final isDark = context.isDarkMode;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? colors.surface : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? colors.border : AppColors.lightBorder,
+        ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.photo_library_outlined,
+                size: 20,
+                color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  context.l10n.packages_imagesSection,
+                  style: TextStyle(
+                    color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              if (_packageImages.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${_packageImages.length}',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_packageImages.isNotEmpty) ...[
+            PackageImageGallery(
+              localImages: _packageImages,
+              editMode: true,
+              onRemoveLocal: (index) {
+                setState(() {
+                  _packageImages.removeAt(index);
+                });
+              },
+              height: 160,
+            ),
+            const SizedBox(height: 12),
+          ],
+          AddImageButton(
+            compact: _packageImages.isEmpty,
+            onImageSelected: (bytes) {
+              setState(() {
+                _packageImages.add(bytes);
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSubmitButton(AppColorsExtension colors) {
     final isDark = context.isDarkMode;
 
@@ -1352,105 +1522,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Form field widget - Clean, elevated design
-class _FormField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final String? hint;
-  final IconData? prefixIcon;
-  final TextInputType? keyboardType;
-  final String? Function(String?)? validator;
-
-  const _FormField({
-    required this.controller,
-    required this.label,
-    this.hint,
-    this.prefixIcon,
-    this.keyboardType,
-    this.validator,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final isDark = context.isDarkMode;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        validator: validator,
-        style: TextStyle(
-          color: colors.textPrimary,
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          // Darker labels for better readability
-          labelStyle: TextStyle(
-            color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
-            fontWeight: FontWeight.w500,
-          ),
-          floatingLabelStyle: TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w600,
-          ),
-          hintStyle: TextStyle(
-            color: isDark ? colors.textMuted : AppColors.lightTextMuted,
-          ),
-          prefixIcon: prefixIcon != null
-              ? Icon(
-                  prefixIcon,
-                  size: 20,
-                  color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
-                )
-              : null,
-          filled: true,
-          // White background for light theme, dark surface for dark theme
-          fillColor: isDark ? colors.surface : Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: isDark ? colors.border : AppColors.lightBorder,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: isDark ? colors.border : AppColors.lightBorder,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 2),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.error, width: 1.5),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.error, width: 2),
           ),
         ),
       ),

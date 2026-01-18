@@ -5,16 +5,20 @@ namespace App\Modules\Packages\Models;
 use App\Models\User;
 use App\Modules\Routes\Models\Route;
 use App\Shared\Enums\PackageStatus;
+use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Package extends Model
+class Package extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasUuid, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'tracking_code',
@@ -62,10 +66,8 @@ class Package extends Model
         'receiver_longitude' => 'decimal:8',
     ];
 
-    protected static function boot()
+    protected static function booted(): void
     {
-        parent::boot();
-
         static::creating(function ($package) {
             if (empty($package->tracking_code)) {
                 $package->tracking_code = self::generateTrackingCode();
@@ -97,18 +99,25 @@ class Package extends Model
         return $this->hasMany(PackageStatusHistory::class)->orderBy('created_at', 'desc');
     }
 
-    public function recordStatusChange(PackageStatus $status, ?int $userId = null, ?string $notes = null): void
-    {
+    public function recordStatusChange(
+        PackageStatus $status,
+        ?string $userId = null,
+        ?string $notes = null,
+        ?float $latitude = null,
+        ?float $longitude = null
+    ): void {
         $this->statusHistory()->create([
             'status' => $status->value,
             'notes' => $notes,
             'created_by' => $userId,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
         ]);
 
         $this->update(['status' => $status]);
     }
 
-    public function scopeForTransporter($query, int $transporterId)
+    public function scopeForTransporter($query, string $transporterId)
     {
         return $query->where('transporter_id', $transporterId);
     }
@@ -127,5 +136,20 @@ class Package extends Model
                 ->orWhere('sender_city', 'like', "%{$term}%")
                 ->orWhere('receiver_city', 'like', "%{$term}%");
         });
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('images')
+            ->useDisk('public');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(300)
+            ->sharpen(10)
+            ->nonQueued();
     }
 }

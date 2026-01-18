@@ -113,11 +113,13 @@ Each feature follows the pattern:
 
 | Service | Dev Port | Container |
 |---------|----------|-----------|
-| Backend API | 8000 | logistics-backend |
-| Frontend | 3000 | logistics-frontend |
-| PostgreSQL | 5432 | logistics-db |
-| Redis | 6379 | logistics-redis |
-| Adminer | 8080 | logistics-adminer (dev only) |
+| Backend API | 8001 | logistics-backend |
+| Frontend | 3002 | logistics-frontend |
+| PostgreSQL | 5433 | logistics-db |
+| Redis | 6380 | logistics-redis |
+| Adminer | 8082 | logistics-adminer (dev only) |
+
+> **Nota**: Los puertos están configurados para no conflictuar con winerim (5432, 6379, 8080).
 
 ## Development Notes
 
@@ -131,7 +133,7 @@ make frontend-local   # Detiene contenedor Docker y ejecuta Flutter local
 O manualmente:
 ```bash
 docker stop logistics-frontend
-cd app && flutter run -d chrome --web-port=3000
+cd app && flutter run -d chrome --web-port=3002
 ```
 
 - Presionar `r` para hot reload (cambios de UI)
@@ -141,6 +143,31 @@ cd app && flutter run -d chrome --web-port=3000
 ### Flutter en Docker (Para CI/CD o testing)
 - Usar `make up-dev` para iniciar todos los servicios incluyendo frontend en Docker
 - Hot reload no es automático en Docker - requiere `docker restart logistics-frontend`
+
+### Aplicar cambios en configuración de Docker (IMPORTANTE)
+
+Los archivos de configuración (nginx, php, supervisor) se copian durante el **build** de la imagen, NO en runtime.
+
+| Comando | ¿Aplica cambios en configs? |
+|---------|----------------------------|
+| `docker restart <container>` | ❌ No |
+| `docker-compose up -d` | ❌ No |
+| `docker-compose build <service>` + `up -d` | ✅ Sí |
+
+**Archivos que requieren rebuild:**
+- `backend/docker/nginx/default.conf` - Configuración de nginx (CORS, headers, locations)
+- `backend/docker/php/php.ini` - Configuración de PHP
+- `backend/docker/supervisor/supervisord.conf` - Procesos supervisados
+
+**Comandos para aplicar cambios:**
+```bash
+docker-compose build backend && docker-compose up -d backend
+```
+
+**Verificar que los cambios se aplicaron:**
+```bash
+docker exec logistics-backend cat /etc/nginx/http.d/default.conf
+```
 
 ## Deployment (Dokploy)
 
@@ -245,3 +272,115 @@ app/lib/core/theme/
 2. Documentar el uso en este archivo (CLAUDE.md)
 3. Implementar usando el token, NO valores hardcodeados
 4. Verificar con `flutter analyze`
+
+## Convención de IDs (UUIDs)
+
+**Regla**: Todas las entidades usan UUID v4 como identificador primario.
+
+### Backend
+
+- Todos los modelos usan el trait `App\Shared\Traits\HasUuid`
+- Las migraciones usan `$table->uuid('id')->primary()` en lugar de `$table->id()`
+- Foreign keys usan `$table->foreignUuid('field_id')`
+- Los scopes que reciben IDs usan `string` en lugar de `int`
+
+### Frontend
+
+- Los IDs son siempre `String` (nunca `int`)
+- No usar `int.parse()` para IDs en rutas
+- En `fromJson`, usar `.toString()` para convertir IDs: `json['id'].toString()`
+- En `FutureProvider.family`, el tipo del parámetro es `String`
+
+### Ejemplo de nuevo modelo
+
+**Laravel Model:**
+```php
+<?php
+
+namespace App\Modules\Example\Models;
+
+use App\Shared\Traits\HasUuid;
+use Illuminate\Database\Eloquent\Model;
+
+class Example extends Model
+{
+    use HasUuid;
+}
+```
+
+**Migración:**
+```php
+Schema::create('examples', function (Blueprint $table) {
+    $table->uuid('id')->primary();
+    $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
+    $table->timestamps();
+});
+```
+
+**Flutter Model:**
+```dart
+class ExampleModel {
+  final String id;
+  final String userId;
+
+  ExampleModel({required this.id, required this.userId});
+
+  factory ExampleModel.fromJson(Map<String, dynamic> json) {
+    return ExampleModel(
+      id: json['id'].toString(),
+      userId: json['user_id'].toString(),
+    );
+  }
+}
+```
+
+**Flutter Provider:**
+```dart
+final exampleDetailProvider =
+    FutureProvider.family<ExampleModel, String>((ref, id) async {
+  final repository = ref.read(exampleRepositoryProvider);
+  return repository.getExample(id);
+});
+```
+
+**Flutter Router:**
+```dart
+GoRoute(
+  path: '/examples/:id',
+  pageBuilder: (context, state) {
+    final id = state.pathParameters['id']!; // String, no int.parse()
+    return MaterialPage(child: ExampleScreen(id: id));
+  },
+),
+```
+
+## OCR - Lista de Ciudades
+
+El servicio OCR detecta nombres de ciudades en imágenes escaneadas. La lista de ciudades está en configuración, no en código.
+
+**Archivo de configuración:** `backend/config/ocr.php`
+
+### Añadir nuevas ciudades
+
+Para añadir una ciudad, editar `backend/config/ocr.php`:
+
+```php
+return [
+    'cities' => [
+        // Formato: nombre canónico, español, ucraniano, código país
+        ['name' => 'CityName', 'nameEs' => 'NombreES', 'nameUk' => 'НазваUK', 'country' => 'XX'],
+        // ... más ciudades
+    ],
+];
+```
+
+**Campos requeridos:**
+- `name`: Nombre canónico (inglés/local) - se usa como identificador
+- `nameEs`: Nombre en español - para detección OCR
+- `nameUk`: Nombre en ucraniano - para detección OCR
+- `country`: Código ISO de país (`ES`, `UA`, `PL`)
+
+Después de añadir ciudades, limpiar caché:
+```bash
+php artisan config:clear
+```

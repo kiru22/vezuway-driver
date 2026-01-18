@@ -3,11 +3,14 @@
 namespace App\Modules\Routes\Models;
 
 use App\Shared\Enums\RouteStatus;
+use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RouteSchedule extends Model
 {
+    use HasUuid;
+
     protected $fillable = [
         'route_id',
         'departure_date',

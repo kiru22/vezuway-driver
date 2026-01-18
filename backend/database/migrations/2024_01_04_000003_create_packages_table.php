@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('packages', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('tracking_code', 50)->unique();
-            $table->foreignId('transporter_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('route_id')->nullable()->constrained('routes')->onDelete('set null');
+            $table->foreignUuid('transporter_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('route_id')->nullable()->constrained('routes')->onDelete('set null');
 
             // Sender
             $table->string('sender_name');

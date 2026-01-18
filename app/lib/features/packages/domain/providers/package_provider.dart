@@ -83,7 +83,7 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
   }
 
   Future<bool> createPackage({
-    int? routeId,
+    String? routeId,
     String? senderName,
     String? senderPhone,
     String? senderAddress,
@@ -96,6 +96,7 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     int? heightCm,
     int? quantity,
     double? declaredValue,
+    List<Uint8List>? images,
   }) async {
     try {
       final newPackage = await _repository.createPackage(
@@ -112,6 +113,7 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         heightCm: heightCm,
         quantity: quantity,
         declaredValue: declaredValue,
+        images: images,
       );
       state = state.copyWith(
         packages: [newPackage, ...state.packages],
@@ -125,7 +127,7 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     }
   }
 
-  Future<bool> updateStatus(int id, PackageStatus status, {String? notes}) async {
+  Future<bool> updateStatus(String id, PackageStatus status, {String? notes}) async {
     try {
       final updated = await _repository.updateStatus(id, status, notes: notes);
       final packages = state.packages.map((p) {
@@ -140,8 +142,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
   }
 
   Future<bool> updatePackage({
-    required int id,
-    int? routeId,
+    required String id,
+    String? routeId,
     String? senderName,
     String? senderPhone,
     String? senderAddress,
@@ -186,7 +188,7 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     }
   }
 
-  Future<bool> deletePackage(int id) async {
+  Future<bool> deletePackage(String id) async {
     try {
       await _repository.deletePackage(id);
       final packages = state.packages.where((p) => p.id != id).toList();
@@ -207,14 +209,14 @@ final packagesProvider =
 
 // Single Package Provider
 final packageDetailProvider =
-    FutureProvider.family<PackageModel, int>((ref, id) async {
+    FutureProvider.family<PackageModel, String>((ref, id) async {
   final repository = ref.read(packageRepositoryProvider);
   return repository.getPackage(id);
 });
 
 // Package Status History Provider
 final packageHistoryProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, int>((ref, id) async {
+    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, id) async {
   final repository = ref.read(packageRepositoryProvider);
   return repository.getStatusHistory(id);
 });

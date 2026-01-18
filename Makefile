@@ -66,7 +66,7 @@ shell-frontend:
 # Run Flutter locally with hot reload (stop Docker frontend first)
 frontend-local:
 	@docker stop logistics-frontend 2>/dev/null || true
-	cd app && flutter run -d chrome --web-port=3000
+	cd app && flutter run -d chrome --web-port=3002
 
 # Laravel commands
 migrate:
@@ -112,6 +112,6 @@ setup:
 	docker compose exec backend php artisan migrate
 	@echo ""
 	@echo "Setup complete!"
-	@echo "Backend API: http://localhost:8000"
-	@echo "Frontend:    http://localhost:3000"
-	@echo "Adminer:     http://localhost:8080 (run 'make up-dev' first)"
+	@echo "Backend API: http://localhost:8001"
+	@echo "Frontend:    http://localhost:3002"
+	@echo "Adminer:     http://localhost:8082 (run 'make up-dev' first)"

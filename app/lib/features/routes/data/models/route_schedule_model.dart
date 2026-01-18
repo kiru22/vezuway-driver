@@ -1,7 +1,7 @@
 import 'route_model.dart';
 
 class RouteScheduleModel {
-  final int? id;
+  final String? id;
   final DateTime departureDate;
   final DateTime? estimatedArrivalDate;
   final RouteStatus status;
@@ -25,7 +25,7 @@ class RouteScheduleModel {
     }
 
     return RouteScheduleModel(
-      id: json['id'],
+      id: json['id']?.toString(),
       departureDate: json['departure_date'] != null
           ? DateTime.parse(json['departure_date'])
           : DateTime.now(),
@@ -47,7 +47,7 @@ class RouteScheduleModel {
   }
 
   RouteScheduleModel copyWith({
-    int? id,
+    String? id,
     DateTime? departureDate,
     DateTime? estimatedArrivalDate,
     RouteStatus? status,

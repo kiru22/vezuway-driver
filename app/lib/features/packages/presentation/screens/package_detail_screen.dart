@@ -16,9 +16,12 @@ import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/status_localizations.dart';
 import '../../data/models/package_model.dart';
 import '../../domain/providers/package_provider.dart';
+import '../widgets/package_image_gallery.dart';
+import '../widgets/add_image_button.dart';
+import '../../../../shared/utils/staggered_animations.dart';
 
 class PackageDetailScreen extends ConsumerStatefulWidget {
-  final int packageId;
+  final String packageId;
 
   const PackageDetailScreen({super.key, required this.packageId});
 
@@ -29,8 +32,7 @@ class PackageDetailScreen extends ConsumerStatefulWidget {
 class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late List<Animation<double>> _fadeAnimations;
-  late List<Animation<Offset>> _slideAnimations;
+  late StaggeredAnimations _animations;
 
   @override
   void initState() {
@@ -40,31 +42,11 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
       duration: const Duration(milliseconds: 800),
     );
 
-    // Create staggered animations for 4 cards
-    _fadeAnimations = List.generate(4, (index) {
-      final start = index * 0.15;
-      final end = start + 0.4;
-      return Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: Interval(start, end.clamp(0.0, 1.0), curve: Curves.easeOutCubic),
-        ),
-      );
-    });
-
-    _slideAnimations = List.generate(4, (index) {
-      final start = index * 0.15;
-      final end = start + 0.4;
-      return Tween<Offset>(
-        begin: const Offset(0, 0.1),
-        end: Offset.zero,
-      ).animate(
-        CurvedAnimation(
-          parent: _animationController,
-          curve: Interval(start, end.clamp(0.0, 1.0), curve: Curves.easeOutCubic),
-        ),
-      );
-    });
+    // Create staggered animations for 4 cards using helper
+    _animations = StaggeredAnimations(
+      controller: _animationController,
+      itemCount: 4,
+    );
 
     _animationController.forward();
   }
@@ -129,23 +111,23 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Tracking Status Card (Blue)
-              _AnimatedCard(
-                fadeAnimation: _fadeAnimations[0],
-                slideAnimation: _slideAnimations[0],
+              AnimatedStaggeredItem(
+                fadeAnimation: _animations.fadeAnimations[0],
+                slideAnimation: _animations.slideAnimations[0],
                 child: _TrackingStatusCard(package: package),
               ),
               const SizedBox(height: 16),
               // 2. Package Specs (Weight, Dimensions, etc.)
-              _AnimatedCard(
-                fadeAnimation: _fadeAnimations[1],
-                slideAnimation: _slideAnimations[1],
+              AnimatedStaggeredItem(
+                fadeAnimation: _animations.fadeAnimations[1],
+                slideAnimation: _animations.slideAnimations[1],
                 child: _PackageSpecsCard(package: package),
               ),
               const SizedBox(height: 16),
               // 3. Destinatario
-              _AnimatedCard(
-                fadeAnimation: _fadeAnimations[2],
-                slideAnimation: _slideAnimations[2],
+              AnimatedStaggeredItem(
+                fadeAnimation: _animations.fadeAnimations[2],
+                slideAnimation: _animations.slideAnimations[2],
                 child: _ContactCard(
                   icon: Icons.download,
                   title: context.l10n.packages_receiver,
@@ -156,9 +138,9 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
               ),
               const SizedBox(height: 16),
               // 4. Remitente
-              _AnimatedCard(
-                fadeAnimation: _fadeAnimations[3],
-                slideAnimation: _slideAnimations[3],
+              AnimatedStaggeredItem(
+                fadeAnimation: _animations.fadeAnimations[3],
+                slideAnimation: _animations.slideAnimations[3],
                 child: _ContactCard(
                   icon: Icons.upload,
                   title: context.l10n.packages_sender,
@@ -171,34 +153,20 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                 const SizedBox(height: 16),
                 _DetailsCard(package: package),
               ],
+              // 5. Sección de imágenes
+              const SizedBox(height: 16),
+              _ImagesSection(
+                package: package,
+                onImageAdded: () {
+                  ref.invalidate(packageDetailProvider(widget.packageId));
+                },
+                onImageDeleted: () {
+                  ref.invalidate(packageDetailProvider(widget.packageId));
+                },
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Widget wrapper para animaciones staggered
-class _AnimatedCard extends StatelessWidget {
-  final Animation<double> fadeAnimation;
-  final Animation<Offset> slideAnimation;
-  final Widget child;
-
-  const _AnimatedCard({
-    required this.fadeAnimation,
-    required this.slideAnimation,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // FadeTransition y SlideTransition ya escuchan sus animaciones internamente
-    return FadeTransition(
-      opacity: fadeAnimation,
-      child: SlideTransition(
-        position: slideAnimation,
-        child: child,
       ),
     );
   }
@@ -976,5 +944,194 @@ class _ActionOption extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Sección de imágenes del paquete
+class _ImagesSection extends ConsumerStatefulWidget {
+  final PackageModel package;
+  final VoidCallback onImageAdded;
+  final VoidCallback onImageDeleted;
+
+  const _ImagesSection({
+    required this.package,
+    required this.onImageAdded,
+    required this.onImageDeleted,
+  });
+
+  @override
+  ConsumerState<_ImagesSection> createState() => _ImagesSectionState();
+}
+
+class _ImagesSectionState extends ConsumerState<_ImagesSection> {
+  bool _isUploading = false;
+  bool _isDeleting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final hasImages = widget.package.images.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        boxShadow: AppTheme.shadowSoft,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.photo_library_outlined, size: 20, color: AppColors.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  context.l10n.packages_imagesSection,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colors.textPrimary,
+                  ),
+                ),
+              ),
+              if (hasImages)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${widget.package.images.length}',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (hasImages) ...[
+            PackageImageGallery(
+              remoteImages: widget.package.images,
+              editMode: true,
+              onRemoveRemote: _handleDeleteImage,
+              height: 180,
+            ),
+            const SizedBox(height: 12),
+          ] else
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  context.l10n.packages_noImages,
+                  style: TextStyle(
+                    color: colors.textMuted,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          AddImageButton(
+            isLoading: _isUploading,
+            onImageSelected: _handleAddImage,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleAddImage(Uint8List imageBytes) async {
+    if (_isUploading) return;
+
+    setState(() => _isUploading = true);
+
+    try {
+      final repository = ref.read(packageRepositoryProvider);
+      await repository.addImages(widget.package.id, [imageBytes]);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.packages_imageAdded),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        widget.onImageAdded();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.packages_imageError),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    }
+  }
+
+  Future<void> _handleDeleteImage(String mediaId) async {
+    if (_isDeleting) return;
+
+    // Confirmar eliminación
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.packages_deleteImageTitle),
+        content: Text(context.l10n.packages_deleteImageConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(context.l10n.common_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text(context.l10n.common_delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      final repository = ref.read(packageRepositoryProvider);
+      await repository.deleteImage(widget.package.id, mediaId);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.packages_imageDeleted),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        widget.onImageDeleted();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.packages_imageError),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+      }
+    }
   }
 }

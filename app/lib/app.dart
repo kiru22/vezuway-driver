@@ -90,7 +90,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/packages/:id',
         pageBuilder: (context, state) {
-          final id = int.parse(state.pathParameters['id']!);
+          final id = state.pathParameters['id']!;
           return fadeSlideTransitionPage(
             state: state,
             child: PackageDetailScreen(packageId: id),
@@ -100,7 +100,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/packages/:id/edit',
         pageBuilder: (context, state) {
-          final id = int.parse(state.pathParameters['id']!);
+          final id = state.pathParameters['id']!;
           return fadeSlideTransitionPage(
             state: state,
             child: CreatePackageScreen(packageId: id),

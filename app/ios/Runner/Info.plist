@@ -61,5 +61,10 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>YOUR_IOS_CLIENT_ID.apps.googleusercontent.com</string>
+	<!-- Camera and Photo Library permissions for OCR scanning -->
+	<key>NSCameraUsageDescription</key>
+	<string>Esta app necesita acceso a la cámara para escanear etiquetas de paquetes</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Esta app necesita acceso a la galería para seleccionar fotos de etiquetas</string>
 </dict>
 </plist>

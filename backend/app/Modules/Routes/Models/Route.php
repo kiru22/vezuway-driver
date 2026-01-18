@@ -5,6 +5,7 @@ namespace App\Modules\Routes\Models;
 use App\Models\User;
 use App\Modules\Packages\Models\Package;
 use App\Shared\Enums\RouteStatus;
+use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Route extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasUuid, SoftDeletes;
 
     protected $fillable = [
         'transporter_id',
@@ -76,7 +77,7 @@ class Route extends Model
         return $this->packages()->count();
     }
 
-    public function scopeForTransporter($query, int $transporterId)
+    public function scopeForTransporter($query, string $transporterId)
     {
         return $query->where('transporter_id', $transporterId);
     }

@@ -4,13 +4,14 @@ namespace App\Modules\Imports\Models;
 
 use App\Models\User;
 use App\Shared\Enums\ImportStatus;
+use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExcelImport extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuid;
 
     protected $fillable = [
         'transporter_id',
@@ -81,7 +82,7 @@ class ExcelImport extends Model
         $this->increment('failed_rows');
     }
 
-    public function scopeForTransporter($query, int $transporterId)
+    public function scopeForTransporter($query, string $transporterId)
     {
         return $query->where('transporter_id', $transporterId);
     }

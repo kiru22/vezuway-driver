@@ -44,6 +44,7 @@ RUN apk add --no-cache \
         opcache \
         pcntl \
         exif \
+        bcmath \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && apk del $PHPIZE_DEPS \

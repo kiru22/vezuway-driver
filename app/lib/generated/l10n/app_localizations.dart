@@ -956,6 +956,72 @@ abstract class AppLocalizations {
   /// **'Fecha de salida'**
   String get packages_departureDate;
 
+  /// No description provided for @packages_imagesSection.
+  ///
+  /// In es, this message translates to:
+  /// **'Imagenes del paquete'**
+  String get packages_imagesSection;
+
+  /// No description provided for @packages_addImage.
+  ///
+  /// In es, this message translates to:
+  /// **'Anadir imagen'**
+  String get packages_addImage;
+
+  /// No description provided for @packages_noImages.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin imagenes'**
+  String get packages_noImages;
+
+  /// No description provided for @packages_imageAdded.
+  ///
+  /// In es, this message translates to:
+  /// **'Imagen anadida correctamente'**
+  String get packages_imageAdded;
+
+  /// No description provided for @packages_imageDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Imagen eliminada correctamente'**
+  String get packages_imageDeleted;
+
+  /// No description provided for @packages_imageError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al procesar la imagen'**
+  String get packages_imageError;
+
+  /// No description provided for @packages_deleteImageTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar imagen'**
+  String get packages_deleteImageTitle;
+
+  /// No description provided for @packages_deleteImageConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Estas seguro de eliminar esta imagen?'**
+  String get packages_deleteImageConfirm;
+
+  /// No description provided for @packages_editPrice.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar precio'**
+  String get packages_editPrice;
+
+  /// No description provided for @packages_priceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio (€)'**
+  String get packages_priceLabel;
+
+  /// No description provided for @packages_priceHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce el precio o deja vacio para calculo automatico'**
+  String get packages_priceHint;
+
   /// No description provided for @routes_title.
   ///
   /// In es, this message translates to:
@@ -1651,6 +1717,84 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Viber'**
   String get action_viber;
+
+  /// No description provided for @ocr_scanButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Escanear'**
+  String get ocr_scanButton;
+
+  /// No description provided for @ocr_selectSource.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar origen'**
+  String get ocr_selectSource;
+
+  /// No description provided for @ocr_camera.
+  ///
+  /// In es, this message translates to:
+  /// **'Camara'**
+  String get ocr_camera;
+
+  /// No description provided for @ocr_gallery.
+  ///
+  /// In es, this message translates to:
+  /// **'Galeria'**
+  String get ocr_gallery;
+
+  /// No description provided for @ocr_resultsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Resultados del escaneo'**
+  String get ocr_resultsTitle;
+
+  /// No description provided for @ocr_resultsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa y edita los datos detectados'**
+  String get ocr_resultsSubtitle;
+
+  /// No description provided for @ocr_apply.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicar datos'**
+  String get ocr_apply;
+
+  /// No description provided for @ocr_error.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al procesar la imagen'**
+  String get ocr_error;
+
+  /// No description provided for @ocr_noDataFound.
+  ///
+  /// In es, this message translates to:
+  /// **'No se encontraron datos en la imagen. Intenta con otra foto mas clara.'**
+  String get ocr_noDataFound;
+
+  /// No description provided for @notifications_enableTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Activa las notificaciones'**
+  String get notifications_enableTitle;
+
+  /// No description provided for @notifications_enableDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibe alertas sobre tus envios y rutas'**
+  String get notifications_enableDescription;
+
+  /// No description provided for @notifications_enable.
+  ///
+  /// In es, this message translates to:
+  /// **'Activar'**
+  String get notifications_enable;
+
+  /// No description provided for @notifications_notNow.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get notifications_notNow;
 }
 
 class _AppLocalizationsDelegate

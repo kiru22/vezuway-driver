@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use App\Modules\Packages\Models\Package;
 use App\Modules\Routes\Models\Route;
 use App\Shared\Enums\PackageStatus;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class PackageSeeder extends Seeder
 {
@@ -16,6 +18,7 @@ class PackageSeeder extends Seeder
     {
         // Get first route or create one if none exists
         $route = Route::first();
+        $user = User::first();
 
         $packages = [
             [
@@ -126,6 +129,10 @@ class PackageSeeder extends Seeder
             if ($route) {
                 $packageData['route_id'] = $route->id;
             }
+            if ($user) {
+                $packageData['transporter_id'] = $user->id;
+            }
+            $packageData['tracking_code'] = 'PKG-'.strtoupper(Str::random(8));
             Package::create($packageData);
         }
     }

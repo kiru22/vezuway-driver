@@ -17,7 +17,7 @@ class RouteRepository {
     return data.map((json) => RouteModel.fromJson(json)).toList();
   }
 
-  Future<RouteModel> getRoute(int id) async {
+  Future<RouteModel> getRoute(String id) async {
     final response = await _api.get('/routes/$id');
     final data = response.data['data'] ?? response.data;
     return RouteModel.fromJson(data);
@@ -60,13 +60,13 @@ class RouteRepository {
     return RouteModel.fromJson(data);
   }
 
-  Future<RouteModel> updateRoute(int id, Map<String, dynamic> data) async {
+  Future<RouteModel> updateRoute(String id, Map<String, dynamic> data) async {
     final response = await _api.put('/routes/$id', data: data);
     final responseData = response.data['data'] ?? response.data;
     return RouteModel.fromJson(responseData);
   }
 
-  Future<RouteModel> updateStatus(int id, RouteStatus status) async {
+  Future<RouteModel> updateStatus(String id, RouteStatus status) async {
     final response = await _api.patch('/routes/$id/status', data: {
       'status': status.apiValue,
     });
@@ -74,17 +74,17 @@ class RouteRepository {
     return RouteModel.fromJson(data);
   }
 
-  Future<void> deleteRoute(int id) async {
+  Future<void> deleteRoute(String id) async {
     await _api.delete('/routes/$id');
   }
 
-  Future<List<PackageModel>> getRoutePackages(int id) async {
+  Future<List<PackageModel>> getRoutePackages(String id) async {
     final response = await _api.get('/routes/$id/packages');
     final List<dynamic> data = response.data['data'] ?? response.data;
     return data.map((json) => PackageModel.fromJson(json)).toList();
   }
 
-  Future<void> assignPackages(int routeId, List<int> packageIds) async {
+  Future<void> assignPackages(String routeId, List<String> packageIds) async {
     await _api.post('/routes/$routeId/packages', data: {
       'package_ids': packageIds,
     });

@@ -37,9 +37,9 @@ docker compose exec backend php artisan migrate
 
 | Servicio | URL | Descripcion |
 |----------|-----|-------------|
-| Frontend | http://localhost:3000 | App Flutter Web |
-| Backend API | http://localhost:8000 | Laravel API |
-| Adminer | http://localhost:8080 | DB Manager (solo dev) |
+| Frontend | http://localhost:3002 | App Flutter Web |
+| Backend API | http://localhost:8001 | Laravel API |
+| Adminer | http://localhost:8082 | DB Manager (solo dev) |
 
 ## Comandos Docker
 
@@ -97,14 +97,14 @@ docker compose exec backend php artisan tinker
 │    Frontend     │────▶│    Backend      │
 │  (Flutter Web)  │     │    (Laravel)    │
 │   nginx:80      │     │   nginx:80      │
-│   port: 3000    │     │   port: 8000    │
+│   port: 3002    │     │   port: 8001    │
 └─────────────────┘     └────────┬────────┘
                                  │
                     ┌────────────┴────────────┐
                     │                         │
               ┌─────▼─────┐           ┌───────▼───────┐
               │  Postgres │           │     Redis     │
-              │   :5432   │           │     :6379     │
+              │   :5433   │           │     :6380     │
               └───────────┘           └───────────────┘
 ```
 
@@ -181,7 +181,7 @@ docker system prune -a --volumes
 ```bash
 # Cambiar puertos en .env
 BACKEND_PORT=8001
-FRONTEND_PORT=3001
+FRONTEND_PORT=3002
 ```
 
 ### Contenedor no inicia

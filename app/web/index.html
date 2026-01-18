@@ -21,8 +21,23 @@
   <meta name="description" content="Encuentra transportistas de confianza">
 
   <!-- Google Sign In -->
-  <meta name="google-signin-client_id" content="264327777558-q8kjuudrlb73l0smgahl29c36nhqduc1.apps.googleusercontent.com">
+  <meta name="google-signin-client_id" content="264327777558-51a3m9fqodresjv2293kalbovpufnoaq.apps.googleusercontent.com">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Firebase SDK for Push Notifications -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtWe0-bt9x7zLGav4zzIvOWJp62OppkkY",
+      authDomain: "vezuway-23673.firebaseapp.com",
+      projectId: "vezuway-23673",
+      storageBucket: "vezuway-23673.firebasestorage.app",
+      messagingSenderId: "1002793405640",
+      appId: "1:1002793405640:web:62f350f0c39db9b5c229fd"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">

@@ -455,6 +455,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_departureDate => 'Fecha de salida';
 
   @override
+  String get packages_imagesSection => 'Imagenes del paquete';
+
+  @override
+  String get packages_addImage => 'Anadir imagen';
+
+  @override
+  String get packages_noImages => 'Sin imagenes';
+
+  @override
+  String get packages_imageAdded => 'Imagen anadida correctamente';
+
+  @override
+  String get packages_imageDeleted => 'Imagen eliminada correctamente';
+
+  @override
+  String get packages_imageError => 'Error al procesar la imagen';
+
+  @override
+  String get packages_deleteImageTitle => 'Eliminar imagen';
+
+  @override
+  String get packages_deleteImageConfirm =>
+      'Estas seguro de eliminar esta imagen?';
+
+  @override
+  String get packages_editPrice => 'Editar precio';
+
+  @override
+  String get packages_priceLabel => 'Precio (€)';
+
+  @override
+  String get packages_priceHint =>
+      'Introduce el precio o deja vacio para calculo automatico';
+
+  @override
   String get routes_title => 'Rutas';
 
   @override
@@ -839,4 +874,45 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get action_viber => 'Viber';
+
+  @override
+  String get ocr_scanButton => 'Escanear';
+
+  @override
+  String get ocr_selectSource => 'Seleccionar origen';
+
+  @override
+  String get ocr_camera => 'Camara';
+
+  @override
+  String get ocr_gallery => 'Galeria';
+
+  @override
+  String get ocr_resultsTitle => 'Resultados del escaneo';
+
+  @override
+  String get ocr_resultsSubtitle => 'Revisa y edita los datos detectados';
+
+  @override
+  String get ocr_apply => 'Aplicar datos';
+
+  @override
+  String get ocr_error => 'Error al procesar la imagen';
+
+  @override
+  String get ocr_noDataFound =>
+      'No se encontraron datos en la imagen. Intenta con otra foto mas clara.';
+
+  @override
+  String get notifications_enableTitle => 'Activa las notificaciones';
+
+  @override
+  String get notifications_enableDescription =>
+      'Recibe alertas sobre tus envios y rutas';
+
+  @override
+  String get notifications_enable => 'Activar';
+
+  @override
+  String get notifications_notNow => 'Ahora no';
 }

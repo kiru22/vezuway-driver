@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Controllers\AuthController;
+use App\Modules\Ocr\Controllers\OcrController;
 use App\Modules\Packages\Controllers\PackageController;
 use App\Modules\Routes\Controllers\RouteController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +54,8 @@ Route::prefix('v1')->group(function () {
             Route::delete('{package}', [PackageController::class, 'destroy']);
             Route::patch('{package}/status', [PackageController::class, 'updateStatus']);
             Route::get('{package}/history', [PackageController::class, 'history']);
+            Route::post('{package}/images', [PackageController::class, 'addImages']);
+            Route::delete('{package}/images/{media}', [PackageController::class, 'deleteImage']);
         });
 
         // Routes
@@ -66,5 +69,8 @@ Route::prefix('v1')->group(function () {
             Route::get('{route}/packages', [RouteController::class, 'packages']);
             Route::post('{route}/packages', [RouteController::class, 'assignPackages']);
         });
+
+        // OCR
+        Route::post('ocr/scan', [OcrController::class, 'scan']);
     });
 });

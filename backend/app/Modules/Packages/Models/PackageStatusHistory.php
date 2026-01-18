@@ -3,11 +3,14 @@
 namespace App\Modules\Packages\Models;
 
 use App\Models\User;
+use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PackageStatusHistory extends Model
 {
+    use HasUuid;
+
     public $timestamps = false;
 
     protected $table = 'package_status_history';

@@ -9,6 +9,7 @@ import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/providers/locale_provider.dart';
 import '../../../../shared/providers/theme_provider.dart';
 import '../../../../shared/widgets/app_header.dart';
+import '../../../../shared/widgets/shimmer_widget.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 import '../../../packages/domain/providers/package_provider.dart';
@@ -16,6 +17,7 @@ import '../../domain/providers/dashboard_provider.dart';
 import '../widgets/hero_section.dart';
 import '../widgets/trip_carousel.dart';
 import '../widgets/stats_grid.dart';
+import '../../../notifications/presentation/widgets/notification_permission_banner.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -81,6 +83,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 child: AppHeader(
                   onMenuTap: () => _showUserMenu(context),
                 ),
+              ),
+              // Notification permission banner
+              const SliverToBoxAdapter(
+                child: NotificationPermissionBanner(),
               ),
               // Greeting section
               SliverToBoxAdapter(
@@ -205,78 +211,13 @@ class _StatsLoadingShimmer extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                 border: Border.all(color: colors.border),
               ),
-              child: const _ShimmerEffect(),
+              child: ShimmerWidget(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              ),
             ),
           );
         }),
       ),
-    );
-  }
-}
-
-class _ShimmerEffect extends StatefulWidget {
-  const _ShimmerEffect();
-
-  @override
-  State<_ShimmerEffect> createState() => _ShimmerEffectState();
-}
-
-class _ShimmerEffectState extends State<_ShimmerEffect>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat();
-    _animation = Tween<double>(begin: -1, end: 2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return ShaderMask(
-          shaderCallback: (bounds) {
-            return LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                colors.shimmerBase,
-                colors.shimmerHighlight,
-                colors.shimmerBase,
-              ],
-              stops: [
-                _animation.value - 0.3,
-                _animation.value,
-                _animation.value + 0.3,
-              ].map((e) => e.clamp(0.0, 1.0)).toList(),
-            ).createShader(bounds);
-          },
-          blendMode: BlendMode.srcIn,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            ),
-          ),
-        );
-      },
     );
   }
 }

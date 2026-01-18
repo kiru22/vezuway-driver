@@ -39,7 +39,7 @@ enum PackageStatus {
 
 /// Información resumida de la ruta asociada al paquete
 class RouteInfo {
-  final int id;
+  final String id;
   final String origin;
   final String destination;
   final String? departureDate;
@@ -53,7 +53,7 @@ class RouteInfo {
 
   factory RouteInfo.fromJson(Map<String, dynamic> json) {
     return RouteInfo(
-      id: json['id'],
+      id: json['id'].toString(),
       origin: json['origin'] ?? '',
       destination: json['destination'] ?? '',
       departureDate: json['departure_date'],
@@ -61,9 +61,30 @@ class RouteInfo {
   }
 }
 
+/// Información de una imagen del paquete
+class PackageImage {
+  final String id;
+  final String url;
+  final String? thumbUrl;
+
+  PackageImage({
+    required this.id,
+    required this.url,
+    this.thumbUrl,
+  });
+
+  factory PackageImage.fromJson(Map<String, dynamic> json) {
+    return PackageImage(
+      id: json['id'].toString(),
+      url: json['url'] ?? '',
+      thumbUrl: json['thumb_url'],
+    );
+  }
+}
+
 class PackageModel {
-  final int id;
-  final int? routeId;
+  final String id;
+  final String? routeId;
   final RouteInfo? route;
   final String trackingCode;
   final PackageStatus status;
@@ -87,6 +108,7 @@ class PackageModel {
   final String? notes;
   final String? ocrRawText;
   final Map<String, dynamic>? ocrParsedData;
+  final List<PackageImage> images;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -116,6 +138,7 @@ class PackageModel {
     this.notes,
     this.ocrRawText,
     this.ocrParsedData,
+    this.images = const [],
     required this.createdAt,
     required this.updatedAt,
   });
@@ -127,10 +150,11 @@ class PackageModel {
     final dimensions = json['dimensions'] as Map<String, dynamic>?;
     final ocr = json['ocr'] as Map<String, dynamic>?;
     final routeJson = json['route'] as Map<String, dynamic>?;
+    final imagesJson = json['images'] as List<dynamic>?;
 
     return PackageModel(
-      id: json['id'],
-      routeId: json['route_id'],
+      id: json['id'].toString(),
+      routeId: json['route_id']?.toString(),
       route: routeJson != null ? RouteInfo.fromJson(routeJson) : null,
       trackingCode: json['tracking_code'],
       status: PackageStatus.fromString(json['status']),
@@ -154,6 +178,7 @@ class PackageModel {
       notes: json['notes'],
       ocrRawText: ocr?['raw_text'] ?? json['ocr_raw_text'],
       ocrParsedData: json['ocr_parsed_data'],
+      images: imagesJson?.map((img) => PackageImage.fromJson(img)).toList() ?? [],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
     );
@@ -204,8 +229,8 @@ class PackageModel {
   }
 
   PackageModel copyWith({
-    int? id,
-    int? routeId,
+    String? id,
+    String? routeId,
     RouteInfo? route,
     String? trackingCode,
     PackageStatus? status,
@@ -229,6 +254,7 @@ class PackageModel {
     String? notes,
     String? ocrRawText,
     Map<String, dynamic>? ocrParsedData,
+    List<PackageImage>? images,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -258,6 +284,7 @@ class PackageModel {
       notes: notes ?? this.notes,
       ocrRawText: ocrRawText ?? this.ocrRawText,
       ocrParsedData: ocrParsedData ?? this.ocrParsedData,
+      images: images ?? this.images,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
