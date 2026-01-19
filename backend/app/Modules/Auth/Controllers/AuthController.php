@@ -287,13 +287,21 @@ class AuthController extends Controller
     private function verifyAccessToken(string $accessToken): ?array
     {
         try {
+            Log::warning('Verifying access_token via Google userinfo API');
+
             $response = Http::timeout(10)
                 ->withToken($accessToken)
                 ->get('https://www.googleapis.com/oauth2/v3/userinfo');
 
+            Log::warning('Google userinfo API response', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+            ]);
+
             if ($response->failed()) {
                 Log::warning('Google userinfo API request failed', [
                     'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
 
                 return null;
@@ -301,7 +309,14 @@ class AuthController extends Controller
 
             $userInfo = $response->json();
 
+            Log::warning('Google userinfo response data', [
+                'has_email' => !empty($userInfo['email']),
+                'email_verified' => $userInfo['email_verified'] ?? 'not_present',
+                'email_verified_type' => gettype($userInfo['email_verified'] ?? null),
+            ]);
+
             if (empty($userInfo['email'])) {
+                Log::warning('Google userinfo missing email');
                 return null;
             }
 
@@ -309,10 +324,15 @@ class AuthController extends Controller
             if (empty($userInfo['email_verified']) || $userInfo['email_verified'] !== true) {
                 Log::warning('Google login rejected: email not verified', [
                     'email' => $userInfo['email'] ?? 'unknown',
+                    'email_verified_value' => $userInfo['email_verified'] ?? 'not_present',
                 ]);
 
                 return null;
             }
+
+            Log::warning('Access token verified successfully', [
+                'email' => $userInfo['email'],
+            ]);
 
             return $userInfo;
         } catch (\Exception $e) {
