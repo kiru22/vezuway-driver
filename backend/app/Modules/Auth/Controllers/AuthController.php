@@ -142,6 +142,14 @@ class AuthController extends Controller
             'access_token' => 'nullable|string',
         ]);
 
+        // Log para diagnóstico de Google OAuth
+        Log::warning('Google login attempt', [
+            'has_id_token' => !empty($validated['id_token']),
+            'has_access_token' => !empty($validated['access_token']),
+            'id_token_preview' => !empty($validated['id_token']) ? substr($validated['id_token'], 0, 50) . '...' : null,
+            'access_token_preview' => !empty($validated['access_token']) ? substr($validated['access_token'], 0, 20) . '...' : null,
+        ]);
+
         if (empty($validated['id_token']) && empty($validated['access_token'])) {
             return response()->json([
                 'message' => 'Se requiere id_token o access_token',
@@ -240,6 +248,11 @@ class AuthController extends Controller
             config('services.google.client_id_android'),
         ]);
 
+        // Log de client IDs configurados
+        Log::warning('Verifying id_token', [
+            'valid_client_ids' => $validClientIds,
+        ]);
+
         if (empty($validClientIds)) {
             Log::warning('Google authentication not configured: no client IDs found in services.google config');
 
@@ -250,12 +263,24 @@ class AuthController extends Controller
 
         foreach ($validClientIds as $clientId) {
             $client->setClientId($clientId);
-            $payload = $client->verifyIdToken($idToken);
-            if ($payload) {
-                return $payload;
+            try {
+                $payload = $client->verifyIdToken($idToken);
+                if ($payload) {
+                    Log::warning('Token verified successfully', [
+                        'client_id' => $clientId,
+                        'aud' => $payload['aud'] ?? 'unknown',
+                    ]);
+                    return $payload;
+                }
+            } catch (\Exception $e) {
+                Log::warning('Token verification failed for client_id', [
+                    'client_id' => $clientId,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
+        Log::warning('All token verifications failed');
         return null;
     }
 
