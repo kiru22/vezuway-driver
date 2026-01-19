@@ -233,6 +233,13 @@ class AuthController extends Controller
                 'token' => $token,
             ]);
         } catch (\Exception $e) {
+            Log::error('Google login exception', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'message' => 'Error al autenticar con Google',
                 'error' => config('app.debug') ? $e->getMessage() : null,
