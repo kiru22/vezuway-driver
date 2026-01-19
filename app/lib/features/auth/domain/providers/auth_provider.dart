@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/services/api_service.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -17,6 +18,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 // Google Sign In Provider
 final googleSignInProvider = Provider<GoogleSignIn>((ref) {
   return GoogleSignIn(
+    clientId: AppConfig.googleClientId,
     scopes: ['email', 'profile'],
   );
 });
