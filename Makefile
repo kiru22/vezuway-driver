@@ -66,7 +66,9 @@ shell-frontend:
 # Run Flutter locally with hot reload (stop Docker frontend first)
 frontend-local:
 	@docker stop logistics-frontend 2>/dev/null || true
-	cd app && flutter run -d chrome --web-port=3002
+	cd app && flutter run -d chrome --web-port=3002 \
+		--dart-define=GOOGLE_CLIENT_ID=264327777558-q8kjuudrlb73l0smgahl29c36nhqduc1.apps.googleusercontent.com \
+		--dart-define=API_URL=http://localhost:8001/api/v1
 
 # Laravel commands
 migrate:
