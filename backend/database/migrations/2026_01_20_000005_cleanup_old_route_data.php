@@ -13,16 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Protect production environment from accidental data loss
-        if (app()->environment('production')) {
-            throw new \RuntimeException(
-                'This migration cannot run in production. '.
-                'If you need to run it, set ALLOW_DESTRUCTIVE_MIGRATIONS=true in your .env'
-            );
-        }
+        // Allow destructive migrations with explicit env variable
+        $allowDestructive = config('app.allow_destructive_migrations', false);
 
-        // Allow override with explicit env variable
-        if (! config('app.allow_destructive_migrations', false) && ! app()->environment('local', 'testing')) {
+        if (! $allowDestructive && ! app()->environment('local', 'testing')) {
             throw new \RuntimeException(
                 'This migration is destructive and requires explicit permission. '.
                 'Set ALLOW_DESTRUCTIVE_MIGRATIONS=true in your .env to proceed.'
@@ -30,16 +24,24 @@ return new class extends Migration
         }
 
         // Clear route_id from packages (they will be assigned to trips)
-        DB::table('packages')->update(['route_id' => null]);
+        if (Schema::hasTable('packages')) {
+            DB::table('packages')->update(['route_id' => null]);
+        }
 
         // Delete route schedules
-        DB::table('route_schedules')->delete();
+        if (Schema::hasTable('route_schedules')) {
+            DB::table('route_schedules')->delete();
+        }
 
         // Delete route stops
-        DB::table('route_stops')->delete();
+        if (Schema::hasTable('route_stops')) {
+            DB::table('route_stops')->delete();
+        }
 
         // Delete routes
-        DB::table('routes')->delete();
+        if (Schema::hasTable('routes')) {
+            DB::table('routes')->delete();
+        }
 
         // Drop route_schedules table
         Schema::dropIfExists('route_schedules');
