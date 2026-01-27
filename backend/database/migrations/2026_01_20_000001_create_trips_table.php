@@ -27,9 +27,9 @@ return new class extends Migration
             $table->json('vehicle_info')->nullable();
             $table->text('notes')->nullable();
 
-            $table->unsignedDecimal('price_per_kg', 10, 2)->nullable();
-            $table->unsignedDecimal('minimum_price', 10, 2)->nullable();
-            $table->unsignedDecimal('price_multiplier', 5, 2)->default(1.00);
+            $table->decimal('price_per_kg', 10, 2)->unsigned()->nullable();
+            $table->decimal('minimum_price', 10, 2)->unsigned()->nullable();
+            $table->decimal('price_multiplier', 5, 2)->unsigned()->default(1.00);
             $table->string('currency', 3)->default('EUR');
 
             $table->timestamps();
