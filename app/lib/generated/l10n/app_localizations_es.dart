@@ -66,6 +66,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get common_pcs => 'uds';
 
   @override
+  String get common_today => 'Hoy';
+
+  @override
+  String get common_yesterday => 'Ayer';
+
+  @override
+  String get common_deleteConfirmTitle => 'Confirmar eliminación';
+
+  @override
+  String common_deleteConfirmMessage(String itemType) {
+    return '¿Estás seguro de que deseas eliminar este $itemType?';
+  }
+
+  @override
   String get auth_loginTitle => 'Iniciar sesion';
 
   @override
@@ -226,6 +240,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_trackingCode => 'Codigo de Seguimiento';
 
   @override
+  String get packages_codeCopied => 'Codigo copiado';
+
+  @override
   String get packages_weight => 'Peso';
 
   @override
@@ -284,6 +301,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get packages_createTitle => 'Nuevo Paquete';
+
+  @override
+  String get packages_createNew => 'Nuevo envío';
 
   @override
   String get packages_createSuccess => 'Paquete creado correctamente';
@@ -490,6 +510,22 @@ class AppLocalizationsEs extends AppLocalizations {
       'Introduce el precio o deja vacio para calculo automatico';
 
   @override
+  String get packages_selectAll => 'Todos';
+
+  @override
+  String packages_selectedCount(int count) {
+    return '$count seleccionados';
+  }
+
+  @override
+  String get packages_advanceStatus => 'Avanzar';
+
+  @override
+  String packages_bulkUpdateSuccess(int count) {
+    return '$count paquetes actualizados';
+  }
+
+  @override
   String get routes_title => 'Rutas';
 
   @override
@@ -590,6 +626,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_createError => 'Error al crear la ruta';
 
   @override
+  String get routes_editTitle => 'Editar Ruta';
+
+  @override
+  String get routes_updateSuccess => 'Ruta actualizada correctamente';
+
+  @override
+  String get routes_updateError => 'Error al actualizar la ruta';
+
+  @override
   String get routes_selectDatesPrompt =>
       'Toca los dias en el calendario para seleccionar';
 
@@ -642,6 +687,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_deleteError => 'Error al eliminar la ruta';
 
   @override
+  String get routes_routeDetails => 'DETALLES DE RUTA';
+
+  @override
+  String get routes_addCountry => '+ Agregar Pais';
+
+  @override
+  String get routes_originPoint => 'Punto de Origen';
+
+  @override
+  String routes_stopN(int n) {
+    return 'Parada $n';
+  }
+
+  @override
+  String get routes_finalDestination => 'Destino Final';
+
+  @override
+  String get routes_addCity => 'Agregar Ciudad';
+
+  @override
+  String get routes_deleteStop => 'eliminar';
+
+  @override
+  String get routes_pricingSection => 'PRECIOS';
+
+  @override
+  String get routes_amount => 'Monto';
+
+  @override
+  String get routes_currency => 'Moneda';
+
+  @override
+  String get routes_publishRoute => 'Publicar Ruta';
+
+  @override
+  String get routes_selectCountry => 'Selecciona pais';
+
+  @override
+  String get routes_selectCity => 'Selecciona ciudad';
+
+  @override
+  String get routes_atLeastOneCity => 'Agrega al menos una ciudad';
+
+  @override
+  String get country_germany => 'Alemania';
+
+  @override
+  String get country_poland => 'Polonia';
+
+  @override
   String get nav_home => 'Inicio';
 
   @override
@@ -649,6 +744,129 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get nav_routes => 'Rutas';
+
+  @override
+  String get nav_contacts => 'Contactos';
+
+  @override
+  String get contacts_title => 'Contactos';
+
+  @override
+  String get contacts_search => 'Buscar por nombre, email o teléfono...';
+
+  @override
+  String get contacts_all => 'Todos';
+
+  @override
+  String get contacts_verified => 'Verificados';
+
+  @override
+  String get contacts_newContact => 'Nuevo Contacto';
+
+  @override
+  String get contacts_noContacts => 'No hay contactos';
+
+  @override
+  String get contacts_noContactsDesc =>
+      'Los contactos se crearán automáticamente al crear paquetes';
+
+  @override
+  String get contacts_nameLabel => 'Nombre *';
+
+  @override
+  String get contacts_nameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get contacts_emailLabel => 'Email';
+
+  @override
+  String get contacts_emailInvalid => 'Email inválido';
+
+  @override
+  String get contacts_phoneLabel => 'Teléfono';
+
+  @override
+  String get contacts_notesLabel => 'Notas';
+
+  @override
+  String get contacts_create => 'Crear';
+
+  @override
+  String get contacts_created => 'Contacto creado';
+
+  @override
+  String get contacts_createError => 'Error al crear contacto';
+
+  @override
+  String get contacts_detail => 'Detalle de Contacto';
+
+  @override
+  String get contacts_edit => 'Editar Contacto';
+
+  @override
+  String get contacts_updated => 'Contacto actualizado';
+
+  @override
+  String get contacts_deleteTitle => 'Eliminar Contacto';
+
+  @override
+  String get contacts_deleteConfirm =>
+      '¿Estás seguro de eliminar este contacto?';
+
+  @override
+  String get contacts_deleted => 'Contacto eliminado';
+
+  @override
+  String get contacts_errorLoading => 'Error al cargar contactos';
+
+  @override
+  String get contacts_errorLoadingPackages => 'Error al cargar paquetes';
+
+  @override
+  String get contacts_tabHistory => 'Histórico';
+
+  @override
+  String get contacts_tabDetails => 'Detalles';
+
+  @override
+  String get contacts_noPackages => 'Sin paquetes';
+
+  @override
+  String get contacts_noPackagesDesc =>
+      'Este contacto no tiene paquetes asociados';
+
+  @override
+  String get contacts_statsSent => 'Enviados';
+
+  @override
+  String get contacts_statsReceived => 'Recibidos';
+
+  @override
+  String get contacts_statsTotal => 'Total';
+
+  @override
+  String get contacts_systemInfo => 'Información del Sistema';
+
+  @override
+  String get contacts_fieldId => 'ID';
+
+  @override
+  String get contacts_fieldCreatedBy => 'Creado por';
+
+  @override
+  String get contacts_fieldCreatedAt => 'Fecha de creación';
+
+  @override
+  String get contacts_fieldUpdatedAt => 'Última actualización';
+
+  @override
+  String get contacts_lastActivity => 'Última actividad';
+
+  @override
+  String get contacts_notes => 'Notas';
+
+  @override
+  String get contacts_linkedUser => 'Usuario vinculado';
 
   @override
   String get quickAction_title => 'Crear nuevo';
@@ -915,4 +1133,170 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notifications_notNow => 'Ahora no';
+
+  @override
+  String get trips_clearFilter => 'Borrar filtro';
+
+  @override
+  String get myOrders_title => 'Mis Pedidos';
+
+  @override
+  String get myOrders_filterByStatus => 'Filtrar por estado';
+
+  @override
+  String get myOrders_filterAll => 'Todos';
+
+  @override
+  String get myOrders_filterPending => 'Pendiente';
+
+  @override
+  String get myOrders_filterInTransit => 'En tránsito';
+
+  @override
+  String get myOrders_filterDelivered => 'Entregado';
+
+  @override
+  String get myOrders_filterDelayed => 'Retrasado';
+
+  @override
+  String get myOrders_noOrdersFiltered => 'No hay pedidos con este estado';
+
+  @override
+  String get myOrders_noOrders => 'No tienes pedidos';
+
+  @override
+  String get myOrders_noOrdersDesc =>
+      'Cuando envíes o recibas paquetes,\naparecerán aquí';
+
+  @override
+  String get myOrders_errorLoading => 'Error al cargar pedidos';
+
+  @override
+  String get myOrders_retry => 'Reintentar';
+
+  @override
+  String get myOrders_senderAndReceiver => 'Remitente y Destinatario';
+
+  @override
+  String get myOrders_youAreSender => 'Eres el Remitente';
+
+  @override
+  String get myOrders_youAreReceiver => 'Eres el Destinatario';
+
+  @override
+  String get driverPending_title => 'Solicitud en revisión';
+
+  @override
+  String get driverPending_message =>
+      'Tu solicitud como conductor está siendo revisada por nuestro equipo.';
+
+  @override
+  String get driverPending_emailNotice =>
+      'Te notificaremos por email cuando sea aprobada.';
+
+  @override
+  String get driverPending_verifying => 'Verificando...';
+
+  @override
+  String get driverPending_refreshStatus => 'Actualizar estado';
+
+  @override
+  String get driverPending_logout => 'Cerrar sesión';
+
+  @override
+  String get clientDashboard_title => 'Mis Envios';
+
+  @override
+  String get clientDashboard_myShipments => 'Mis envios';
+
+  @override
+  String get clientDashboard_noShipments => 'No tienes envios registrados';
+
+  @override
+  String get clientDashboard_createFirst => 'Crea tu primer envio';
+
+  @override
+  String get clientDashboard_totalShipments => 'Total enviados';
+
+  @override
+  String get clientDashboard_inTransit => 'En transito';
+
+  @override
+  String get clientDashboard_delivered => 'Entregados';
+
+  @override
+  String get clientDashboard_viewAll => 'Ver todos';
+
+  @override
+  String get admin_panelTitle => 'Panel de Admin';
+
+  @override
+  String get admin_users => 'Usuarios';
+
+  @override
+  String get admin_requests => 'Solicitudes';
+
+  @override
+  String get admin_allUsers => 'Todos';
+
+  @override
+  String get admin_clients => 'Clientes';
+
+  @override
+  String get admin_drivers => 'Transportistas';
+
+  @override
+  String get admin_client => 'Cliente';
+
+  @override
+  String get admin_driver => 'Transportista';
+
+  @override
+  String get admin_noUsers => 'No hay usuarios';
+
+  @override
+  String get admin_loadError => 'Error al cargar datos';
+
+  @override
+  String get admin_registered => 'Registrado';
+
+  @override
+  String get admin_userSingular => 'usuario';
+
+  @override
+  String get admin_userPlural => 'usuarios';
+
+  @override
+  String get admin_clientSingular => 'cliente';
+
+  @override
+  String get admin_clientPlural => 'clientes';
+
+  @override
+  String get admin_driverSingular => 'transportista';
+
+  @override
+  String get admin_driverPlural => 'transportistas';
+
+  @override
+  String get admin_statusApproved => 'Aprobado';
+
+  @override
+  String get admin_statusPending => 'Pendiente';
+
+  @override
+  String get admin_statusRejected => 'Rechazado';
+
+  @override
+  String get admin_noPendingDrivers => 'No hay conductores pendientes';
+
+  @override
+  String get admin_allDriversReviewed =>
+      'Todos los conductores han sido revisados';
+
+  @override
+  String get admin_pendingDriverSingular => 'Conductor pendiente';
+
+  @override
+  String get admin_pendingDriverPlural => 'Conductores pendientes';
 }

@@ -55,7 +55,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
   final GoogleSignIn _googleSignIn;
 
-  AuthNotifier(this._repository, this._googleSignIn) : super(const AuthState()) {
+  AuthNotifier(this._repository, this._googleSignIn)
+      : super(const AuthState()) {
     checkAuthStatus();
   }
 
@@ -175,6 +176,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.unauthenticated,
         error: 'Error al iniciar sesion con Google',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> selectUserType(String userType) async {
+    state = state.copyWith(status: AuthStatus.loading, error: null);
+
+    try {
+      final user = await _repository.selectUserType(userType);
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        error: 'Error al seleccionar tipo de usuario',
       );
       return false;
     }

@@ -3,8 +3,7 @@
 namespace App\Modules\Routes\Models;
 
 use App\Models\User;
-use App\Modules\Packages\Models\Package;
-use App\Shared\Enums\RouteStatus;
+use App\Modules\Trips\Models\Trip;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +17,10 @@ class Route extends Model
 
     protected $fillable = [
         'transporter_id',
+        'name',
+        'description',
+        'is_active',
+        'estimated_duration_hours',
         'origin_city',
         'origin_country',
         'origin_latitude',
@@ -26,10 +29,6 @@ class Route extends Model
         'destination_country',
         'destination_latitude',
         'destination_longitude',
-        'departure_date',
-        'estimated_arrival_date',
-        'actual_arrival_date',
-        'status',
         'vehicle_info',
         'notes',
         'price_per_kg',
@@ -38,10 +37,8 @@ class Route extends Model
     ];
 
     protected $casts = [
-        'departure_date' => 'date',
-        'estimated_arrival_date' => 'date',
-        'actual_arrival_date' => 'date',
-        'status' => RouteStatus::class,
+        'is_active' => 'boolean',
+        'estimated_duration_hours' => 'integer',
         'vehicle_info' => 'array',
         'origin_latitude' => 'decimal:8',
         'origin_longitude' => 'decimal:8',
@@ -57,24 +54,19 @@ class Route extends Model
         return $this->belongsTo(User::class, 'transporter_id');
     }
 
-    public function packages(): HasMany
-    {
-        return $this->hasMany(Package::class);
-    }
-
-    public function schedules(): HasMany
-    {
-        return $this->hasMany(RouteSchedule::class)->orderBy('departure_date');
-    }
-
     public function stops(): HasMany
     {
         return $this->hasMany(RouteStop::class)->orderBy('order');
     }
 
-    public function getPackagesCountAttribute(): int
+    public function trips(): HasMany
     {
-        return $this->packages()->count();
+        return $this->hasMany(Trip::class);
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->name ?? "{$this->origin_city} - {$this->destination_city}";
     }
 
     public function scopeForTransporter($query, string $transporterId)
@@ -82,14 +74,8 @@ class Route extends Model
         return $query->where('transporter_id', $transporterId);
     }
 
-    public function scopeUpcoming($query)
-    {
-        return $query->where('departure_date', '>=', now()->toDateString())
-            ->where('status', RouteStatus::PLANNED);
-    }
-
     public function scopeActive($query)
     {
-        return $query->where('status', RouteStatus::IN_PROGRESS);
+        return $query->where('is_active', true);
     }
 }

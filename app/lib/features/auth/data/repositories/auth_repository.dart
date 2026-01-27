@@ -10,7 +10,8 @@ class AuthRepository {
 
   AuthRepository(this._api);
 
-  Future<({UserModel user, String token})> login(String email, String password) async {
+  Future<({UserModel user, String token})> login(
+      String email, String password) async {
     final response = await _api.post('/auth/login', data: {
       'email': email,
       'password': password,
@@ -94,7 +95,8 @@ class AuthRepository {
     String? accessToken,
   }) async {
     if (idToken == null && accessToken == null) {
-      throw ArgumentError('At least one of idToken or accessToken must be provided');
+      throw ArgumentError(
+          'At least one of idToken or accessToken must be provided');
     }
 
     final response = await _api.post('/auth/google', data: {
@@ -130,7 +132,15 @@ class AuthRepository {
         filename: fileName,
       ),
     });
-    final response = await _api.postMultipart('/profile/avatar', data: formData);
+    final response =
+        await _api.postMultipart('/profile/avatar', data: formData);
+    return UserModel.fromJson(response.data);
+  }
+
+  Future<UserModel> selectUserType(String userType) async {
+    final response = await _api.post('/auth/select-user-type', data: {
+      'user_type': userType,
+    });
     return UserModel.fromJson(response.data);
   }
 }

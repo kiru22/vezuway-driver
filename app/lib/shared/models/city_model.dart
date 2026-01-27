@@ -1,3 +1,5 @@
+import '../utils/country_utils.dart';
+
 class CityModel {
   final String name;
   final String nameEs;
@@ -31,6 +33,8 @@ class CityModel {
           return 'Україна';
         case 'PL':
           return 'Польща';
+        case 'DE':
+          return 'Німеччина';
         default:
           return country;
       }
@@ -43,6 +47,8 @@ class CityModel {
         return 'Ucrania';
       case 'PL':
         return 'Polonia';
+      case 'DE':
+        return 'Alemania';
       default:
         return country;
     }
@@ -56,23 +62,14 @@ class CityModel {
         return 'Ucrania';
       case 'PL':
         return 'Polonia';
+      case 'DE':
+        return 'Alemania';
       default:
         return country;
     }
   }
 
-  String get countryFlag {
-    switch (country) {
-      case 'ES':
-        return '🇪🇸';
-      case 'UA':
-        return '🇺🇦';
-      case 'PL':
-        return '🇵🇱';
-      default:
-        return '🏳️';
-    }
-  }
+  String get countryFlag => getCountryFlag(country);
 
   String get fullDisplayName => '$name, $countryName';
 
@@ -91,9 +88,7 @@ class CityModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is CityModel &&
-        other.name == name &&
-        other.country == country;
+    return other is CityModel && other.name == name && other.country == country;
   }
 
   @override

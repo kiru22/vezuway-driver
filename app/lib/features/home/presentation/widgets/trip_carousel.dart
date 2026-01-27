@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -8,14 +9,16 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/date_formatters.dart';
 import '../../../../l10n/status_localizations.dart';
-import '../../../routes/data/models/route_model.dart';
+import '../../../../shared/widgets/empty_state.dart';
+import '../../../trips/data/models/trip_model.dart';
+import '../../../trips/data/models/trip_status.dart';
 
-class UpcomingRoutesList extends ConsumerWidget {
-  final List<RouteModel> routes;
+class UpcomingTripsList extends ConsumerWidget {
+  final List<TripModel> trips;
 
-  const UpcomingRoutesList({
+  const UpcomingTripsList({
     super.key,
-    required this.routes,
+    required this.trips,
   });
 
   @override
@@ -28,37 +31,40 @@ class UpcomingRoutesList extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Routes list
-          if (routes.isEmpty)
-            _EmptyState(
+          // Trips list
+          if (trips.isEmpty)
+            EmptyState(
+              icon: Icons.route_rounded,
               title: l10n.home_noScheduledRoutes,
               subtitle: l10n.home_createRoutePrompt,
             )
           else
-            ...routes.take(3).map((route) => _SimpleRouteCard(
-              route: route,
-              dateFormatter: formatters.shortDateNoYear,
-              packagesLabel: l10n.packages_count(route.packagesCount),
-              onTap: () => _onRouteTap(context, route),
-            )),
+            ...trips.take(3).map((trip) => _SimpleTripCard(
+                  trip: trip,
+                  dateFormatter: formatters.shortDateNoYear,
+                  packagesLabel: l10n.packages_count(trip.packagesCount),
+                  onTap: () => _onTripTap(context, trip),
+                )),
         ],
       ),
     );
   }
 
-  void _onRouteTap(BuildContext context, RouteModel route) {
+  void _onTripTap(BuildContext context, TripModel trip) {
     HapticFeedback.lightImpact();
+    // Navegar a la pantalla de trips (el trip detail aún no existe)
+    context.go('/trips');
   }
 }
 
-class _SimpleRouteCard extends StatelessWidget {
-  final RouteModel route;
+class _SimpleTripCard extends StatelessWidget {
+  final TripModel trip;
   final VoidCallback? onTap;
   final DateFormat dateFormatter;
   final String packagesLabel;
 
-  const _SimpleRouteCard({
-    required this.route,
+  const _SimpleTripCard({
+    required this.trip,
     required this.dateFormatter,
     required this.packagesLabel,
     this.onTap,
@@ -76,7 +82,7 @@ class _SimpleRouteCard extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: colors.cardBackground,
-          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(color: colors.border),
           boxShadow: [
             BoxShadow(
@@ -88,7 +94,7 @@ class _SimpleRouteCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Route icon with gradient
+            // Trip icon with gradient
             Container(
               width: 52,
               height: 52,
@@ -110,13 +116,13 @@ class _SimpleRouteCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            // Route info
+            // Trip info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${_extractCity(route.origin)} - ${_extractCity(route.destination)}',
+                    '${trip.originCity} - ${trip.destinationCity}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -137,7 +143,7 @@ class _SimpleRouteCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          dateFormatter.format(route.nextDepartureDate ?? route.departureDate),
+                          dateFormatter.format(trip.departureDate),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -171,44 +177,39 @@ class _SimpleRouteCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             // Status chip
-            _StatusChip(status: route.status),
+            _StatusChip(status: trip.status),
           ],
         ),
       ),
     );
   }
 
-  String _extractCity(String location) {
-    final parts = location.split(',');
-    return parts.first.trim();
-  }
-
   Color _getStatusColor() {
-    switch (route.status) {
-      case RouteStatus.planned:
+    switch (trip.status) {
+      case TripStatus.planned:
         return AppColors.info;
-      case RouteStatus.inProgress:
+      case TripStatus.inProgress:
         return AppColors.primary;
-      case RouteStatus.completed:
+      case TripStatus.completed:
         return AppColors.success;
-      case RouteStatus.cancelled:
+      case TripStatus.cancelled:
         return AppColors.textMuted;
     }
   }
 
   LinearGradient _getStatusGradient() {
-    switch (route.status) {
-      case RouteStatus.planned:
+    switch (trip.status) {
+      case TripStatus.planned:
         return const LinearGradient(
           colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
         );
-      case RouteStatus.inProgress:
+      case TripStatus.inProgress:
         return AppColors.primaryGradient;
-      case RouteStatus.completed:
+      case TripStatus.completed:
         return const LinearGradient(
           colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
         );
-      case RouteStatus.cancelled:
+      case TripStatus.cancelled:
         return LinearGradient(
           colors: [AppColors.surfaceElevated, AppColors.surfaceLight],
         );
@@ -217,7 +218,7 @@ class _SimpleRouteCard extends StatelessWidget {
 }
 
 class _StatusChip extends StatelessWidget {
-  final RouteStatus status;
+  final TripStatus status;
 
   const _StatusChip({required this.status});
 
@@ -248,100 +249,36 @@ class _StatusChip extends StatelessWidget {
     );
   }
 
-  ({Color background, Color text, Color border}) _getColors(BuildContext context) {
+  ({Color background, Color text, Color border}) _getColors(
+      BuildContext context) {
     final colors = context.colors;
 
     switch (status) {
-      case RouteStatus.planned:
+      case TripStatus.planned:
+        // Mismo estilo que StatusBadge de paquetes: verde claro transparente
         return (
-          background: colors.chipBlue,
-          text: colors.chipBlueText,
-          border: colors.chipBlueBorder,
+          background: AppColors.success.withValues(alpha: 0.12),
+          text: AppColors.success,
+          border: AppColors.success.withValues(alpha: 0.3),
         );
-      case RouteStatus.inProgress:
+      case TripStatus.inProgress:
         return (
           background: colors.chipOrange,
           text: colors.chipOrangeText,
           border: colors.chipOrangeBorder,
         );
-      case RouteStatus.completed:
+      case TripStatus.completed:
         return (
           background: colors.chipGreen,
           text: colors.chipGreenText,
           border: colors.chipGreenBorder,
         );
-      case RouteStatus.cancelled:
+      case TripStatus.cancelled:
         return (
           background: colors.chipGray,
           text: colors.chipGrayText,
           border: colors.chipGrayBorder,
         );
     }
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _EmptyState({
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final colorScheme = context.colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-        border: Border.all(color: colors.border),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.route_rounded,
-              size: 28,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              color: colors.textMuted,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

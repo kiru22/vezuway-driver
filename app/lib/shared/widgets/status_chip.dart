@@ -63,9 +63,7 @@ class StatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.background,
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: showBorder
-            ? Border.all(color: colors.border, width: 1)
-            : null,
+        border: showBorder ? Border.all(color: colors.border, width: 1) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -107,10 +105,11 @@ class StatusChip extends StatelessWidget {
           border: AppColors.chipBlueBorder,
         );
       case ChipVariant.green:
+        // Usa transparencia como en la home para consistencia visual
         return (
-          background: AppColors.chipGreen,
-          text: AppColors.chipGreenText,
-          border: AppColors.chipGreenBorder,
+          background: AppColors.success.withValues(alpha: 0.12),
+          text: AppColors.success,
+          border: AppColors.success.withValues(alpha: 0.3),
         );
       case ChipVariant.gray:
         return (

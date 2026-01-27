@@ -13,7 +13,7 @@ Logistics UA-ES is a shipment management system for Ukraine-Spain logistics. It 
 ### Docker (recommended)
 ```bash
 make setup          # Initial project setup (build, migrate, seed)
-make up-dev         # Start development environment with Adminer
+make up-dev         # Start development environment
 make down           # Stop all containers
 make test           # Run backend tests
 make shell-backend  # Access backend container shell
@@ -117,7 +117,6 @@ Each feature follows the pattern:
 | Frontend | 3002 | logistics-frontend |
 | PostgreSQL | 5433 | logistics-db |
 | Redis | 6380 | logistics-redis |
-| Adminer | 8082 | logistics-adminer (dev only) |
 
 > **Nota**: Los puertos están configurados para no conflictuar con winerim (5432, 6379, 8080).
 
@@ -272,6 +271,41 @@ app/lib/core/theme/
 2. Documentar el uso en este archivo (CLAUDE.md)
 3. Implementar usando el token, NO valores hardcodeados
 4. Verificar con `flutter analyze`
+
+## Regla de Consistencia UI (CRÍTICO)
+
+**NUNCA crear nuevos diseños o componentes sin antes buscar patrones existentes.**
+
+### Proceso obligatorio antes de crear UI
+
+1. **Preguntar**: ¿Existe ya una pantalla/componente similar?
+2. **Buscar**: Usar `Grep` para encontrar patrones similares
+   ```bash
+   # Ejemplos de búsqueda
+   grep -r "AppBar" lib/features/  # Buscar cómo se usan AppBars
+   grep -r "detail" lib/features/  # Buscar pantallas de detalle
+   grep -r "TabBar" lib/features/  # Buscar uso de tabs
+   ```
+3. **Leer**: El código existente y entender el patrón
+4. **Replicar**: Copiar el patrón exacto, no inventar uno nuevo
+
+### Ejemplos de patrones existentes
+
+| Tipo de pantalla | Referencia | Patrón |
+|------------------|------------|--------|
+| Detalle (fuera del shell) | `package_detail_screen.dart` | `AppBar` + `IconButton` leading + menú 3 puntos |
+| Lista principal (en shell) | `packages_screen.dart` | `AppHeader` + contenido scrolleable |
+| Tabs dentro de pantalla | `trips_routes_screen.dart` | `PillTabBar` (shared/widgets) |
+
+### ❌ NO hacer
+- Crear nuevos estilos de botones, headers, o navegación
+- Inventar nuevos layouts sin verificar los existentes
+- Añadir parámetros a componentes compartidos para casos específicos
+
+### ✅ SÍ hacer
+- Buscar primero una pantalla similar y copiar su estructura
+- Usar componentes de `shared/widgets/` cuando existan
+- Si no existe un patrón, preguntar al usuario antes de crear uno nuevo
 
 ## Convención de IDs (UUIDs)
 

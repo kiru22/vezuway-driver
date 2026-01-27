@@ -60,7 +60,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         newPassword: newPassword,
         newPasswordConfirmation: confirmPassword,
       );
-      state = state.copyWith(isLoading: false, successMessage: 'password_updated');
+      state =
+          state.copyWith(isLoading: false, successMessage: 'password_updated');
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'password_error');
@@ -73,7 +74,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     try {
       final user = await _repository.uploadAvatar(imageFile);
       _ref.read(authProvider.notifier).updateUser(user);
-      state = state.copyWith(isLoading: false, successMessage: 'avatar_updated');
+      state =
+          state.copyWith(isLoading: false, successMessage: 'avatar_updated');
       return true;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'avatar_error');
@@ -86,7 +88,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   }
 }
 
-final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
+final profileProvider =
+    StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
   return ProfileNotifier(
     ref.read(authRepositoryProvider),
     ref,

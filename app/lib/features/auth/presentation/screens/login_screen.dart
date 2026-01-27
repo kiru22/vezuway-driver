@@ -53,7 +53,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(ref.read(authProvider).error ?? context.l10n.auth_loginError),
+          content: Text(
+              ref.read(authProvider).error ?? context.l10n.auth_loginError),
           backgroundColor: AppColors.error,
         ),
       );
@@ -139,7 +140,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: AppColors.lightTextMuted,
                             ),
                             onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
+                              setState(
+                                  () => _obscurePassword = !_obscurePassword);
                             },
                           ),
                           validator: (value) {

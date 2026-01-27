@@ -19,7 +19,8 @@ class OcrRepository {
     return _sendScanRequest(formData);
   }
 
-  Future<OcrResultModel> scanImageBytes(Uint8List bytes, String filename) async {
+  Future<OcrResultModel> scanImageBytes(
+      Uint8List bytes, String filename) async {
     final formData = FormData.fromMap({
       'image': MultipartFile.fromBytes(bytes, filename: filename),
     });

@@ -192,7 +192,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       surfaceLight: surfaceLight ?? this.surfaceLight,
       surfaceElevated: surfaceElevated ?? this.surfaceElevated,
       cardBackground: cardBackground ?? this.cardBackground,
-      cardBackgroundElevated: cardBackgroundElevated ?? this.cardBackgroundElevated,
+      cardBackgroundElevated:
+          cardBackgroundElevated ?? this.cardBackgroundElevated,
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       textMuted: textMuted ?? this.textMuted,
@@ -233,7 +234,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       surfaceLight: Color.lerp(surfaceLight, other.surfaceLight, t)!,
       surfaceElevated: Color.lerp(surfaceElevated, other.surfaceElevated, t)!,
       cardBackground: Color.lerp(cardBackground, other.cardBackground, t)!,
-      cardBackgroundElevated: Color.lerp(cardBackgroundElevated, other.cardBackgroundElevated, t)!,
+      cardBackgroundElevated:
+          Color.lerp(cardBackgroundElevated, other.cardBackgroundElevated, t)!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       textMuted: Color.lerp(textMuted, other.textMuted, t)!,
@@ -245,7 +247,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       navItemInactive: Color.lerp(navItemInactive, other.navItemInactive, t)!,
       chipOrange: Color.lerp(chipOrange, other.chipOrange, t)!,
       chipOrangeText: Color.lerp(chipOrangeText, other.chipOrangeText, t)!,
-      chipOrangeBorder: Color.lerp(chipOrangeBorder, other.chipOrangeBorder, t)!,
+      chipOrangeBorder:
+          Color.lerp(chipOrangeBorder, other.chipOrangeBorder, t)!,
       chipBlue: Color.lerp(chipBlue, other.chipBlue, t)!,
       chipBlueText: Color.lerp(chipBlueText, other.chipBlueText, t)!,
       chipBlueBorder: Color.lerp(chipBlueBorder, other.chipBlueBorder, t)!,
@@ -257,7 +260,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       chipGrayBorder: Color.lerp(chipGrayBorder, other.chipGrayBorder, t)!,
       shadow: Color.lerp(shadow, other.shadow, t)!,
       shimmerBase: Color.lerp(shimmerBase, other.shimmerBase, t)!,
-      shimmerHighlight: Color.lerp(shimmerHighlight, other.shimmerHighlight, t)!,
+      shimmerHighlight:
+          Color.lerp(shimmerHighlight, other.shimmerHighlight, t)!,
     );
   }
 }

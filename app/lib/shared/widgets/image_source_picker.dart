@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/theme/theme_extensions.dart';
 import '../../l10n/l10n_extension.dart';
+import 'bottom_sheet_handle.dart';
 import 'source_picker_option.dart';
 
 /// Muestra un bottom sheet para seleccionar la fuente de imagen (cámara/galería).
@@ -22,6 +23,7 @@ Future<ImageSource?> showImageSourcePicker(BuildContext context) {
   return showModalBottomSheet<ImageSource>(
     context: context,
     backgroundColor: isDark ? colors.surface : Colors.white,
+    showDragHandle: false,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -31,15 +33,8 @@ Future<ImageSource?> showImageSourcePicker(BuildContext context) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
+            const BottomSheetHandle(),
+            const SizedBox(height: 16),
             Text(
               sheetContext.l10n.ocr_selectSource,
               style: TextStyle(
@@ -55,7 +50,8 @@ Future<ImageSource?> showImageSourcePicker(BuildContext context) {
                   child: SourcePickerOption(
                     icon: Icons.camera_alt_outlined,
                     label: sheetContext.l10n.ocr_camera,
-                    onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+                    onTap: () =>
+                        Navigator.pop(sheetContext, ImageSource.camera),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -63,7 +59,8 @@ Future<ImageSource?> showImageSourcePicker(BuildContext context) {
                   child: SourcePickerOption(
                     icon: Icons.photo_library_outlined,
                     label: sheetContext.l10n.ocr_gallery,
-                    onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+                    onTap: () =>
+                        Navigator.pop(sheetContext, ImageSource.gallery),
                   ),
                 ),
               ],

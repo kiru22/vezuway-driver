@@ -212,6 +212,30 @@ abstract class AppLocalizations {
   /// **'uds'**
   String get common_pcs;
 
+  /// No description provided for @common_today.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get common_today;
+
+  /// No description provided for @common_yesterday.
+  ///
+  /// In es, this message translates to:
+  /// **'Ayer'**
+  String get common_yesterday;
+
+  /// No description provided for @common_deleteConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar eliminación'**
+  String get common_deleteConfirmTitle;
+
+  /// No description provided for @common_deleteConfirmMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que deseas eliminar este {itemType}?'**
+  String common_deleteConfirmMessage(String itemType);
+
   /// No description provided for @auth_loginTitle.
   ///
   /// In es, this message translates to:
@@ -518,6 +542,12 @@ abstract class AppLocalizations {
   /// **'Codigo de Seguimiento'**
   String get packages_trackingCode;
 
+  /// No description provided for @packages_codeCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Codigo copiado'**
+  String get packages_codeCopied;
+
   /// No description provided for @packages_weight.
   ///
   /// In es, this message translates to:
@@ -619,6 +649,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nuevo Paquete'**
   String get packages_createTitle;
+
+  /// No description provided for @packages_createNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo envío'**
+  String get packages_createNew;
 
   /// No description provided for @packages_createSuccess.
   ///
@@ -1022,6 +1058,30 @@ abstract class AppLocalizations {
   /// **'Introduce el precio o deja vacio para calculo automatico'**
   String get packages_priceHint;
 
+  /// No description provided for @packages_selectAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get packages_selectAll;
+
+  /// No description provided for @packages_selectedCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} seleccionados'**
+  String packages_selectedCount(int count);
+
+  /// No description provided for @packages_advanceStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Avanzar'**
+  String get packages_advanceStatus;
+
+  /// No description provided for @packages_bulkUpdateSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} paquetes actualizados'**
+  String packages_bulkUpdateSuccess(int count);
+
   /// No description provided for @routes_title.
   ///
   /// In es, this message translates to:
@@ -1190,6 +1250,24 @@ abstract class AppLocalizations {
   /// **'Error al crear la ruta'**
   String get routes_createError;
 
+  /// No description provided for @routes_editTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar Ruta'**
+  String get routes_editTitle;
+
+  /// No description provided for @routes_updateSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta actualizada correctamente'**
+  String get routes_updateSuccess;
+
+  /// No description provided for @routes_updateError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al actualizar la ruta'**
+  String get routes_updateError;
+
   /// No description provided for @routes_selectDatesPrompt.
   ///
   /// In es, this message translates to:
@@ -1274,6 +1352,102 @@ abstract class AppLocalizations {
   /// **'Error al eliminar la ruta'**
   String get routes_deleteError;
 
+  /// No description provided for @routes_routeDetails.
+  ///
+  /// In es, this message translates to:
+  /// **'DETALLES DE RUTA'**
+  String get routes_routeDetails;
+
+  /// No description provided for @routes_addCountry.
+  ///
+  /// In es, this message translates to:
+  /// **'+ Agregar Pais'**
+  String get routes_addCountry;
+
+  /// No description provided for @routes_originPoint.
+  ///
+  /// In es, this message translates to:
+  /// **'Punto de Origen'**
+  String get routes_originPoint;
+
+  /// No description provided for @routes_stopN.
+  ///
+  /// In es, this message translates to:
+  /// **'Parada {n}'**
+  String routes_stopN(int n);
+
+  /// No description provided for @routes_finalDestination.
+  ///
+  /// In es, this message translates to:
+  /// **'Destino Final'**
+  String get routes_finalDestination;
+
+  /// No description provided for @routes_addCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar Ciudad'**
+  String get routes_addCity;
+
+  /// No description provided for @routes_deleteStop.
+  ///
+  /// In es, this message translates to:
+  /// **'eliminar'**
+  String get routes_deleteStop;
+
+  /// No description provided for @routes_pricingSection.
+  ///
+  /// In es, this message translates to:
+  /// **'PRECIOS'**
+  String get routes_pricingSection;
+
+  /// No description provided for @routes_amount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get routes_amount;
+
+  /// No description provided for @routes_currency.
+  ///
+  /// In es, this message translates to:
+  /// **'Moneda'**
+  String get routes_currency;
+
+  /// No description provided for @routes_publishRoute.
+  ///
+  /// In es, this message translates to:
+  /// **'Publicar Ruta'**
+  String get routes_publishRoute;
+
+  /// No description provided for @routes_selectCountry.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona pais'**
+  String get routes_selectCountry;
+
+  /// No description provided for @routes_selectCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona ciudad'**
+  String get routes_selectCity;
+
+  /// No description provided for @routes_atLeastOneCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega al menos una ciudad'**
+  String get routes_atLeastOneCity;
+
+  /// No description provided for @country_germany.
+  ///
+  /// In es, this message translates to:
+  /// **'Alemania'**
+  String get country_germany;
+
+  /// No description provided for @country_poland.
+  ///
+  /// In es, this message translates to:
+  /// **'Polonia'**
+  String get country_poland;
+
   /// No description provided for @nav_home.
   ///
   /// In es, this message translates to:
@@ -1291,6 +1465,246 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Rutas'**
   String get nav_routes;
+
+  /// No description provided for @nav_contacts.
+  ///
+  /// In es, this message translates to:
+  /// **'Contactos'**
+  String get nav_contacts;
+
+  /// No description provided for @contacts_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Contactos'**
+  String get contacts_title;
+
+  /// No description provided for @contacts_search.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nombre, email o teléfono...'**
+  String get contacts_search;
+
+  /// No description provided for @contacts_all.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get contacts_all;
+
+  /// No description provided for @contacts_verified.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificados'**
+  String get contacts_verified;
+
+  /// No description provided for @contacts_newContact.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo Contacto'**
+  String get contacts_newContact;
+
+  /// No description provided for @contacts_noContacts.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay contactos'**
+  String get contacts_noContacts;
+
+  /// No description provided for @contacts_noContactsDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Los contactos se crearán automáticamente al crear paquetes'**
+  String get contacts_noContactsDesc;
+
+  /// No description provided for @contacts_nameLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre *'**
+  String get contacts_nameLabel;
+
+  /// No description provided for @contacts_nameRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'El nombre es obligatorio'**
+  String get contacts_nameRequired;
+
+  /// No description provided for @contacts_emailLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Email'**
+  String get contacts_emailLabel;
+
+  /// No description provided for @contacts_emailInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'Email inválido'**
+  String get contacts_emailInvalid;
+
+  /// No description provided for @contacts_phoneLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono'**
+  String get contacts_phoneLabel;
+
+  /// No description provided for @contacts_notesLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get contacts_notesLabel;
+
+  /// No description provided for @contacts_create.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear'**
+  String get contacts_create;
+
+  /// No description provided for @contacts_created.
+  ///
+  /// In es, this message translates to:
+  /// **'Contacto creado'**
+  String get contacts_created;
+
+  /// No description provided for @contacts_createError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al crear contacto'**
+  String get contacts_createError;
+
+  /// No description provided for @contacts_detail.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle de Contacto'**
+  String get contacts_detail;
+
+  /// No description provided for @contacts_edit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar Contacto'**
+  String get contacts_edit;
+
+  /// No description provided for @contacts_updated.
+  ///
+  /// In es, this message translates to:
+  /// **'Contacto actualizado'**
+  String get contacts_updated;
+
+  /// No description provided for @contacts_deleteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar Contacto'**
+  String get contacts_deleteTitle;
+
+  /// No description provided for @contacts_deleteConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de eliminar este contacto?'**
+  String get contacts_deleteConfirm;
+
+  /// No description provided for @contacts_deleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Contacto eliminado'**
+  String get contacts_deleted;
+
+  /// No description provided for @contacts_errorLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar contactos'**
+  String get contacts_errorLoading;
+
+  /// No description provided for @contacts_errorLoadingPackages.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar paquetes'**
+  String get contacts_errorLoadingPackages;
+
+  /// No description provided for @contacts_tabHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Histórico'**
+  String get contacts_tabHistory;
+
+  /// No description provided for @contacts_tabDetails.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalles'**
+  String get contacts_tabDetails;
+
+  /// No description provided for @contacts_noPackages.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin paquetes'**
+  String get contacts_noPackages;
+
+  /// No description provided for @contacts_noPackagesDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Este contacto no tiene paquetes asociados'**
+  String get contacts_noPackagesDesc;
+
+  /// No description provided for @contacts_statsSent.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviados'**
+  String get contacts_statsSent;
+
+  /// No description provided for @contacts_statsReceived.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibidos'**
+  String get contacts_statsReceived;
+
+  /// No description provided for @contacts_statsTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get contacts_statsTotal;
+
+  /// No description provided for @contacts_systemInfo.
+  ///
+  /// In es, this message translates to:
+  /// **'Información del Sistema'**
+  String get contacts_systemInfo;
+
+  /// No description provided for @contacts_fieldId.
+  ///
+  /// In es, this message translates to:
+  /// **'ID'**
+  String get contacts_fieldId;
+
+  /// No description provided for @contacts_fieldCreatedBy.
+  ///
+  /// In es, this message translates to:
+  /// **'Creado por'**
+  String get contacts_fieldCreatedBy;
+
+  /// No description provided for @contacts_fieldCreatedAt.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha de creación'**
+  String get contacts_fieldCreatedAt;
+
+  /// No description provided for @contacts_fieldUpdatedAt.
+  ///
+  /// In es, this message translates to:
+  /// **'Última actualización'**
+  String get contacts_fieldUpdatedAt;
+
+  /// No description provided for @contacts_lastActivity.
+  ///
+  /// In es, this message translates to:
+  /// **'Última actividad'**
+  String get contacts_lastActivity;
+
+  /// No description provided for @contacts_notes.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get contacts_notes;
+
+  /// No description provided for @contacts_linkedUser.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario vinculado'**
+  String get contacts_linkedUser;
 
   /// No description provided for @quickAction_title.
   ///
@@ -1795,6 +2209,330 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ahora no'**
   String get notifications_notNow;
+
+  /// No description provided for @trips_clearFilter.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar filtro'**
+  String get trips_clearFilter;
+
+  /// No description provided for @myOrders_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Pedidos'**
+  String get myOrders_title;
+
+  /// No description provided for @myOrders_filterByStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar por estado'**
+  String get myOrders_filterByStatus;
+
+  /// No description provided for @myOrders_filterAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get myOrders_filterAll;
+
+  /// No description provided for @myOrders_filterPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente'**
+  String get myOrders_filterPending;
+
+  /// No description provided for @myOrders_filterInTransit.
+  ///
+  /// In es, this message translates to:
+  /// **'En tránsito'**
+  String get myOrders_filterInTransit;
+
+  /// No description provided for @myOrders_filterDelivered.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregado'**
+  String get myOrders_filterDelivered;
+
+  /// No description provided for @myOrders_filterDelayed.
+  ///
+  /// In es, this message translates to:
+  /// **'Retrasado'**
+  String get myOrders_filterDelayed;
+
+  /// No description provided for @myOrders_noOrdersFiltered.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay pedidos con este estado'**
+  String get myOrders_noOrdersFiltered;
+
+  /// No description provided for @myOrders_noOrders.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes pedidos'**
+  String get myOrders_noOrders;
+
+  /// No description provided for @myOrders_noOrdersDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando envíes o recibas paquetes,\naparecerán aquí'**
+  String get myOrders_noOrdersDesc;
+
+  /// No description provided for @myOrders_errorLoading.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar pedidos'**
+  String get myOrders_errorLoading;
+
+  /// No description provided for @myOrders_retry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get myOrders_retry;
+
+  /// No description provided for @myOrders_senderAndReceiver.
+  ///
+  /// In es, this message translates to:
+  /// **'Remitente y Destinatario'**
+  String get myOrders_senderAndReceiver;
+
+  /// No description provided for @myOrders_youAreSender.
+  ///
+  /// In es, this message translates to:
+  /// **'Eres el Remitente'**
+  String get myOrders_youAreSender;
+
+  /// No description provided for @myOrders_youAreReceiver.
+  ///
+  /// In es, this message translates to:
+  /// **'Eres el Destinatario'**
+  String get myOrders_youAreReceiver;
+
+  /// No description provided for @driverPending_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud en revisión'**
+  String get driverPending_title;
+
+  /// No description provided for @driverPending_message.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu solicitud como conductor está siendo revisada por nuestro equipo.'**
+  String get driverPending_message;
+
+  /// No description provided for @driverPending_emailNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Te notificaremos por email cuando sea aprobada.'**
+  String get driverPending_emailNotice;
+
+  /// No description provided for @driverPending_verifying.
+  ///
+  /// In es, this message translates to:
+  /// **'Verificando...'**
+  String get driverPending_verifying;
+
+  /// No description provided for @driverPending_refreshStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar estado'**
+  String get driverPending_refreshStatus;
+
+  /// No description provided for @driverPending_logout.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get driverPending_logout;
+
+  /// No description provided for @clientDashboard_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis Envios'**
+  String get clientDashboard_title;
+
+  /// No description provided for @clientDashboard_myShipments.
+  ///
+  /// In es, this message translates to:
+  /// **'Mis envios'**
+  String get clientDashboard_myShipments;
+
+  /// No description provided for @clientDashboard_noShipments.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes envios registrados'**
+  String get clientDashboard_noShipments;
+
+  /// No description provided for @clientDashboard_createFirst.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primer envio'**
+  String get clientDashboard_createFirst;
+
+  /// No description provided for @clientDashboard_totalShipments.
+  ///
+  /// In es, this message translates to:
+  /// **'Total enviados'**
+  String get clientDashboard_totalShipments;
+
+  /// No description provided for @clientDashboard_inTransit.
+  ///
+  /// In es, this message translates to:
+  /// **'En transito'**
+  String get clientDashboard_inTransit;
+
+  /// No description provided for @clientDashboard_delivered.
+  ///
+  /// In es, this message translates to:
+  /// **'Entregados'**
+  String get clientDashboard_delivered;
+
+  /// No description provided for @clientDashboard_viewAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todos'**
+  String get clientDashboard_viewAll;
+
+  /// No description provided for @admin_panelTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Panel de Admin'**
+  String get admin_panelTitle;
+
+  /// No description provided for @admin_users.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuarios'**
+  String get admin_users;
+
+  /// No description provided for @admin_requests.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitudes'**
+  String get admin_requests;
+
+  /// No description provided for @admin_allUsers.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get admin_allUsers;
+
+  /// No description provided for @admin_clients.
+  ///
+  /// In es, this message translates to:
+  /// **'Clientes'**
+  String get admin_clients;
+
+  /// No description provided for @admin_drivers.
+  ///
+  /// In es, this message translates to:
+  /// **'Transportistas'**
+  String get admin_drivers;
+
+  /// No description provided for @admin_client.
+  ///
+  /// In es, this message translates to:
+  /// **'Cliente'**
+  String get admin_client;
+
+  /// No description provided for @admin_driver.
+  ///
+  /// In es, this message translates to:
+  /// **'Transportista'**
+  String get admin_driver;
+
+  /// No description provided for @admin_noUsers.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay usuarios'**
+  String get admin_noUsers;
+
+  /// No description provided for @admin_loadError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar datos'**
+  String get admin_loadError;
+
+  /// No description provided for @admin_registered.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrado'**
+  String get admin_registered;
+
+  /// No description provided for @admin_userSingular.
+  ///
+  /// In es, this message translates to:
+  /// **'usuario'**
+  String get admin_userSingular;
+
+  /// No description provided for @admin_userPlural.
+  ///
+  /// In es, this message translates to:
+  /// **'usuarios'**
+  String get admin_userPlural;
+
+  /// No description provided for @admin_clientSingular.
+  ///
+  /// In es, this message translates to:
+  /// **'cliente'**
+  String get admin_clientSingular;
+
+  /// No description provided for @admin_clientPlural.
+  ///
+  /// In es, this message translates to:
+  /// **'clientes'**
+  String get admin_clientPlural;
+
+  /// No description provided for @admin_driverSingular.
+  ///
+  /// In es, this message translates to:
+  /// **'transportista'**
+  String get admin_driverSingular;
+
+  /// No description provided for @admin_driverPlural.
+  ///
+  /// In es, this message translates to:
+  /// **'transportistas'**
+  String get admin_driverPlural;
+
+  /// No description provided for @admin_statusApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobado'**
+  String get admin_statusApproved;
+
+  /// No description provided for @admin_statusPending.
+  ///
+  /// In es, this message translates to:
+  /// **'Pendiente'**
+  String get admin_statusPending;
+
+  /// No description provided for @admin_statusRejected.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazado'**
+  String get admin_statusRejected;
+
+  /// No description provided for @admin_noPendingDrivers.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay conductores pendientes'**
+  String get admin_noPendingDrivers;
+
+  /// No description provided for @admin_allDriversReviewed.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los conductores han sido revisados'**
+  String get admin_allDriversReviewed;
+
+  /// No description provided for @admin_pendingDriverSingular.
+  ///
+  /// In es, this message translates to:
+  /// **'Conductor pendiente'**
+  String get admin_pendingDriverSingular;
+
+  /// No description provided for @admin_pendingDriverPlural.
+  ///
+  /// In es, this message translates to:
+  /// **'Conductores pendientes'**
+  String get admin_pendingDriverPlural;
 }
 
 class _AppLocalizationsDelegate

@@ -13,7 +13,8 @@ class AppConfig {
     'GOOGLE_CLIENT_ID',
     defaultValue: '',
   );
-  static String? get googleClientId => _googleClientIdEnv.isEmpty ? null : _googleClientIdEnv;
+  static String? get googleClientId =>
+      _googleClientIdEnv.isEmpty ? null : _googleClientIdEnv;
 
   static const Duration apiTimeout = Duration(seconds: 30);
 

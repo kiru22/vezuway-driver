@@ -26,7 +26,9 @@ class PwaUtils {
 
     try {
       final ua = html.window.navigator.userAgent.toLowerCase();
-      return ua.contains('iphone') || ua.contains('ipad') || ua.contains('ipod');
+      return ua.contains('iphone') ||
+          ua.contains('ipad') ||
+          ua.contains('ipod');
     } catch (e) {
       debugPrint('[PwaUtils] Error checking iOS: $e');
       return false;

@@ -100,20 +100,6 @@ services:
     networks:
       - logistics-network
 
-  # Adminer - Database Management (optional, for development)
-  adminer:
-    image: adminer:latest
-    container_name: logistics-adminer
-    restart: unless-stopped
-    ports:
-      - "${ADMINER_PORT:-8082}:8080"
-    depends_on:
-      - postgres
-    networks:
-      - logistics-network
-    profiles:
-      - dev
-
 volumes:
   postgres_data:
   redis_data:

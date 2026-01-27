@@ -4,28 +4,40 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
-import '../../../../l10n/status_localizations.dart';
+import '../../../../l10n/status_localizations.dart' show PackageStatusL10n;
 import '../../../../shared/extensions/package_status_extensions.dart';
-import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/utils/contact_launcher.dart';
 import '../../../../shared/widgets/communication_button_row.dart';
 import '../../../../shared/widgets/map_button.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../../data/models/package_model.dart';
 
-/// Tarjeta de paquete con comportamiento de doble click.
+/// Tarjeta de paquete compacta con borde de estado.
 /// - Primer click: expande mostrando botones de comunicación
 /// - Segundo click: navega al detalle fullscreen
+/// - Long-press: activa modo selección
 class PackageCardV2 extends StatefulWidget {
   final PackageModel package;
   final VoidCallback onTap;
   final Function(PackageStatus) onStatusChange;
+  final bool isExpanded;
+  final VoidCallback? onExpand;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final VoidCallback? onSelectionToggle;
+  final VoidCallback? onLongPress;
 
   const PackageCardV2({
     super.key,
     required this.package,
     required this.onTap,
     required this.onStatusChange,
+    this.isExpanded = false,
+    this.onExpand,
+    this.isSelectionMode = false,
+    this.isSelected = false,
+    this.onSelectionToggle,
+    this.onLongPress,
   });
 
   @override
@@ -33,353 +45,360 @@ class PackageCardV2 extends StatefulWidget {
 }
 
 class _PackageCardV2State extends State<PackageCardV2>
-    with SingleTickerProviderStateMixin {
-  bool _isExpanded = false;
-  late AnimationController _animationController;
+    with TickerProviderStateMixin {
+  late AnimationController _expandController;
   late Animation<double> _expandAnimation;
+  late AnimationController _checkboxController;
+  late Animation<double> _checkboxAnimation;
+
+  /// Si el paquete está en estado final, no puede seleccionarse
+  bool get _isSelectable => widget.package.status != PackageStatus.delivered;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+    _expandController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
+      value: widget.isExpanded ? 1.0 : 0.0,
     );
     _expandAnimation = CurvedAnimation(
-      parent: _animationController,
+      parent: _expandController,
+      curve: Curves.easeOutCubic,
+    );
+
+    _checkboxController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+      value: widget.isSelectionMode ? 1.0 : 0.0,
+    );
+    _checkboxAnimation = CurvedAnimation(
+      parent: _checkboxController,
       curve: Curves.easeOutCubic,
     );
   }
 
   @override
+  void didUpdateWidget(PackageCardV2 oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isExpanded != oldWidget.isExpanded) {
+      if (widget.isExpanded) {
+        _expandController.forward();
+      } else {
+        _expandController.reverse();
+      }
+    }
+    if (widget.isSelectionMode != oldWidget.isSelectionMode) {
+      if (widget.isSelectionMode) {
+        _checkboxController.forward();
+      } else {
+        _checkboxController.reverse();
+      }
+    }
+  }
+
+  @override
   void dispose() {
-    _animationController.dispose();
+    _expandController.dispose();
+    _checkboxController.dispose();
     super.dispose();
   }
 
   void _handleTap() {
     HapticFeedback.lightImpact();
-    if (!_isExpanded) {
+
+    // En modo selección, el tap alterna la selección
+    if (widget.isSelectionMode) {
+      if (_isSelectable) {
+        widget.onSelectionToggle?.call();
+      }
+      return;
+    }
+
+    if (!widget.isExpanded) {
       // Primer click: expandir
-      setState(() => _isExpanded = true);
-      _animationController.forward();
+      widget.onExpand?.call();
     } else {
       // Segundo click: ir al detalle
       widget.onTap();
     }
   }
 
+  void _handleLongPress() {
+    if (!widget.isSelectionMode && _isSelectable) {
+      HapticFeedback.mediumImpact();
+      widget.onLongPress?.call();
+    }
+  }
+
+  /// Obtiene la ciudad de origen (senderCity o route.origin)
+  String get _originCity {
+    if (widget.package.senderCity != null &&
+        widget.package.senderCity!.isNotEmpty) {
+      return widget.package.senderCity!;
+    }
+    if (widget.package.route != null &&
+        widget.package.route!.origin.isNotEmpty) {
+      return widget.package.route!.origin;
+    }
+    return '—';
+  }
+
+  /// Obtiene la ciudad de destino (receiverCity o route.destination)
+  String get _destinationCity {
+    if (widget.package.receiverCity != null &&
+        widget.package.receiverCity!.isNotEmpty) {
+      return widget.package.receiverCity!;
+    }
+    if (widget.package.route != null &&
+        widget.package.route!.destination.isNotEmpty) {
+      return widget.package.route!.destination;
+    }
+    return '—';
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isDark = context.isDarkMode;
-    final hasPhone =
-        widget.package.receiverPhone != null && widget.package.receiverPhone!.isNotEmpty;
-    final hasAddress =
-        widget.package.receiverAddress != null && widget.package.receiverAddress!.isNotEmpty;
+    final hasPhone = widget.package.receiverPhone != null &&
+        widget.package.receiverPhone!.isNotEmpty;
+    final hasAddress = widget.package.receiverAddress != null &&
+        widget.package.receiverAddress!.isNotEmpty;
+
+    // Determinar si el borde debe estar seleccionado
+    final isHighlighted = widget.isExpanded || widget.isSelected;
 
     return GestureDetector(
       onTap: _handleTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      onLongPress: _handleLongPress,
+      child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: isDark ? colors.cardBackground : Colors.white,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          color: colors.cardBackground,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(
-            color: _isExpanded
-                ? AppColors.primary.withValues(alpha: 0.4)
-                : colors.border.withValues(alpha: 0.5),
-            width: _isExpanded ? 1.5 : 1,
+            color: widget.isSelected
+                ? AppColors.primary.withValues(alpha: 0.6)
+                : widget.isExpanded
+                    ? AppColors.primary.withValues(alpha: 0.4)
+                    : colors.border,
+            width: isHighlighted ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: _isExpanded
-                  ? AppColors.primary.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
-              blurRadius: _isExpanded ? 16 : 8,
+              color: isHighlighted
+                  ? AppColors.primary.withValues(alpha: 0.1)
+                  : colors.shadow.withValues(alpha: 0.15),
+              blurRadius: isHighlighted ? 16 : 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header: Tracking + Name + Badge
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0x0DFFFFFF)
-                                : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                fontFamily: 'monospace',
-                                letterSpacing: 0.5,
-                              ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd - 1),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Checkbox animado (aparece desde la izquierda)
+                SizeTransition(
+                  sizeFactor: _checkboxAnimation,
+                  axis: Axis.horizontal,
+                  child: _SelectionCheckbox(
+                    isSelected: widget.isSelected,
+                    isEnabled: _isSelectable,
+                    onTap: widget.onSelectionToggle,
+                  ),
+                ),
+                // Borde izquierdo con color del estado
+                Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: widget.package.status.color,
+                  ),
+                ),
+                // Contenido principal
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Contenido compacto: 2 filas
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Fila 1: Tracking + Badge
+                            Row(
                               children: [
-                                TextSpan(
-                                  text: '#',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
+                                Expanded(
+                                  child: RichText(
+                                    overflow: TextOverflow.ellipsis,
+                                    text: TextSpan(
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        fontFamily: 'monospace',
+                                        letterSpacing: 0.3,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: '#',
+                                          style: TextStyle(
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: widget.package.trackingCode,
+                                          style: TextStyle(
+                                            color: colors.textPrimary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                TextSpan(
-                                  text: widget.package.trackingCode,
-                                  style: TextStyle(
-                                    color: colors.textPrimary,
-                                  ),
+                                StatusBadge(
+                                  status: widget.package.status,
+                                  size: StatusBadgeSize.compact,
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.package.receiverName,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: colors.textSecondary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  StatusBadge(
-                    status: widget.package.status,
-                    size: StatusBadgeSize.compact,
-                  ),
-                ],
-              ),
-            ),
-
-            // Info Box con fondo sutil
-            _InfoBox(
-              location: AddressUtils.extractCity(widget.package.receiverAddress),
-              weight: widget.package.weight,
-              quantity: widget.package.quantity,
-              price: widget.package.declaredValue,
-              isDark: isDark,
-              colors: colors,
-            ),
-
-            // Expandable section
-            SizeTransition(
-              sizeFactor: _expandAnimation,
-              child: Column(
-                children: [
-                  // Communication buttons (orden: Llamar, Viber, WhatsApp, Telegram)
-                  if (hasPhone)
-                    CommunicationButtonRow(
-                      phone: widget.package.receiverPhone!,
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    ),
-
-                  // Action buttons row: Open map + Change status
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: Row(
-                      children: [
-                        // Open map button (izquierda)
-                        if (hasAddress)
-                          Expanded(
-                            child: MapButton(
-                              style: MapButtonStyle.outlined,
-                              onTap: () => ContactLauncher.openMaps(widget.package.receiverAddress!),
+                            const SizedBox(height: 6),
+                            // Fila 2: Ruta + Métricas + Precio
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '$_originCity → $_destinationCity',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: colors.textSecondary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _buildMetricsString(),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: colors.textSecondary
+                                        .withValues(alpha: 0.8),
+                                  ),
+                                ),
+                                if (widget.package.declaredValue != null &&
+                                    widget.package.declaredValue! > 0) ...[
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${widget.package.declaredValue!.toInt()}€',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: colors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                          ),
-                        if (hasAddress &&
-                            widget.package.status != PackageStatus.delivered)
-                          const SizedBox(width: 8),
-                        // Change status button (derecha)
-                        if (widget.package.status != PackageStatus.delivered)
-                          Expanded(
-                            child: _ChangeStatusButton(
-                              currentStatus: widget.package.status,
-                              onTap: () {
-                                final nextStatus = widget.package.status.nextStatus;
-                                if (nextStatus != null) {
-                                  widget.onStatusChange(nextStatus);
-                                }
-                              },
+                          ],
+                        ),
+                      ),
+
+                      // Sección expandible
+                      SizeTransition(
+                        sizeFactor: _expandAnimation,
+                        child: Column(
+                          children: [
+                            // Divider sutil
+                            Container(
+                              height: 1,
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              color: colors.border.withValues(alpha: 0.3),
                             ),
-                          ),
-                      ],
-                    ),
+                            // Botones de comunicación
+                            if (hasPhone)
+                              CommunicationButtonRow(
+                                phone: widget.package.receiverPhone!,
+                                padding:
+                                    const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                              ),
+
+                            // Botones de acción: Mapa + Cambiar estado
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                              child: Row(
+                                children: [
+                                  // Botón de mapa
+                                  if (hasAddress)
+                                    Expanded(
+                                      child: MapButton(
+                                        style: MapButtonStyle.outlined,
+                                        onTap: () => ContactLauncher.openMaps(
+                                            widget.package.receiverAddress!),
+                                      ),
+                                    ),
+                                  if (hasAddress &&
+                                      widget.package.status !=
+                                          PackageStatus.delivered)
+                                    const SizedBox(width: 8),
+                                  // Botón de cambiar estado
+                                  if (widget.package.status !=
+                                      PackageStatus.delivered)
+                                    Expanded(
+                                      child: _ChangeStatusButton(
+                                        currentStatus: widget.package.status,
+                                        onTap: () {
+                                          final nextStatus =
+                                              widget.package.status.nextStatus;
+                                          if (nextStatus != null) {
+                                            widget.onStatusChange(nextStatus);
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
-}
 
-/// Info box con fondo sutil que agrupa ubicación y métricas
-class _InfoBox extends StatelessWidget {
-  final String location;
-  final double? weight;
-  final int? quantity;
-  final double? price;
-  final bool isDark;
-  final dynamic colors;
+  /// Construye el string de métricas: "10kg • 1шт • Nombre"
+  String _buildMetricsString() {
+    final parts = <String>[];
 
-  const _InfoBox({
-    required this.location,
-    this.weight,
-    this.quantity,
-    this.price,
-    required this.isDark,
-    required this.colors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0x0DFFFFFF) // 5% white for dark mode
-            : const Color(0xFFF8FAFC), // slate-50 for light mode
-        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Fila 1: Ubicación
-          Row(
-            children: [
-              Icon(
-                Icons.location_on_outlined,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  location,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Fila 2: Peso + Cantidad + Precio
-          Row(
-            children: [
-              Icon(
-                Icons.inventory_2_outlined,
-                size: 16,
-                color: colors.textSecondary,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _MetricsRow(
-                  weight: weight,
-                  quantity: quantity,
-                  price: price,
-                  textColor: colors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetricsRow extends StatelessWidget {
-  final double? weight;
-  final int? quantity;
-  final double? price;
-  final Color textColor;
-
-  const _MetricsRow({
-    this.weight,
-    this.quantity,
-    this.price,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final parts = <TextSpan>[];
-
-    if (weight != null && weight! > 0) {
-      parts.add(TextSpan(text: '${weight!.toInt()}'));
-      parts.add(TextSpan(
-        text: 'kg',
-        style: TextStyle(color: textColor.withValues(alpha: 0.7)),
-      ));
+    if (widget.package.weight != null && widget.package.weight! > 0) {
+      parts.add('${widget.package.weight!.toInt()}kg');
     }
-    if (quantity != null && quantity! > 0) {
-      if (parts.isNotEmpty) {
-        parts.add(TextSpan(
-          text: ' • ',
-          style: TextStyle(color: textColor.withValues(alpha: 0.5)),
-        ));
-      }
-      parts.add(TextSpan(text: '$quantity'));
-      parts.add(TextSpan(
-        text: context.l10n.common_pcs,
-        style: TextStyle(color: textColor.withValues(alpha: 0.7)),
-      ));
-    }
-    if (price != null && price! > 0) {
-      if (parts.isNotEmpty) {
-        parts.add(TextSpan(
-          text: ' • ',
-          style: TextStyle(color: textColor.withValues(alpha: 0.5)),
-        ));
-      }
-      parts.add(TextSpan(
-        text: '${price!.toInt()}',
-        style: const TextStyle(fontWeight: FontWeight.w700),
-      ));
-      parts.add(const TextSpan(text: '€'));
+    if (widget.package.quantity != null && widget.package.quantity! > 0) {
+      parts.add('${widget.package.quantity}${context.l10n.common_pcs}');
     }
 
-    if (parts.isEmpty) return const SizedBox.shrink();
+    // Nombre del receptor (truncado si es necesario)
+    final name = widget.package.receiverName;
+    if (name.isNotEmpty) {
+      // Tomar solo el primer nombre para mantenerlo compacto
+      final firstName = name.split(' ').first;
+      parts.add(firstName);
+    }
 
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
-        children: parts,
-      ),
-    );
+    return parts.join(' • ');
   }
 }
 
@@ -403,11 +422,11 @@ class _ChangeStatusButton extends StatelessWidget {
         onTap();
       },
       child: Container(
-        height: 48,
+        height: 44,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: AppColors.primary,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -436,3 +455,61 @@ class _ChangeStatusButton extends StatelessWidget {
   }
 }
 
+/// Checkbox para selección de paquetes en modo bulk.
+class _SelectionCheckbox extends StatelessWidget {
+  final bool isSelected;
+  final bool isEnabled;
+  final VoidCallback? onTap;
+
+  const _SelectionCheckbox({
+    required this.isSelected,
+    required this.isEnabled,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return GestureDetector(
+      onTap: isEnabled
+          ? () {
+              HapticFeedback.lightImpact();
+              onTap?.call();
+            }
+          : null,
+      child: Container(
+        width: 44,
+        alignment: Alignment.center,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary
+                : isEnabled
+                    ? Colors.transparent
+                    : colors.border.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primary
+                  : isEnabled
+                      ? colors.border
+                      : colors.border.withValues(alpha: 0.5),
+              width: 2,
+            ),
+          ),
+          child: isSelected
+              ? const Icon(
+                  Icons.check,
+                  size: 16,
+                  color: Colors.white,
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+}

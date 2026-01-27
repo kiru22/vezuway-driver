@@ -64,7 +64,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(ref.read(authProvider).error ?? context.l10n.auth_registerError),
+          content: Text(
+              ref.read(authProvider).error ?? context.l10n.auth_registerError),
           backgroundColor: AppColors.error,
         ),
       );
@@ -85,7 +86,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: AppTheme.authCardMaxWidth),
+                  constraints:
+                      const BoxConstraints(maxWidth: AppTheme.authCardMaxWidth),
                   child: Column(
                     children: [
                       AuthBackButton(onPressed: () => context.go('/login')),
@@ -160,7 +162,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     color: AppColors.lightTextMuted,
                                   ),
                                   onPressed: () {
-                                    setState(() => _obscurePassword = !_obscurePassword);
+                                    setState(() =>
+                                        _obscurePassword = !_obscurePassword);
                                   },
                                 ),
                                 validator: (value) {
@@ -187,8 +190,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     color: AppColors.lightTextMuted,
                                   ),
                                   onPressed: () {
-                                    setState(() =>
-                                        _obscureConfirmPassword = !_obscureConfirmPassword);
+                                    setState(() => _obscureConfirmPassword =
+                                        !_obscureConfirmPassword);
                                   },
                                 ),
                                 validator: (value) {

@@ -89,8 +89,9 @@ class StyledFormField extends StatelessWidget {
               ? Icon(
                   prefixIcon,
                   size: 20,
-                  color:
-                      isDark ? colors.textSecondary : AppColors.lightTextSecondary,
+                  color: isDark
+                      ? colors.textSecondary
+                      : AppColors.lightTextSecondary,
                 )
               : null,
           suffix: suffix,

@@ -3,7 +3,9 @@
 namespace App\Modules\Packages\Models;
 
 use App\Models\User;
+use App\Modules\Contacts\Models\Contact;
 use App\Modules\Routes\Models\Route;
+use App\Modules\Trips\Models\Trip;
 use App\Shared\Enums\PackageStatus;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,6 +26,9 @@ class Package extends Model implements HasMedia
         'tracking_code',
         'transporter_id',
         'route_id',
+        'trip_id',
+        'sender_contact_id',
+        'receiver_contact_id',
         'sender_name',
         'sender_phone',
         'sender_address',
@@ -94,6 +99,21 @@ class Package extends Model implements HasMedia
         return $this->belongsTo(Route::class);
     }
 
+    public function trip(): BelongsTo
+    {
+        return $this->belongsTo(Trip::class);
+    }
+
+    public function senderContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'sender_contact_id');
+    }
+
+    public function receiverContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'receiver_contact_id');
+    }
+
     public function statusHistory(): HasMany
     {
         return $this->hasMany(PackageStatusHistory::class)->orderBy('created_at', 'desc');
@@ -135,6 +155,14 @@ class Package extends Model implements HasMedia
                 ->orWhere('receiver_name', 'like', "%{$term}%")
                 ->orWhere('sender_city', 'like', "%{$term}%")
                 ->orWhere('receiver_city', 'like', "%{$term}%");
+        });
+    }
+
+    public function scopeForContact($query, string $contactId)
+    {
+        return $query->where(function ($q) use ($contactId) {
+            $q->where('sender_contact_id', $contactId)
+                ->orWhere('receiver_contact_id', $contactId);
         });
     }
 

@@ -34,7 +34,8 @@ class PushNotificationService {
   /// Whether push notifications are supported in this environment
   bool get isSupported => kIsWeb;
 
-  static const String _vapidKey = 'BFaBq_XlRLjcoo2j4f_x-vtlXcqj1lo5SgBAs92DAnQMm-vcKFFvgfBj9paA4cGllyY_uHc8pln5ESXjalTriw0';
+  static const String _vapidKey =
+      'BFaBq_XlRLjcoo2j4f_x-vtlXcqj1lo5SgBAs92DAnQMm-vcKFFvgfBj9paA4cGllyY_uHc8pln5ESXjalTriw0';
 
   /// Initialize Firebase and messaging service.
   /// Returns true if initialization was successful.
@@ -50,7 +51,8 @@ class PushNotificationService {
     try {
       // Check if Firebase is already initialized (from index.html)
       if (Firebase.apps.isEmpty) {
-        debugPrint('[PushNotificationService] Firebase not configured in index.html');
+        debugPrint(
+            '[PushNotificationService] Firebase not configured in index.html');
         return false;
       }
 
@@ -65,13 +67,15 @@ class PushNotificationService {
 
       // Listen for foreground messages
       FirebaseMessaging.onMessage.listen((message) {
-        debugPrint('[PushNotificationService] Foreground message received: ${message.notification?.title}');
+        debugPrint(
+            '[PushNotificationService] Foreground message received: ${message.notification?.title}');
         _messageController.add(message);
       });
 
       // Handle notification tap when app is in background
       FirebaseMessaging.onMessageOpenedApp.listen((message) {
-        debugPrint('[PushNotificationService] Message opened app: ${message.notification?.title}');
+        debugPrint(
+            '[PushNotificationService] Message opened app: ${message.notification?.title}');
         _messageController.add(message);
       });
 
@@ -94,7 +98,8 @@ class PushNotificationService {
       final settings = await _messaging!.getNotificationSettings();
       return _mapAuthorizationStatus(settings.authorizationStatus);
     } catch (e) {
-      debugPrint('[PushNotificationService] Error getting permission status: $e');
+      debugPrint(
+          '[PushNotificationService] Error getting permission status: $e');
       return NotificationPermissionStatus.notSupported;
     }
   }
@@ -114,7 +119,8 @@ class PushNotificationService {
         provisional: false,
       );
 
-      debugPrint('[PushNotificationService] Permission requested: ${settings.authorizationStatus}');
+      debugPrint(
+          '[PushNotificationService] Permission requested: ${settings.authorizationStatus}');
       return _mapAuthorizationStatus(settings.authorizationStatus);
     } catch (e) {
       debugPrint('[PushNotificationService] Error requesting permission: $e');
@@ -132,7 +138,8 @@ class PushNotificationService {
     try {
       // For web, we need to provide the VAPID key
       final token = await _messaging!.getToken(vapidKey: _vapidKey);
-      debugPrint('[PushNotificationService] Token obtained: ${token?.substring(0, 20)}...');
+      debugPrint(
+          '[PushNotificationService] Token obtained: ${token?.substring(0, 20)}...');
       return token;
     } catch (e) {
       debugPrint('[PushNotificationService] Error getting token: $e');
@@ -153,12 +160,15 @@ class PushNotificationService {
     }
   }
 
-  NotificationPermissionStatus _mapAuthorizationStatus(AuthorizationStatus status) {
+  NotificationPermissionStatus _mapAuthorizationStatus(
+      AuthorizationStatus status) {
     return switch (status) {
-      AuthorizationStatus.authorized || AuthorizationStatus.provisional =>
+      AuthorizationStatus.authorized ||
+      AuthorizationStatus.provisional =>
         NotificationPermissionStatus.granted,
       AuthorizationStatus.denied => NotificationPermissionStatus.denied,
-      AuthorizationStatus.notDetermined => NotificationPermissionStatus.notRequested,
+      AuthorizationStatus.notDetermined =>
+        NotificationPermissionStatus.notRequested,
     };
   }
 

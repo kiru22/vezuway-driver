@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Auth\Requests\UpdateAvatarRequest;
 use App\Modules\Auth\Resources\UserResource;
+use App\Modules\Contacts\Services\ContactService;
+use App\Shared\Enums\DriverStatus;
 use Google\Client as GoogleClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +18,8 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly ContactService $contactService) {}
+
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -33,6 +37,9 @@ class AuthController extends Controller
             'phone' => $validated['phone'] ?? null,
             'locale' => $validated['locale'] ?? 'es',
         ]);
+
+        // Vincular contacto existente si hay uno con este email
+        $this->contactService->linkContactToUser($validated['email'], $user->id);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -75,6 +82,33 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json(new UserResource($request->user()));
+    }
+
+    public function selectUserType(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'user_type' => 'required|string|in:client,driver',
+        ]);
+
+        $user = $request->user();
+
+        // Verificar que el usuario NO tiene rol asignado (solo primera vez)
+        if ($user->roles()->count() > 0) {
+            return response()->json([
+                'message' => 'Ya tienes un tipo de cuenta asignado',
+            ], 403);
+        }
+
+        $user->assignRole($validated['user_type']);
+
+        if ($validated['user_type'] === 'driver') {
+            $user->update(['driver_status' => DriverStatus::PENDING]);
+        }
+
+        // Limpiar cache de permisos
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        return response()->json(new UserResource($user->fresh()));
     }
 
     public function updateProfile(Request $request): JsonResponse
@@ -140,14 +174,6 @@ class AuthController extends Controller
         $validated = $request->validate([
             'id_token' => 'nullable|string',
             'access_token' => 'nullable|string',
-        ]);
-
-        // Log para diagnóstico de Google OAuth
-        Log::warning('Google login attempt', [
-            'has_id_token' => !empty($validated['id_token']),
-            'has_access_token' => !empty($validated['access_token']),
-            'id_token_preview' => !empty($validated['id_token']) ? substr($validated['id_token'], 0, 50) . '...' : null,
-            'access_token_preview' => !empty($validated['access_token']) ? substr($validated['access_token'], 0, 20) . '...' : null,
         ]);
 
         if (empty($validated['id_token']) && empty($validated['access_token'])) {
@@ -224,6 +250,9 @@ class AuthController extends Controller
                     'password' => null, // OAuth users don't have password
                     'locale' => 'es',
                 ]);
+
+                // Vincular contacto existente si hay uno con este email
+                $this->contactService->linkContactToUser($email, $user->id);
             }
 
             $token = $user->createToken('auth-token')->plainTextToken;
@@ -255,11 +284,6 @@ class AuthController extends Controller
             config('services.google.client_id_android'),
         ]);
 
-        // Log de client IDs configurados
-        Log::warning('Verifying id_token', [
-            'valid_client_ids' => $validClientIds,
-        ]);
-
         if (empty($validClientIds)) {
             Log::warning('Google authentication not configured: no client IDs found in services.google config');
 
@@ -273,42 +297,29 @@ class AuthController extends Controller
             try {
                 $payload = $client->verifyIdToken($idToken);
                 if ($payload) {
-                    Log::warning('Token verified successfully', [
-                        'client_id' => $clientId,
-                        'aud' => $payload['aud'] ?? 'unknown',
-                    ]);
                     return $payload;
                 }
             } catch (\Exception $e) {
-                Log::warning('Token verification failed for client_id', [
+                Log::debug('Token verification failed for client_id', [
                     'client_id' => $clientId,
                     'error' => $e->getMessage(),
                 ]);
             }
         }
 
-        Log::warning('All token verifications failed');
         return null;
     }
 
     private function verifyAccessToken(string $accessToken): ?array
     {
         try {
-            Log::warning('Verifying access_token via Google userinfo API');
-
             $response = Http::timeout(10)
                 ->withToken($accessToken)
                 ->get('https://www.googleapis.com/oauth2/v3/userinfo');
 
-            Log::warning('Google userinfo API response', [
-                'status' => $response->status(),
-                'successful' => $response->successful(),
-            ]);
-
             if ($response->failed()) {
-                Log::warning('Google userinfo API request failed', [
+                Log::debug('Google userinfo API request failed', [
                     'status' => $response->status(),
-                    'body' => $response->body(),
                 ]);
 
                 return null;
@@ -316,30 +327,17 @@ class AuthController extends Controller
 
             $userInfo = $response->json();
 
-            Log::warning('Google userinfo response data', [
-                'has_email' => !empty($userInfo['email']),
-                'email_verified' => $userInfo['email_verified'] ?? 'not_present',
-                'email_verified_type' => gettype($userInfo['email_verified'] ?? null),
-            ]);
-
             if (empty($userInfo['email'])) {
-                Log::warning('Google userinfo missing email');
                 return null;
             }
 
-            // Security: Verify email is verified to prevent account takeover
             if (empty($userInfo['email_verified']) || $userInfo['email_verified'] !== true) {
                 Log::warning('Google login rejected: email not verified', [
-                    'email' => $userInfo['email'] ?? 'unknown',
-                    'email_verified_value' => $userInfo['email_verified'] ?? 'not_present',
+                    'email' => $userInfo['email'],
                 ]);
 
                 return null;
             }
-
-            Log::warning('Access token verified successfully', [
-                'email' => $userInfo['email'],
-            ]);
 
             return $userInfo;
         } catch (\Exception $e) {

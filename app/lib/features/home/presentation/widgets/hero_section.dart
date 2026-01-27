@@ -18,7 +18,8 @@ class HeroSection extends ConsumerWidget {
     final now = DateTime.now();
     final formatters = ref.watch(dateFormattersProvider);
     final formattedDate = formatters.fullDate.format(now);
-    final capitalizedDate = formattedDate[0].toUpperCase() + formattedDate.substring(1);
+    final capitalizedDate =
+        formattedDate[0].toUpperCase() + formattedDate.substring(1);
     final colors = context.colors;
     final l10n = context.l10n;
 

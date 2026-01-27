@@ -39,7 +39,6 @@ docker compose exec backend php artisan migrate
 |----------|-----|-------------|
 | Frontend | http://localhost:3002 | App Flutter Web |
 | Backend API | http://localhost:8001 | Laravel API |
-| Adminer | http://localhost:8082 | DB Manager (solo dev) |
 
 ## Comandos Docker
 
@@ -48,7 +47,7 @@ docker compose exec backend php artisan migrate
 ```bash
 make build          # Construir imagenes
 make up             # Iniciar contenedores (produccion)
-make up-dev         # Iniciar con Adminer (desarrollo)
+make up-dev         # Iniciar contenedores (desarrollo)
 make down           # Detener contenedores
 make restart        # Reiniciar todo
 make logs           # Ver logs de todos los servicios
@@ -71,8 +70,8 @@ docker compose build
 # Iniciar
 docker compose up -d
 
-# Con perfil dev (incluye Adminer)
-docker compose --profile dev up -d
+# Modo desarrollo
+docker compose up -d
 
 # Detener
 docker compose down

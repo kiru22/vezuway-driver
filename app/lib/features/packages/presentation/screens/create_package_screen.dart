@@ -13,12 +13,15 @@ import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/widgets/form_app_bar.dart';
 import '../../data/models/package_model.dart';
 import '../../domain/providers/package_provider.dart';
-import '../../../routes/domain/providers/route_provider.dart';
-import '../../../routes/data/models/route_model.dart';
+import '../../../trips/domain/providers/trip_provider.dart';
+import '../../../trips/data/models/trip_model.dart';
+import '../../../trips/data/models/trip_status.dart';
 import '../../../ocr/presentation/widgets/ocr_scan_button.dart';
 import '../widgets/package_image_gallery.dart';
 import '../widgets/add_image_button.dart';
 import '../../../../shared/widgets/styled_form_field.dart';
+import '../../../contacts/data/models/contact_model.dart';
+import '../../../contacts/presentation/widgets/contact_search_field.dart';
 
 class CreatePackageScreen extends ConsumerStatefulWidget {
   final String? packageId;
@@ -28,7 +31,8 @@ class CreatePackageScreen extends ConsumerStatefulWidget {
   bool get isEditMode => packageId != null;
 
   @override
-  ConsumerState<CreatePackageScreen> createState() => _CreatePackageScreenState();
+  ConsumerState<CreatePackageScreen> createState() =>
+      _CreatePackageScreenState();
 }
 
 class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
@@ -42,6 +46,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _senderGoogleMapsController = TextEditingController();
   CityModel? _senderCity;
   bool _senderShowAddress = false;
+  ContactModel? _selectedSenderContact;
 
   // Receiver fields
   final _receiverNameController = TextEditingController();
@@ -50,6 +55,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _receiverGoogleMapsController = TextEditingController();
   CityModel? _receiverCity;
   bool _receiverShowAddress = false;
+  ContactModel? _selectedReceiverContact;
 
   // Package details
   final _weightController = TextEditingController();
@@ -58,7 +64,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _heightController = TextEditingController();
   final _quantityController = TextEditingController(text: '1');
 
-  RouteModel? _selectedRoute;
+  TripModel? _selectedTrip;
   double _volumetricWeight = 0.0;
   double _calculatedPrice = 0.0;
   double? _manualPrice; // Manually set price
@@ -67,6 +73,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
   // Lista de imágenes locales para enviar con el paquete
   final List<Uint8List> _packageImages = [];
+
+  // Lista de imágenes existentes (del servidor) al editar
+  List<PackageImage> _existingImages = [];
 
   @override
   void initState() {
@@ -88,7 +97,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       if (widget.isEditMode) {
         _loadExistingPackage();
       } else {
-        _preselectClosestRoute();
+        _preselectClosestTrip();
       }
     });
   }
@@ -99,7 +108,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final package = await ref.read(packageRepositoryProvider).getPackage(widget.packageId!);
+      final package = await ref
+          .read(packageRepositoryProvider)
+          .getPackage(widget.packageId!);
       _populateFieldsFromPackage(package);
     } catch (e) {
       if (mounted) {
@@ -121,18 +132,34 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     // Sender fields
     _senderNameController.text = package.senderName;
     _senderPhoneController.text = package.senderPhone ?? '';
-    // Parse address to extract city and exact address
-    if (package.senderAddress != null) {
+    // Set sender city from model
+    if (package.senderCity != null && package.senderCity!.isNotEmpty) {
+      _senderCity = CityModel(
+        name: package.senderCity!,
+        country: package.senderCountry ?? 'UA',
+      );
+    }
+    // Set sender address
+    if (package.senderAddress != null && package.senderAddress!.isNotEmpty) {
       _senderExactAddressController.text = package.senderAddress!;
-      _senderShowAddress = package.senderAddress!.isNotEmpty;
+      _senderShowAddress = true;
     }
 
     // Receiver fields
     _receiverNameController.text = package.receiverName;
     _receiverPhoneController.text = package.receiverPhone ?? '';
-    if (package.receiverAddress != null) {
+    // Set receiver city from model
+    if (package.receiverCity != null && package.receiverCity!.isNotEmpty) {
+      _receiverCity = CityModel(
+        name: package.receiverCity!,
+        country: package.receiverCountry ?? 'ES',
+      );
+    }
+    // Set receiver address
+    if (package.receiverAddress != null &&
+        package.receiverAddress!.isNotEmpty) {
       _receiverExactAddressController.text = package.receiverAddress!;
-      _receiverShowAddress = package.receiverAddress!.isNotEmpty;
+      _receiverShowAddress = true;
     }
 
     // Package details
@@ -152,13 +179,19 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       _quantityController.text = package.quantity.toString();
     }
 
-    // Select route if assigned
-    if (package.routeId != null) {
-      final routesState = ref.read(routesProvider);
-      final route = routesState.routes.where((r) => r.id == package.routeId).firstOrNull;
-      if (route != null) {
-        _selectedRoute = route;
+    // Select trip if assigned
+    if (package.tripId != null) {
+      final tripsState = ref.read(tripsProvider);
+      final trip =
+          tripsState.trips.where((t) => t.id == package.tripId).firstOrNull;
+      if (trip != null) {
+        _selectedTrip = trip;
       }
+    }
+
+    // Load existing images
+    if (package.images.isNotEmpty) {
+      _existingImages = List.from(package.images);
     }
 
     _updatePriceCalculation();
@@ -194,18 +227,17 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     super.dispose();
   }
 
-  void _preselectClosestRoute() {
-    final routesState = ref.read(routesProvider);
-    final availableRoutes = routesState.routes
-        .where((r) => r.status == RouteStatus.planned || r.status == RouteStatus.inProgress)
-        .where((r) => r.hasUpcomingDates)
+  void _preselectClosestTrip() {
+    final tripsState = ref.read(tripsProvider);
+    final availableTrips = tripsState.trips
+        .where((t) =>
+            t.status == TripStatus.planned || t.status == TripStatus.inProgress)
         .toList()
-      ..sort((a, b) => (a.nextDepartureDate ?? a.departureDate)
-          .compareTo(b.nextDepartureDate ?? b.departureDate));
+      ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
 
-    if (availableRoutes.isNotEmpty) {
+    if (availableTrips.isNotEmpty) {
       setState(() {
-        _selectedRoute = availableRoutes.first;
+        _selectedTrip = availableTrips.first;
         _updatePriceCalculation();
       });
     }
@@ -220,19 +252,49 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     return (length * width * height) / 5000;
   }
 
-  double _calculatePrice() {
-    final route = _selectedRoute;
-    if (route == null) return 0;
+  /// Get available cities from the selected trip (origin, stops, destination)
+  List<CityModel> _getAvailableCities() {
+    final trip = _selectedTrip;
+    if (trip == null) return [];
 
-    final pricePerKg = route.pricePerKg;
+    final cities = <CityModel>[];
+
+    // Add origin city
+    cities.add(CityModel(
+      name: trip.originCity,
+      country: trip.originCountry,
+    ));
+
+    // Add stop cities
+    for (final stop in trip.stops) {
+      cities.add(CityModel(
+        name: stop.city,
+        country: stop.country,
+      ));
+    }
+
+    // Add destination city
+    cities.add(CityModel(
+      name: trip.destinationCity,
+      country: trip.destinationCountry,
+    ));
+
+    return cities;
+  }
+
+  double _calculatePrice() {
+    final trip = _selectedTrip;
+    if (trip == null) return 0;
+
+    final pricePerKg = trip.pricePerKg;
     if (pricePerKg == null) return 0;
 
     final actualWeight = double.tryParse(_weightController.text) ?? 0;
     final volumetric = _calculateVolumetricWeight();
     final billingWeight = actualWeight > volumetric ? actualWeight : volumetric;
 
-    final multiplier = route.priceMultiplier ?? 1.0;
-    final minPrice = route.minimumPrice ?? 0;
+    final multiplier = trip.priceMultiplier ?? 1.0;
+    final minPrice = trip.minimumPrice ?? 0;
 
     // Quantity is informational only, weight is already the total
     final calculatedPrice = billingWeight * pricePerKg * multiplier;
@@ -248,14 +310,15 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }
 
   // Get the final price (manual or calculated)
-  double get _finalPrice => _isManualPrice && _manualPrice != null ? _manualPrice! : _calculatedPrice;
+  double get _finalPrice =>
+      _isManualPrice && _manualPrice != null ? _manualPrice! : _calculatedPrice;
 
   // Show dialog to edit price manually
   Future<void> _showPriceEditDialog() async {
     final controller = TextEditingController(
       text: _isManualPrice && _manualPrice != null
-        ? _manualPrice!.toStringAsFixed(0)
-        : _calculatedPrice.toStringAsFixed(0),
+          ? _manualPrice!.toStringAsFixed(0)
+          : _calculatedPrice.toStringAsFixed(0),
     );
 
     final result = await showDialog<String>(
@@ -312,7 +375,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     setState(() => _selectedTabIndex = index);
   }
 
-  void _applyOcrResult(String? name, String? phone, String? city, Uint8List? imageBytes) {
+  void _applyOcrResult(
+      String? name, String? phone, String? city, Uint8List? imageBytes) {
     setState(() {
       if (_selectedTabIndex == 0) {
         // Sender tab
@@ -337,7 +401,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }
 
   CityModel? _findCityByName(String cityName) {
-    final availableCities = _selectedRoute?.stops ?? [];
+    final availableCities = _getAvailableCities();
     final cityNameLower = cityName.toLowerCase();
 
     for (final city in availableCities) {
@@ -350,8 +414,50 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     return null;
   }
 
+  Future<void> _handleRemoveExistingImage(String mediaId) async {
+    if (!widget.isEditMode || widget.packageId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Видалити фото?'),
+        content: const Text('Це фото буде видалено назавжди.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Скасувати'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Видалити'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final repository = ref.read(packageRepositoryProvider);
+      await repository.deleteImage(widget.packageId!, mediaId);
+      setState(() {
+        _existingImages.removeWhere((img) => img.id == mediaId);
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Помилка видалення: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _handleSubmit() async {
-    if (_selectedRoute == null) {
+    if (_selectedTrip == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.packages_routeRequired),
@@ -389,14 +495,12 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     final height = int.tryParse(_heightController.text);
     final quantity = int.tryParse(_quantityController.text);
 
-    // Build full addresses combining city + exact address + Google Maps link
+    // Build addresses combining exact address + Google Maps link (city is separate)
     final senderAddress = AddressUtils.buildAddressFromParts(
-      cityName: _senderCity?.name,
       exactAddress: _senderExactAddressController.text.trim(),
       googleMapsLink: _senderGoogleMapsController.text.trim(),
     );
     final receiverAddress = AddressUtils.buildAddressFromParts(
-      cityName: _receiverCity?.name,
       exactAddress: _receiverExactAddressController.text.trim(),
       googleMapsLink: _receiverGoogleMapsController.text.trim(),
     );
@@ -406,48 +510,57 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     if (widget.isEditMode) {
       // Update existing package
       success = await ref.read(packagesProvider.notifier).updatePackage(
-        id: widget.packageId!,
-        routeId: _selectedRoute!.id,
-        senderName: _senderNameController.text.trim(),
-        senderPhone: _senderPhoneController.text.isNotEmpty
-            ? _senderPhoneController.text.trim()
-            : null,
-        senderAddress: senderAddress,
-        receiverName: _receiverNameController.text.trim(),
-        receiverPhone: _receiverPhoneController.text.isNotEmpty
-            ? _receiverPhoneController.text.trim()
-            : null,
-        receiverAddress: receiverAddress,
-        weight: weight,
-        lengthCm: length,
-        widthCm: width,
-        heightCm: height,
-        quantity: quantity,
-        declaredValue: _finalPrice > 0 ? _finalPrice : null,
-      );
-
+            id: widget.packageId!,
+            tripId: _selectedTrip!.id,
+            senderContactId: _selectedSenderContact?.id,
+            receiverContactId: _selectedReceiverContact?.id,
+            senderName: _senderNameController.text.trim(),
+            senderPhone: _senderPhoneController.text.isNotEmpty
+                ? _senderPhoneController.text.trim()
+                : null,
+            senderCity: _senderCity?.name,
+            senderAddress: senderAddress.isNotEmpty ? senderAddress : null,
+            receiverName: _receiverNameController.text.trim(),
+            receiverPhone: _receiverPhoneController.text.isNotEmpty
+                ? _receiverPhoneController.text.trim()
+                : null,
+            receiverCity: _receiverCity?.name,
+            receiverAddress:
+                receiverAddress.isNotEmpty ? receiverAddress : null,
+            weight: weight,
+            lengthCm: length,
+            widthCm: width,
+            heightCm: height,
+            quantity: quantity,
+            declaredValue: _finalPrice > 0 ? _finalPrice : null,
+          );
     } else {
       // Create new package
       success = await ref.read(packagesProvider.notifier).createPackage(
-        routeId: _selectedRoute!.id,
-        senderName: _senderNameController.text.trim(),
-        senderPhone: _senderPhoneController.text.isNotEmpty
-            ? _senderPhoneController.text.trim()
-            : null,
-        senderAddress: senderAddress,
-        receiverName: _receiverNameController.text.trim(),
-        receiverPhone: _receiverPhoneController.text.isNotEmpty
-            ? _receiverPhoneController.text.trim()
-            : null,
-        receiverAddress: receiverAddress,
-        weight: weight,
-        lengthCm: length,
-        widthCm: width,
-        heightCm: height,
-        quantity: quantity,
-        declaredValue: _finalPrice > 0 ? _finalPrice : null,
-        images: _packageImages.isNotEmpty ? _packageImages : null,
-      );
+            tripId: _selectedTrip!.id,
+            senderContactId: _selectedSenderContact?.id,
+            receiverContactId: _selectedReceiverContact?.id,
+            senderName: _senderNameController.text.trim(),
+            senderPhone: _senderPhoneController.text.isNotEmpty
+                ? _senderPhoneController.text.trim()
+                : null,
+            senderCity: _senderCity?.name,
+            senderAddress: senderAddress.isNotEmpty ? senderAddress : null,
+            receiverName: _receiverNameController.text.trim(),
+            receiverPhone: _receiverPhoneController.text.isNotEmpty
+                ? _receiverPhoneController.text.trim()
+                : null,
+            receiverCity: _receiverCity?.name,
+            receiverAddress:
+                receiverAddress.isNotEmpty ? receiverAddress : null,
+            weight: weight,
+            lengthCm: length,
+            widthCm: width,
+            heightCm: height,
+            quantity: quantity,
+            declaredValue: _finalPrice > 0 ? _finalPrice : null,
+            images: _packageImages.isNotEmpty ? _packageImages : null,
+          );
     }
 
     setState(() => _isLoading = false);
@@ -468,7 +581,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(ref.read(packagesProvider).error ?? context.l10n.packages_createError),
+            content: Text(ref.read(packagesProvider).error ??
+                context.l10n.packages_createError),
             backgroundColor: AppColors.error,
           ),
         );
@@ -479,25 +593,26 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    var routes = ref.watch(routesProvider).routes
-        .where((r) => r.status == RouteStatus.planned || r.status == RouteStatus.inProgress)
-        .where((r) => r.hasUpcomingDates)
+    var trips = ref
+        .watch(tripsProvider)
+        .trips
+        .where((t) =>
+            t.status == TripStatus.planned || t.status == TripStatus.inProgress)
         .toList()
-      ..sort((a, b) => (a.nextDepartureDate ?? a.departureDate)
-          .compareTo(b.nextDepartureDate ?? b.departureDate));
+      ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
 
-    // En modo edición, asegurar que la ruta actual del paquete esté disponible
-    // (aunque esté completada/cancelada o tenga fecha pasada)
-    if (widget.isEditMode && _selectedRoute != null) {
-      final currentRouteInList = routes.any((r) => r.id == _selectedRoute!.id);
-      if (!currentRouteInList) {
-        routes.insert(0, _selectedRoute!);
+    // En modo edición, asegurar que el viaje actual del paquete esté disponible
+    // (aunque esté completado/cancelado o tenga fecha pasada)
+    if (widget.isEditMode && _selectedTrip != null) {
+      final currentTripInList = trips.any((t) => t.id == _selectedTrip!.id);
+      if (!currentTripInList) {
+        trips.insert(0, _selectedTrip!);
       }
     }
 
-    // Solo mostrar estado vacío en modo CREACIÓN cuando no hay rutas
-    // En modo EDICIÓN, permitir continuar (el paquete ya tiene ruta asignada)
-    if (routes.isEmpty && !widget.isEditMode) {
+    // Solo mostrar estado vacío en modo CREACIÓN cuando no hay viajes
+    // En modo EDICIÓN, permitir continuar (el paquete ya tiene viaje asignado)
+    if (trips.isEmpty && !widget.isEditMode) {
       return Scaffold(
         backgroundColor: colors.surface,
         appBar: AppBar(
@@ -508,7 +623,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             onPressed: () => context.go('/packages'),
           ),
         ),
-        body: _buildEmptyRoutesState(colors),
+        body: _buildEmptyTripsState(colors),
       );
     }
 
@@ -528,8 +643,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               child: ListView(
                 padding: EdgeInsets.all(isCompact ? 12 : 20),
                 children: [
-                  // Route selector
-                  _buildRouteSelector(routes, colors),
+                  // Trip selector
+                  _buildTripSelector(trips, colors),
                   SizedBox(height: isCompact ? 12 : 20),
 
                   // Pill tabs for Sender/Receiver
@@ -574,7 +689,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
-  Widget _buildEmptyRoutesState(AppColorsExtension colors) {
+  Widget _buildEmptyTripsState(AppColorsExtension colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -617,7 +732,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context.push('/routes/create'),
+                onPressed: () => context.push('/trips/create'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -641,7 +756,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
-  Widget _buildRouteSelector(List<RouteModel> routes, AppColorsExtension colors) {
+  Widget _buildTripSelector(List<TripModel> trips, AppColorsExtension colors) {
     final isDark = context.isDarkMode;
 
     return Container(
@@ -652,17 +767,19 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         border: Border.all(
           color: isDark ? colors.border : AppColors.lightBorder,
         ),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: _selectedRoute?.id,
+          value: _selectedTrip?.id,
           hint: Text(
             context.l10n.packages_selectRoute,
             style: TextStyle(
@@ -676,67 +793,74 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           ),
           dropdownColor: isDark ? colors.surface : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          items: routes.map((route) => DropdownMenuItem<String>(
-            value: route.id,
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.route_rounded, size: 18, color: AppColors.primary),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        route.name,
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
+          items: trips
+              .map((trip) => DropdownMenuItem<String>(
+                    value: trip.id,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.route_rounded,
+                              size: 18, color: AppColors.primary),
                         ),
-                      ),
-                      Text(
-                        DateFormat('dd/MM/yyyy').format(route.nextDepartureDate ?? route.departureDate),
-                        style: TextStyle(
-                          color: isDark ? colors.textMuted : AppColors.lightTextMuted,
-                          fontSize: 13,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                trip.displayName,
+                                style: TextStyle(
+                                  color: colors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                DateFormat('dd/MM/yyyy')
+                                    .format(trip.departureDate),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? colors.textMuted
+                                      : AppColors.lightTextMuted,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (route.pricePerKg != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.primary.withValues(alpha: 0.2)
-                          : AppColors.lightAccentBg,
-                      borderRadius: BorderRadius.circular(6),
+                        if (trip.pricePerKg != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.primary.withValues(alpha: 0.2)
+                                  : AppColors.lightAccentBg,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${trip.pricePerKg!.toStringAsFixed(2)}€/kg',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    child: Text(
-                      '${route.pricePerKg!.toStringAsFixed(2)}€/kg',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          )).toList(),
+                  ))
+              .toList(),
           onChanged: (id) {
             setState(() {
-              _selectedRoute = routes.firstWhere((r) => r.id == id);
-              // Reset cities when route changes
+              _selectedTrip = trips.firstWhere((t) => t.id == id);
+              // Reset cities when trip changes
               _senderCity = null;
               _receiverCity = null;
               _updatePriceCalculation();
@@ -802,7 +926,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                             style: TextStyle(
                               color: _selectedTabIndex == 0
                                   ? Colors.white
-                                  : (isDark ? colors.textSecondary : AppColors.statusNeutralText),
+                                  : (isDark
+                                      ? colors.textSecondary
+                                      : AppColors.statusNeutralText),
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),
@@ -825,7 +951,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                             style: TextStyle(
                               color: _selectedTabIndex == 1
                                   ? Colors.white
-                                  : (isDark ? colors.textSecondary : AppColors.statusNeutralText),
+                                  : (isDark
+                                      ? colors.textSecondary
+                                      : AppColors.statusNeutralText),
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
                             ),
@@ -846,16 +974,23 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
   Widget _buildPersonForm(AppColorsExtension colors, bool isCompact) {
     final isSender = _selectedTabIndex == 0;
-    final nameController = isSender ? _senderNameController : _receiverNameController;
-    final phoneController = isSender ? _senderPhoneController : _receiverPhoneController;
-    final exactAddressController = isSender ? _senderExactAddressController : _receiverExactAddressController;
-    final googleMapsController = isSender ? _senderGoogleMapsController : _receiverGoogleMapsController;
+    final nameController =
+        isSender ? _senderNameController : _receiverNameController;
+    final phoneController =
+        isSender ? _senderPhoneController : _receiverPhoneController;
+    final exactAddressController = isSender
+        ? _senderExactAddressController
+        : _receiverExactAddressController;
+    final googleMapsController =
+        isSender ? _senderGoogleMapsController : _receiverGoogleMapsController;
     final selectedCity = isSender ? _senderCity : _receiverCity;
     final showAddress = isSender ? _senderShowAddress : _receiverShowAddress;
-    final phoneHint = isSender ? context.l10n.packages_phoneHintSpain : context.l10n.packages_phoneHintUkraine;
+    final phoneHint = isSender
+        ? context.l10n.packages_phoneHintSpain
+        : context.l10n.packages_phoneHintUkraine;
 
     // Get available cities from route stops
-    final availableCities = _selectedRoute?.stops ?? [];
+    final availableCities = _getAvailableCities();
     final gap = isCompact ? 8.0 : 12.0;
 
     return Column(
@@ -866,7 +1001,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           children: [
             Expanded(
               child: Text(
-                isSender ? context.l10n.packages_tabSender : context.l10n.packages_tabReceiver,
+                isSender
+                    ? context.l10n.packages_tabSender
+                    : context.l10n.packages_tabReceiver,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -879,12 +1016,57 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         ),
         SizedBox(height: gap),
 
-        // Name field (only required for receiver)
-        StyledFormField(
+        // Name field with contact search (only required for receiver)
+        ContactSearchField(
+          key: ValueKey('contact_search_$_selectedTabIndex'),
           controller: nameController,
           label: context.l10n.packages_nameLabel,
-          hint: isSender ? context.l10n.packages_senderNameHint : context.l10n.packages_receiverNameHint,
-          prefixIcon: Icons.person_outline,
+          hintText: isSender
+              ? context.l10n.packages_senderNameHint
+              : context.l10n.packages_receiverNameHint,
+          icon: Icons.person_outline,
+          onContactSelected: (contact) {
+            setState(() {
+              if (isSender) {
+                _selectedSenderContact = contact;
+                _senderNameController.text = contact.name;
+                _senderPhoneController.text = contact.phone ?? '';
+                if (contact.city != null) {
+                  _senderCity = CityModel(
+                    name: contact.city!,
+                    country: contact.country ?? 'UA',
+                  );
+                }
+                if (contact.address != null) {
+                  _senderExactAddressController.text = contact.address!;
+                  _senderShowAddress = true;
+                }
+              } else {
+                _selectedReceiverContact = contact;
+                _receiverNameController.text = contact.name;
+                _receiverPhoneController.text = contact.phone ?? '';
+                if (contact.city != null) {
+                  _receiverCity = CityModel(
+                    name: contact.city!,
+                    country: contact.country ?? 'ES',
+                  );
+                }
+                if (contact.address != null) {
+                  _receiverExactAddressController.text = contact.address!;
+                  _receiverShowAddress = true;
+                }
+              }
+            });
+          },
+          onManualEntry: (name) {
+            setState(() {
+              if (isSender) {
+                _selectedSenderContact = null;
+              } else {
+                _selectedReceiverContact = null;
+              }
+            });
+          },
           validator: isSender
               ? null // Sender name is optional
               : (value) {
@@ -973,7 +1155,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             googleMapsController: googleMapsController,
             colors: colors,
           ),
-          crossFadeState: showAddress ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          crossFadeState: showAddress
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 200),
         ),
       ],
@@ -1004,7 +1188,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             Icon(
               Icons.location_city_outlined,
               size: 20,
-              color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
+              color:
+                  isDark ? colors.textSecondary : AppColors.lightTextSecondary,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1013,8 +1198,11 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                 style: TextStyle(
                   color: selectedCity != null
                       ? colors.textPrimary
-                      : (isDark ? colors.textMuted : AppColors.lightTextSecondary),
-                  fontWeight: selectedCity != null ? FontWeight.w500 : FontWeight.w400,
+                      : (isDark
+                          ? colors.textMuted
+                          : AppColors.lightTextSecondary),
+                  fontWeight:
+                      selectedCity != null ? FontWeight.w500 : FontWeight.w400,
                 ),
               ),
             ),
@@ -1034,13 +1222,15 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         border: Border.all(
           color: isDark ? colors.border : AppColors.lightBorder,
         ),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<CityModel>(
@@ -1050,13 +1240,16 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               Icon(
                 Icons.location_city_outlined,
                 size: 20,
-                color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
+                color: isDark
+                    ? colors.textSecondary
+                    : AppColors.lightTextSecondary,
               ),
               const SizedBox(width: 12),
               Text(
                 context.l10n.packages_cityLabel,
                 style: TextStyle(
-                  color: isDark ? colors.textMuted : AppColors.lightTextSecondary,
+                  color:
+                      isDark ? colors.textMuted : AppColors.lightTextSecondary,
                 ),
               ),
             ],
@@ -1068,23 +1261,26 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           ),
           dropdownColor: isDark ? colors.surface : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          items: cities.map((city) => DropdownMenuItem<CityModel>(
-            value: city,
-            child: Row(
-              children: [
-                Text(city.countryFlag, style: const TextStyle(fontSize: 18)),
-                const SizedBox(width: 10),
-                Text(
-                  city.name,
-                  style: TextStyle(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-          )).toList(),
+          items: cities
+              .map((city) => DropdownMenuItem<CityModel>(
+                    value: city,
+                    child: Row(
+                      children: [
+                        Text(city.countryFlag,
+                            style: const TextStyle(fontSize: 18)),
+                        const SizedBox(width: 10),
+                        Text(
+                          city.name,
+                          style: TextStyle(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ))
+              .toList(),
           onChanged: onChanged,
         ),
       ),
@@ -1115,7 +1311,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           Text(
             context.l10n.packages_deliverySection,
             style: TextStyle(
-              color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+              color:
+                  isDark ? colors.textSecondary : AppColors.statusNeutralText,
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
@@ -1146,11 +1343,12 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }
 
   Widget _buildPriceCalculator(AppColorsExtension colors, bool isCompact) {
-    final pricePerKg = _selectedRoute?.pricePerKg;
+    final pricePerKg = _selectedTrip?.pricePerKg;
     final hasPricing = pricePerKg != null;
-    final billingWeight = _volumetricWeight > (double.tryParse(_weightController.text) ?? 0)
-        ? _volumetricWeight
-        : (double.tryParse(_weightController.text) ?? 0);
+    final billingWeight =
+        _volumetricWeight > (double.tryParse(_weightController.text) ?? 0)
+            ? _volumetricWeight
+            : (double.tryParse(_weightController.text) ?? 0);
     final isDark = context.isDarkMode;
     final padding = isCompact ? 12.0 : 20.0;
     final gap = isCompact ? 10.0 : 20.0;
@@ -1164,13 +1362,15 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         border: Border.all(
           color: isDark ? colors.border : AppColors.lightBorder,
         ),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1186,7 +1386,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                     Text(
                       context.l10n.packages_weightKg,
                       style: TextStyle(
-                        color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+                        color: isDark
+                            ? colors.textSecondary
+                            : AppColors.statusNeutralText,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.3,
@@ -1211,7 +1413,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                     Text(
                       context.l10n.packages_quantityPcs,
                       style: TextStyle(
-                        color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+                        color: isDark
+                            ? colors.textSecondary
+                            : AppColors.statusNeutralText,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.3,
@@ -1234,7 +1438,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           Text(
             context.l10n.packages_dimensionsCm,
             style: TextStyle(
-              color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+              color:
+                  isDark ? colors.textSecondary : AppColors.statusNeutralText,
               fontSize: 12,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.3,
@@ -1287,7 +1492,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                       Text(
                         '${context.l10n.packages_tariffLabel}: ${pricePerKg.toStringAsFixed(2)} €/kg',
                         style: TextStyle(
-                          color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
+                          color: isDark
+                              ? colors.textSecondary
+                              : AppColors.lightTextSecondary,
                           fontSize: isCompact ? 12 : 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1298,7 +1505,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                           child: Text(
                             '${context.l10n.packages_volumetricWeight}: ${_volumetricWeight.toStringAsFixed(2)} kg',
                             style: TextStyle(
-                              color: isDark ? colors.textMuted : AppColors.lightTextMuted,
+                              color: isDark
+                                  ? colors.textMuted
+                                  : AppColors.lightTextMuted,
                               fontSize: isCompact ? 11 : 12,
                             ),
                           ),
@@ -1309,7 +1518,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                           child: Text(
                             '${context.l10n.packages_billingWeight}: ${billingWeight.toStringAsFixed(2)} kg',
                             style: TextStyle(
-                              color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+                              color: isDark
+                                  ? colors.textSecondary
+                                  : AppColors.statusNeutralText,
                               fontSize: isCompact ? 12 : 13,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1332,7 +1543,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                           : AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: _isManualPrice
-                          ? Border.all(color: AppColors.warning.withValues(alpha: 0.3), width: 1.5)
+                          ? Border.all(
+                              color: AppColors.warning.withValues(alpha: 0.3),
+                              width: 1.5)
                           : null,
                     ),
                     child: Row(
@@ -1350,7 +1563,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                         Text(
                           '${_finalPrice.toStringAsFixed(0)}€',
                           style: TextStyle(
-                            color: _isManualPrice ? AppColors.warning : AppColors.primary,
+                            color: _isManualPrice
+                                ? AppColors.warning
+                                : AppColors.primary,
                             fontSize: isCompact ? 18 : 22,
                             fontWeight: FontWeight.w800,
                           ),
@@ -1396,29 +1611,33 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               Icon(
                 Icons.photo_library_outlined,
                 size: 20,
-                color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+                color:
+                    isDark ? colors.textSecondary : AppColors.statusNeutralText,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   context.l10n.packages_imagesSection,
                   style: TextStyle(
-                    color: isDark ? colors.textSecondary : AppColors.statusNeutralText,
+                    color: isDark
+                        ? colors.textSecondary
+                        : AppColors.statusNeutralText,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
                   ),
                 ),
               ),
-              if (_packageImages.isNotEmpty)
+              if (_packageImages.isNotEmpty || _existingImages.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '${_packageImages.length}',
+                    '${_packageImages.length + _existingImages.length}',
                     style: TextStyle(
                       color: AppColors.primary,
                       fontSize: 12,
@@ -1429,21 +1648,23 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          if (_packageImages.isNotEmpty) ...[
+          if (_packageImages.isNotEmpty || _existingImages.isNotEmpty) ...[
             PackageImageGallery(
               localImages: _packageImages,
+              remoteImages: _existingImages,
               editMode: true,
               onRemoveLocal: (index) {
                 setState(() {
                   _packageImages.removeAt(index);
                 });
               },
+              onRemoveRemote: (mediaId) => _handleRemoveExistingImage(mediaId),
               height: 160,
             ),
             const SizedBox(height: 12),
           ],
           AddImageButton(
-            compact: _packageImages.isEmpty,
+            compact: _packageImages.isEmpty && _existingImages.isEmpty,
             onImageSelected: (bytes) {
               setState(() {
                 _packageImages.add(bytes);
@@ -1467,13 +1688,15 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             color: isDark ? colors.border : AppColors.lightBorder,
           ),
         ),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
+                ),
+              ],
       ),
       child: SafeArea(
         child: SizedBox(
@@ -1481,7 +1704,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           child: Container(
             decoration: BoxDecoration(
               gradient: _isLoading ? null : AppColors.primaryGradient,
-              color: _isLoading ? AppColors.primary.withValues(alpha: 0.5) : null,
+              color:
+                  _isLoading ? AppColors.primary.withValues(alpha: 0.5) : null,
               borderRadius: BorderRadius.circular(14),
               boxShadow: _isLoading
                   ? null
@@ -1590,7 +1814,8 @@ class _NumericInputState extends State<_NumericInput> {
       child: TextField(
         controller: widget.controller,
         focusNode: _focusNode,
-        keyboardType: TextInputType.numberWithOptions(decimal: widget.allowDecimal),
+        keyboardType:
+            TextInputType.numberWithOptions(decimal: widget.allowDecimal),
         textAlign: TextAlign.center,
         cursorWidth: 1.5,
         cursorColor: AppColors.primary,
@@ -1607,7 +1832,8 @@ class _NumericInputState extends State<_NumericInput> {
             fontSize: fontSize,
           ),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: verticalPadding),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 8, vertical: verticalPadding),
         ),
         inputFormatters: [
           widget.allowDecimal

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/models/city_model.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
+import '../../../trips/data/models/trip_model.dart';
 import '../../data/models/route_model.dart';
 import '../../data/repositories/route_repository.dart';
 
@@ -50,30 +51,30 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
     await loadRoutes();
   }
 
-  Future<void> loadRoutes() async {
-    // Prevent concurrent loads
+  Future<void> loadRoutes({bool? activeOnly}) async {
     if (state.isLoading) return;
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final routes = await _repository.getRoutes();
+      final routes = await _repository.getRoutes(activeOnly: activeOnly);
       state = state.copyWith(routes: routes, isLoading: false);
     } catch (_) {
       state = state.copyWith(
         isLoading: false,
-        error: 'Error al cargar rutas',
+        error: 'Error al cargar plantillas de rutas',
       );
     }
   }
 
   Future<bool> createRoute({
+    String? name,
+    String? description,
+    int? estimatedDurationHours,
     required String origin,
     required String originCountry,
     required String destination,
     required String destinationCountry,
-    required List<DateTime> departureDates,
-    int? tripDurationHours,
     String? notes,
     List<CityModel>? stops,
     double? pricePerKg,
@@ -82,12 +83,13 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
   }) async {
     try {
       final newRoute = await _repository.createRoute(
+        name: name,
+        description: description,
+        estimatedDurationHours: estimatedDurationHours,
         origin: origin,
         originCountry: originCountry,
         destination: destination,
         destinationCountry: destinationCountry,
-        departureDates: departureDates,
-        tripDurationHours: tripDurationHours,
         notes: notes,
         stops: stops,
         pricePerKg: pricePerKg,
@@ -97,19 +99,6 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
       state = state.copyWith(
         routes: [newRoute, ...state.routes],
       );
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<bool> updateStatus(String id, RouteStatus status) async {
-    try {
-      final updated = await _repository.updateStatus(id, status);
-      final routes = state.routes.map((r) {
-        return r.id == id ? updated : r;
-      }).toList();
-      state = state.copyWith(routes: routes);
       return true;
     } catch (e) {
       return false;
@@ -126,15 +115,76 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
       return false;
     }
   }
+
+  Future<bool> updateRoute({
+    required String id,
+    String? name,
+    String? description,
+    int? estimatedDurationHours,
+    required String origin,
+    required String originCountry,
+    required String destination,
+    required String destinationCountry,
+    String? notes,
+    List<CityModel>? stops,
+    double? pricePerKg,
+    double? minimumPrice,
+    double? priceMultiplier,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'origin_city': origin,
+        'origin_country': originCountry,
+        'destination_city': destination,
+        'destination_country': destinationCountry,
+        if (name != null) 'name': name,
+        if (description != null) 'description': description,
+        if (estimatedDurationHours != null)
+          'estimated_duration_hours': estimatedDurationHours,
+        if (notes != null) 'notes': notes,
+        if (pricePerKg != null) 'price_per_kg': pricePerKg,
+        if (minimumPrice != null) 'minimum_price': minimumPrice,
+        if (priceMultiplier != null) 'price_multiplier': priceMultiplier,
+        if (stops != null)
+          'stops': stops
+              .asMap()
+              .entries
+              .map((e) => {
+                    'city': e.value.name,
+                    'country': e.value.country,
+                    'order': e.key,
+                  })
+              .toList(),
+      };
+
+      final updatedRoute = await _repository.updateRoute(id, data);
+      final routes = state.routes.map((r) {
+        return r.id == id ? updatedRoute : r;
+      }).toList();
+      state = state.copyWith(routes: routes);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 // Routes Provider
-final routesProvider = StateNotifierProvider<RoutesNotifier, RoutesState>((ref) {
+final routesProvider =
+    StateNotifierProvider<RoutesNotifier, RoutesState>((ref) {
   return RoutesNotifier(ref.read(routeRepositoryProvider));
 });
 
 // Single Route Provider
-final routeDetailProvider = FutureProvider.family<RouteModel, String>((ref, id) async {
+final routeDetailProvider =
+    FutureProvider.family<RouteModel, String>((ref, id) async {
   final repository = ref.read(routeRepositoryProvider);
   return repository.getRoute(id);
+});
+
+// Route Trips Provider
+final routeTripsProvider =
+    FutureProvider.family<List<TripModel>, String>((ref, routeId) async {
+  final repository = ref.read(routeRepositoryProvider);
+  return repository.getRouteTrips(routeId);
 });

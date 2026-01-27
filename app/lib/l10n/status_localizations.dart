@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../features/packages/data/models/package_model.dart';
-import '../features/routes/data/models/route_model.dart';
+import '../features/trips/data/models/trip_status.dart';
 import '../shared/widgets/status_chip.dart';
 
 /// Extension to get localized display names for PackageStatus.
@@ -40,36 +40,36 @@ extension PackageStatusL10n on PackageStatus {
   }
 }
 
-/// Extension to get localized display names for RouteStatus.
+/// Extension to get localized display names for TripStatus.
 ///
 /// Usage:
 /// ```dart
-/// Text(route.status.localizedName(context))
+/// Text(trip.status.localizedName(context))
 /// ```
-extension RouteStatusL10n on RouteStatus {
+extension TripStatusL10n on TripStatus {
   String localizedName(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     switch (this) {
-      case RouteStatus.planned:
+      case TripStatus.planned:
         return l10n.status_route_planned;
-      case RouteStatus.inProgress:
+      case TripStatus.inProgress:
         return l10n.status_route_inProgress;
-      case RouteStatus.completed:
+      case TripStatus.completed:
         return l10n.status_route_completed;
-      case RouteStatus.cancelled:
+      case TripStatus.cancelled:
         return l10n.status_route_cancelled;
     }
   }
 
   ChipVariant get chipVariant {
     switch (this) {
-      case RouteStatus.planned:
+      case TripStatus.planned:
         return ChipVariant.blue;
-      case RouteStatus.inProgress:
+      case TripStatus.inProgress:
         return ChipVariant.orange;
-      case RouteStatus.completed:
+      case TripStatus.completed:
         return ChipVariant.green;
-      case RouteStatus.cancelled:
+      case TripStatus.cancelled:
         return ChipVariant.gray;
     }
   }

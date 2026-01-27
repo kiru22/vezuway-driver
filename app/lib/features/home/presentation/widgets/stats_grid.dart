@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/date_formatters.dart';
+import '../../../../shared/widgets/stat_card.dart';
 import '../../domain/providers/dashboard_provider.dart';
 
 class StatsGrid extends ConsumerWidget {
@@ -32,8 +33,8 @@ class StatsGrid extends ConsumerWidget {
         if (currentTrip != null) ...[
           // Active trip banner
           _ActiveTripBanner(
-            origin: currentTrip.origin,
-            destination: currentTrip.destination,
+            origin: currentTrip.originCity,
+            destination: currentTrip.destinationCity,
             date: currentTrip.departureDate,
             isActive: stats.activeTrip != null,
             dateFormatter: formatters.shortDate,
@@ -46,7 +47,7 @@ class StatsGrid extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: _StatCard(
+              child: StatCard(
                 icon: Icons.inventory_2_rounded,
                 label: l10n.stats_packages,
                 value: '${stats.packagesCount}',
@@ -55,16 +56,17 @@ class StatsGrid extends ConsumerWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _StatCard(
+              child: StatCard(
                 icon: Icons.scale_rounded,
                 label: l10n.stats_totalWeight,
-                value: '${stats.totalWeight.toStringAsFixed(1)} ${l10n.common_kg}',
+                value:
+                    '${stats.totalWeight.toStringAsFixed(1)} ${l10n.common_kg}',
                 gradient: [AppColors.warning, const Color(0xFFD97706)],
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _StatCard(
+              child: StatCard(
                 icon: Icons.euro_rounded,
                 label: l10n.stats_declaredValue,
                 value: stats.totalDeclaredValue.toStringAsFixed(0),
@@ -100,7 +102,6 @@ class _ActiveTripBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final colorScheme = context.colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -195,7 +196,7 @@ class _ActiveTripBanner extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
+                    color: colors.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -226,95 +227,6 @@ class _ActiveTripBanner extends StatelessWidget {
             Icons.chevron_right_rounded,
             color: colors.textMuted,
             size: 24,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final List<Color> gradient;
-
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.gradient,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final colorScheme = context.colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: colors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icon with gradient background
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: gradient),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: gradient.first.withValues(alpha: 0.35),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 14),
-          // Value with animation
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: 1),
-            duration: AppTheme.durationSlow,
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Opacity(
-                opacity: value,
-                child: Transform.translate(
-                  offset: Offset(0, 8 * (1 - value)),
-                  child: child,
-                ),
-              );
-            },
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.onSurface,
-                letterSpacing: -0.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: colors.textMuted,
-            ),
           ),
         ],
       ),
@@ -383,10 +295,12 @@ class LargeStatCard extends StatelessWidget {
               const Spacer(),
               if (trend != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: (isTrendPositive ? AppColors.success : AppColors.error)
-                        .withValues(alpha: 0.15),
+                    color:
+                        (isTrendPositive ? AppColors.success : AppColors.error)
+                            .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -397,7 +311,9 @@ class LargeStatCard extends StatelessWidget {
                             ? Icons.trending_up_rounded
                             : Icons.trending_down_rounded,
                         size: 14,
-                        color: isTrendPositive ? AppColors.success : AppColors.error,
+                        color: isTrendPositive
+                            ? AppColors.success
+                            : AppColors.error,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -405,7 +321,9 @@ class LargeStatCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isTrendPositive ? AppColors.success : AppColors.error,
+                          color: isTrendPositive
+                              ? AppColors.success
+                              : AppColors.error,
                         ),
                       ),
                     ],

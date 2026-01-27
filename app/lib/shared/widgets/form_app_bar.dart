@@ -56,7 +56,8 @@ class FormAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Text(
                     subtitle!,
                     style: TextStyle(
-                      color: isDark ? colors.textMuted : const Color(0xFF64748B),
+                      color:
+                          isDark ? colors.textMuted : const Color(0xFF64748B),
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -66,7 +67,8 @@ class FormAppBar extends StatelessWidget implements PreferredSizeWidget {
                 if (badge != null) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),

@@ -21,7 +21,8 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth ?? AppTheme.authCardMaxWidth),
+      constraints:
+          BoxConstraints(maxWidth: maxWidth ?? AppTheme.authCardMaxWidth),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: BackdropFilter(

@@ -66,6 +66,20 @@ class AppLocalizationsUk extends AppLocalizations {
   String get common_pcs => 'шт';
 
   @override
+  String get common_today => 'Сьогодні';
+
+  @override
+  String get common_yesterday => 'Вчора';
+
+  @override
+  String get common_deleteConfirmTitle => 'Підтвердити видалення';
+
+  @override
+  String common_deleteConfirmMessage(String itemType) {
+    return 'Ви впевнені, що хочете видалити цей $itemType?';
+  }
+
+  @override
   String get auth_loginTitle => 'Увiйти';
 
   @override
@@ -225,6 +239,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_trackingCode => 'Код вiдстеження';
 
   @override
+  String get packages_codeCopied => 'Код скопійовано';
+
+  @override
   String get packages_weight => 'Вага';
 
   @override
@@ -284,6 +301,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get packages_createTitle => 'Нова посилка';
+
+  @override
+  String get packages_createNew => 'Нове відправлення';
 
   @override
   String get packages_createSuccess => 'Посилку успiшно створено';
@@ -490,6 +510,22 @@ class AppLocalizationsUk extends AppLocalizations {
       'Введiть цiну або залиште порожнiм для автоматичного розрахунку';
 
   @override
+  String get packages_selectAll => 'Усi';
+
+  @override
+  String packages_selectedCount(int count) {
+    return '$count обрано';
+  }
+
+  @override
+  String get packages_advanceStatus => 'Далi';
+
+  @override
+  String packages_bulkUpdateSuccess(int count) {
+    return '$count посилок оновлено';
+  }
+
+  @override
   String get routes_title => 'Маршрути';
 
   @override
@@ -592,6 +628,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_createError => 'Помилка створення маршруту';
 
   @override
+  String get routes_editTitle => 'Редагувати маршрут';
+
+  @override
+  String get routes_updateSuccess => 'Маршрут успiшно оновлено';
+
+  @override
+  String get routes_updateError => 'Помилка оновлення маршруту';
+
+  @override
   String get routes_selectDatesPrompt =>
       'Торкнiться днiв у календарi для вибору';
 
@@ -645,6 +690,56 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_deleteError => 'Помилка видалення маршруту';
 
   @override
+  String get routes_routeDetails => 'ДЕТАЛI МАРШРУТУ';
+
+  @override
+  String get routes_addCountry => '+ Додати Країну';
+
+  @override
+  String get routes_originPoint => 'Точка Вiдправлення';
+
+  @override
+  String routes_stopN(int n) {
+    return 'Зупинка $n';
+  }
+
+  @override
+  String get routes_finalDestination => 'Кiнцеве Призначення';
+
+  @override
+  String get routes_addCity => 'Додати Мiсто';
+
+  @override
+  String get routes_deleteStop => 'видалити';
+
+  @override
+  String get routes_pricingSection => 'ЦIНОУТВОРЕННЯ';
+
+  @override
+  String get routes_amount => 'Сума';
+
+  @override
+  String get routes_currency => 'Валюта';
+
+  @override
+  String get routes_publishRoute => 'Опублiкувати Маршрут';
+
+  @override
+  String get routes_selectCountry => 'Оберiть країну';
+
+  @override
+  String get routes_selectCity => 'Оберiть мiсто';
+
+  @override
+  String get routes_atLeastOneCity => 'Додайте щонайменше одне мiсто';
+
+  @override
+  String get country_germany => 'Нiмеччина';
+
+  @override
+  String get country_poland => 'Польща';
+
+  @override
   String get nav_home => 'Головна';
 
   @override
@@ -652,6 +747,128 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get nav_routes => 'Рейси';
+
+  @override
+  String get nav_contacts => 'Контакти';
+
+  @override
+  String get contacts_title => 'Контакти';
+
+  @override
+  String get contacts_search => 'Шукати за іменем, email або телефоном...';
+
+  @override
+  String get contacts_all => 'Всі';
+
+  @override
+  String get contacts_verified => 'Верифіковані';
+
+  @override
+  String get contacts_newContact => 'Новий Контакт';
+
+  @override
+  String get contacts_noContacts => 'Немає контактів';
+
+  @override
+  String get contacts_noContactsDesc =>
+      'Контакти створюватимуться автоматично при створенні посилок';
+
+  @override
+  String get contacts_nameLabel => 'Ім\'я *';
+
+  @override
+  String get contacts_nameRequired => 'Імя обовязкове';
+
+  @override
+  String get contacts_emailLabel => 'Email';
+
+  @override
+  String get contacts_emailInvalid => 'Невірний email';
+
+  @override
+  String get contacts_phoneLabel => 'Телефон';
+
+  @override
+  String get contacts_notesLabel => 'Нотатки';
+
+  @override
+  String get contacts_create => 'Створити';
+
+  @override
+  String get contacts_created => 'Контакт створено';
+
+  @override
+  String get contacts_createError => 'Помилка створення контакту';
+
+  @override
+  String get contacts_detail => 'Деталі Контакту';
+
+  @override
+  String get contacts_edit => 'Редагувати Контакт';
+
+  @override
+  String get contacts_updated => 'Контакт оновлено';
+
+  @override
+  String get contacts_deleteTitle => 'Видалити Контакт';
+
+  @override
+  String get contacts_deleteConfirm =>
+      'Ви впевнені, що хочете видалити цей контакт?';
+
+  @override
+  String get contacts_deleted => 'Контакт видалено';
+
+  @override
+  String get contacts_errorLoading => 'Помилка завантаження контактів';
+
+  @override
+  String get contacts_errorLoadingPackages => 'Помилка завантаження посилок';
+
+  @override
+  String get contacts_tabHistory => 'Історія';
+
+  @override
+  String get contacts_tabDetails => 'Деталі';
+
+  @override
+  String get contacts_noPackages => 'Немає посилок';
+
+  @override
+  String get contacts_noPackagesDesc => 'Цей контакт не має посилок';
+
+  @override
+  String get contacts_statsSent => 'Відправлено';
+
+  @override
+  String get contacts_statsReceived => 'Отримано';
+
+  @override
+  String get contacts_statsTotal => 'Всього';
+
+  @override
+  String get contacts_systemInfo => 'Системна Інформація';
+
+  @override
+  String get contacts_fieldId => 'ID';
+
+  @override
+  String get contacts_fieldCreatedBy => 'Створено';
+
+  @override
+  String get contacts_fieldCreatedAt => 'Дата створення';
+
+  @override
+  String get contacts_fieldUpdatedAt => 'Останнє оновлення';
+
+  @override
+  String get contacts_lastActivity => 'Остання активність';
+
+  @override
+  String get contacts_notes => 'Нотатки';
+
+  @override
+  String get contacts_linkedUser => 'Пов\'язаний користувач';
 
   @override
   String get quickAction_title => 'Створити нове';
@@ -919,4 +1136,170 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get notifications_notNow => 'Не зараз';
+
+  @override
+  String get trips_clearFilter => 'Скинути фільтр';
+
+  @override
+  String get myOrders_title => 'Мої Замовлення';
+
+  @override
+  String get myOrders_filterByStatus => 'Фільтр за статусом';
+
+  @override
+  String get myOrders_filterAll => 'Всі';
+
+  @override
+  String get myOrders_filterPending => 'Очікує';
+
+  @override
+  String get myOrders_filterInTransit => 'В дорозі';
+
+  @override
+  String get myOrders_filterDelivered => 'Доставлено';
+
+  @override
+  String get myOrders_filterDelayed => 'Затримано';
+
+  @override
+  String get myOrders_noOrdersFiltered => 'Немає замовлень з таким статусом';
+
+  @override
+  String get myOrders_noOrders => 'У вас немає замовлень';
+
+  @override
+  String get myOrders_noOrdersDesc =>
+      'Коли ви відправите або отримаєте посилки,\nвони з\'являться тут';
+
+  @override
+  String get myOrders_errorLoading => 'Помилка завантаження замовлень';
+
+  @override
+  String get myOrders_retry => 'Повторити';
+
+  @override
+  String get myOrders_senderAndReceiver => 'Відправник і Отримувач';
+
+  @override
+  String get myOrders_youAreSender => 'Ви Відправник';
+
+  @override
+  String get myOrders_youAreReceiver => 'Ви Отримувач';
+
+  @override
+  String get driverPending_title => 'Заявка на розгляді';
+
+  @override
+  String get driverPending_message =>
+      'Ваша заявка як водія перевіряється нашою командою.';
+
+  @override
+  String get driverPending_emailNotice =>
+      'Ми повідомимо вас електронною поштою, коли її схвалять.';
+
+  @override
+  String get driverPending_verifying => 'Перевірка...';
+
+  @override
+  String get driverPending_refreshStatus => 'Оновити статус';
+
+  @override
+  String get driverPending_logout => 'Вийти';
+
+  @override
+  String get clientDashboard_title => 'Мої Відправлення';
+
+  @override
+  String get clientDashboard_myShipments => 'Мої відправлення';
+
+  @override
+  String get clientDashboard_noShipments =>
+      'У вас немає зареєстрованих відправлень';
+
+  @override
+  String get clientDashboard_createFirst => 'Створіть ваше перше відправлення';
+
+  @override
+  String get clientDashboard_totalShipments => 'Всього відправлено';
+
+  @override
+  String get clientDashboard_inTransit => 'У дорозі';
+
+  @override
+  String get clientDashboard_delivered => 'Доставлено';
+
+  @override
+  String get clientDashboard_viewAll => 'Переглянути всі';
+
+  @override
+  String get admin_panelTitle => 'Панель Адміна';
+
+  @override
+  String get admin_users => 'Користувачі';
+
+  @override
+  String get admin_requests => 'Заявки';
+
+  @override
+  String get admin_allUsers => 'Всі';
+
+  @override
+  String get admin_clients => 'Клієнти';
+
+  @override
+  String get admin_drivers => 'Перевізники';
+
+  @override
+  String get admin_client => 'Клієнт';
+
+  @override
+  String get admin_driver => 'Перевізник';
+
+  @override
+  String get admin_noUsers => 'Немає користувачів';
+
+  @override
+  String get admin_loadError => 'Помилка завантаження даних';
+
+  @override
+  String get admin_registered => 'Зареєстрований';
+
+  @override
+  String get admin_userSingular => 'користувач';
+
+  @override
+  String get admin_userPlural => 'користувачів';
+
+  @override
+  String get admin_clientSingular => 'клієнт';
+
+  @override
+  String get admin_clientPlural => 'клієнтів';
+
+  @override
+  String get admin_driverSingular => 'перевізник';
+
+  @override
+  String get admin_driverPlural => 'перевізників';
+
+  @override
+  String get admin_statusApproved => 'Схвалено';
+
+  @override
+  String get admin_statusPending => 'Очікує';
+
+  @override
+  String get admin_statusRejected => 'Відхилено';
+
+  @override
+  String get admin_noPendingDrivers => 'Немає водіїв на розгляді';
+
+  @override
+  String get admin_allDriversReviewed => 'Всі водії перевірені';
+
+  @override
+  String get admin_pendingDriverSingular => 'Водій на розгляді';
+
+  @override
+  String get admin_pendingDriverPlural => 'Водіїв на розгляді';
 }

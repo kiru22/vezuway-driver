@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_extensions.dart';
 
 class RouteProgress extends StatelessWidget {
   final String origin;
@@ -79,6 +80,8 @@ class _LocationInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Column(
       crossAxisAlignment: alignment,
       mainAxisSize: MainAxisSize.min,
@@ -96,7 +99,7 @@ class _LocationInfo extends StatelessWidget {
                 style: TextStyle(
                   fontSize: compact ? 14 : 16,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   letterSpacing: -0.3,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -118,7 +121,7 @@ class _LocationInfo extends StatelessWidget {
             style: TextStyle(
               fontSize: compact ? 10 : 11,
               fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
+              color: colors.textMuted,
               letterSpacing: 1.0,
             ),
           ),
@@ -181,6 +184,8 @@ class _AnimatedProgressLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final lineWidth = constraints.maxWidth;
@@ -197,7 +202,7 @@ class _AnimatedProgressLine extends StatelessWidget {
                 height: 3,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: colors.border,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -213,7 +218,7 @@ class _AnimatedProgressLine extends StatelessWidget {
                     height: 6,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isActive ? AppColors.primary : AppColors.border,
+                      color: isActive ? AppColors.primary : colors.border,
                       boxShadow: isActive
                           ? [
                               BoxShadow(
@@ -334,6 +339,8 @@ class _TimelineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,7 +358,7 @@ class _TimelineItem extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: isCompleted || isCurrent
                         ? AppColors.primary
-                        : AppColors.border,
+                        : colors.border,
                     border: isCurrent
                         ? Border.all(color: AppColors.primaryLight, width: 3)
                         : null,
@@ -379,7 +386,7 @@ class _TimelineItem extends StatelessWidget {
                     child: Container(
                       width: 2,
                       margin: const EdgeInsets.symmetric(vertical: 4),
-                      color: isCompleted ? AppColors.primary : AppColors.border,
+                      color: isCompleted ? AppColors.primary : colors.border,
                     ),
                   ),
               ],
@@ -401,7 +408,7 @@ class _TimelineItem extends StatelessWidget {
                           size: 16,
                           color: isCurrent
                               ? AppColors.primary
-                              : AppColors.textMuted,
+                              : colors.textMuted,
                         ),
                         const SizedBox(width: 8),
                       ],
@@ -412,10 +419,10 @@ class _TimelineItem extends StatelessWidget {
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: isCurrent
-                                ? AppColors.textPrimary
+                                ? colors.textPrimary
                                 : isCompleted
-                                    ? AppColors.textSecondary
-                                    : AppColors.textMuted,
+                                    ? colors.textSecondary
+                                    : colors.textMuted,
                           ),
                         ),
                       ),
@@ -426,7 +433,7 @@ class _TimelineItem extends StatelessWidget {
                             fontSize: 12,
                             color: isCurrent
                                 ? AppColors.primary
-                                : AppColors.textMuted,
+                                : colors.textMuted,
                             fontWeight:
                                 isCurrent ? FontWeight.w600 : FontWeight.w400,
                           ),
@@ -437,9 +444,9 @@ class _TimelineItem extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       stop.description!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                       ),
                     ),
                   ],

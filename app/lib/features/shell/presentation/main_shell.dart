@@ -6,8 +6,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../l10n/l10n_extension.dart';
+import '../../../shared/widgets/styled_form_field.dart';
+import '../../auth/domain/providers/auth_provider.dart';
+import '../../contacts/domain/providers/contact_provider.dart';
+import '../../trips/presentation/screens/trips_routes_screen.dart';
 
-class MainShell extends ConsumerWidget {
+class MainShell extends ConsumerStatefulWidget {
   final Widget child;
 
   const MainShell({
@@ -16,11 +20,287 @@ class MainShell extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends ConsumerState<MainShell>
+    with SingleTickerProviderStateMixin {
+  bool _slideFromRight = true;
+
+  late AnimationController _animationController;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(1, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    ));
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onNavTap(int newIndex, BuildContext context) {
+    final currentIndex = _calculateSelectedIndex(context);
+    if (newIndex == currentIndex) return;
+
+    HapticFeedback.lightImpact();
+
+    setState(() {
+      _slideFromRight = newIndex > currentIndex;
+    });
+
+    // Update slide direction for animation
+    _slideAnimation = Tween<Offset>(
+      begin: _slideFromRight ? const Offset(1, 0) : const Offset(-1, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _animationController.reset();
+    _animationController.forward();
+
+    switch (newIndex) {
+      case 0:
+        context.go('/home');
+        break;
+      case 1:
+        context.go('/packages');
+        break;
+      case 2:
+        context.go('/routes');
+        break;
+      case 3:
+        context.go('/contacts');
+        break;
+    }
+  }
+
+  int _calculateSelectedIndex(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    if (location == '/home' || location == '/') return 0;
+    if (location.startsWith('/packages')) return 1;
+    if (location.startsWith('/routes')) return 2;
+    if (location.startsWith('/contacts')) return 3;
+    return 0;
+  }
+
+  void _handleAddPressed(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    final currentIndex = _calculateSelectedIndex(context);
+
+    // Obtener tipo de usuario
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+    final isClient = user?.isClient ?? false;
+
+    // Clientes solo pueden crear pedidos
+    if (isClient) {
+      context.push('/packages/new');
+      return;
+    }
+
+    // Resto de usuarios: lógica normal
+    switch (currentIndex) {
+      case 0: // Dashboard
+      case 1: // Packages
+        context.push('/packages/new');
+        break;
+      case 2: // Routes/Trips screen
+        final tabIndex = ref.read(tripsRoutesTabIndexProvider);
+        if (tabIndex == 0) {
+          context.push('/trips/create');
+        } else {
+          context.push('/routes/create');
+        }
+        break;
+      case 3: // Contacts
+        _showCreateContactDialog(context);
+        break;
+    }
+  }
+
+  void _showCreateContactDialog(BuildContext context) {
+    final l10n = context.l10n;
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final phoneController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        ),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          padding: const EdgeInsets.all(32),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Título
+                Text(
+                  l10n.contacts_newContact,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 24),
+
+                // Campo Nombre
+                StyledFormField(
+                  controller: nameController,
+                  label: l10n.contacts_nameLabel,
+                  prefixIcon: Icons.person_outline,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return l10n.contacts_nameRequired;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // Campo Email
+                StyledFormField(
+                  controller: emailController,
+                  label: l10n.contacts_emailLabel,
+                  prefixIcon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      final emailRegex =
+                          RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      if (!emailRegex.hasMatch(value)) {
+                        return l10n.contacts_emailInvalid;
+                      }
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // Campo Teléfono
+                StyledFormField(
+                  controller: phoneController,
+                  label: l10n.contacts_phoneLabel,
+                  prefixIcon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.done,
+                ),
+                const SizedBox(height: 32),
+
+                // Botones de acción
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                      ),
+                      child: Text(l10n.common_cancel),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (!formKey.currentState!.validate()) {
+                          return;
+                        }
+
+                        try {
+                          await ref
+                              .read(contactsProvider.notifier)
+                              .createContact(
+                                name: nameController.text.trim(),
+                                email: emailController.text.trim().isNotEmpty
+                                    ? emailController.text.trim()
+                                    : null,
+                                phone: phoneController.text.trim().isNotEmpty
+                                    ? phoneController.text.trim()
+                                    : null,
+                              );
+
+                          if (context.mounted) {
+                            Navigator.pop(dialogContext);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.contacts_created)),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      '${l10n.common_error}: ${e.toString()}')),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusMd),
+                        ),
+                      ),
+                      child: Text(l10n.contacts_create),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.colors;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Bottom nav height: 60 (nav) + 16 (top) + 16 (bottom) + safe area
     const bottomNavHeight = 60.0 + 16 + 16;
+    final currentIndex = _calculateSelectedIndex(context);
+
+    // Obtener tipo de usuario para navegación condicional
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final isClient = user?.isClient ?? false;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -35,12 +315,27 @@ class MainShell extends ConsumerWidget {
         backgroundColor: context.theme.scaffoldBackgroundColor,
         body: Stack(
           children: [
-            // Main content with bottom padding to avoid nav overlap
+            // Main content with slide animation
             Positioned.fill(
               child: Padding(
                 padding:
                     EdgeInsets.only(bottom: bottomNavHeight + bottomPadding),
-                child: child,
+                child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return SlideTransition(
+                      position: _slideAnimation,
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey(currentIndex),
+                    child: widget.child,
+                  ),
+                ),
               ),
             ),
             // Bottom navigation
@@ -49,47 +344,15 @@ class MainShell extends ConsumerWidget {
               right: 0,
               bottom: 0,
               child: _PremiumBottomNav(
-                currentIndex: _calculateSelectedIndex(context),
-                onTap: (index) => _onItemTapped(index, context),
-                onAddPressed: () => _showAddPackageSheet(context),
+                currentIndex: currentIndex,
+                onTap: (index) => _onNavTap(index, context),
+                onAddPressed: () => _handleAddPressed(context),
+                isClientMode: isClient,
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  int _calculateSelectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    if (location == '/home' || location == '/') return 0;
-    if (location.startsWith('/packages')) return 1;
-    if (location.startsWith('/routes')) return 2;
-    return 0;
-  }
-
-  void _onItemTapped(int index, BuildContext context) {
-    HapticFeedback.lightImpact();
-    switch (index) {
-      case 0:
-        context.go('/home');
-        break;
-      case 1:
-        context.go('/packages');
-        break;
-      case 2:
-        context.go('/routes');
-        break;
-    }
-  }
-
-  void _showAddPackageSheet(BuildContext context) {
-    HapticFeedback.mediumImpact();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const _AddPackageSheet(),
     );
   }
 }
@@ -176,11 +439,13 @@ class _PremiumBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final VoidCallback onAddPressed;
+  final bool isClientMode;
 
   const _PremiumBottomNav({
     required this.currentIndex,
     required this.onTap,
     required this.onAddPressed,
+    this.isClientMode = false,
   });
 
   @override
@@ -226,33 +491,58 @@ class _PremiumBottomNav extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: _NavItem(
-                          icon: Icons.space_dashboard_outlined,
-                          activeIcon: Icons.space_dashboard_rounded,
-                          label: l10n.nav_home,
-                          isSelected: currentIndex == 0,
-                          onTap: () => onTap(0),
+                      // Modo Cliente: solo mostrar tab Mis pedidos
+                      if (isClientMode)
+                        Expanded(
+                          child: Center(
+                            child: _NavItem(
+                              icon: Icons.shopping_bag_outlined,
+                              activeIcon: Icons.shopping_bag_rounded,
+                              label: 'Mis pedidos',
+                              isSelected: true,
+                              onTap: () => onTap(1),
+                            ),
+                          ),
+                        )
+                      else ...[
+                        // Modo Driver/Admin: mostrar todas las tabs
+                        Expanded(
+                          child: _NavItem(
+                            icon: Icons.space_dashboard_outlined,
+                            activeIcon: Icons.space_dashboard_rounded,
+                            label: l10n.nav_home,
+                            isSelected: currentIndex == 0,
+                            onTap: () => onTap(0),
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child: _NavItem(
-                          icon: Icons.view_in_ar_outlined,
-                          activeIcon: Icons.view_in_ar_rounded,
-                          label: l10n.nav_packages,
-                          isSelected: currentIndex == 1,
-                          onTap: () => onTap(1),
+                        Expanded(
+                          child: _NavItem(
+                            icon: Icons.view_in_ar_outlined,
+                            activeIcon: Icons.view_in_ar_rounded,
+                            label: l10n.nav_packages,
+                            isSelected: currentIndex == 1,
+                            onTap: () => onTap(1),
+                          ),
                         ),
-                      ),
-                      Expanded(
-                        child: _NavItem(
-                          icon: Icons.timeline_outlined,
-                          activeIcon: Icons.timeline_rounded,
-                          label: l10n.nav_routes,
-                          isSelected: currentIndex == 2,
-                          onTap: () => onTap(2),
+                        Expanded(
+                          child: _NavItem(
+                            icon: Icons.timeline_outlined,
+                            activeIcon: Icons.timeline_rounded,
+                            label: l10n.nav_routes,
+                            isSelected: currentIndex == 2,
+                            onTap: () => onTap(2),
+                          ),
                         ),
-                      ),
+                        Expanded(
+                          child: _NavItem(
+                            icon: Icons.contacts_outlined,
+                            activeIcon: Icons.contacts_rounded,
+                            label: l10n.nav_contacts,
+                            isSelected: currentIndex == 3,
+                            onTap: () => onTap(3),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -312,237 +602,6 @@ class _NavItem extends StatelessWidget {
                     : Colors.black45,
             size: 24,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AddPackageSheet extends StatelessWidget {
-  const _AddPackageSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final colorScheme = context.colorScheme;
-    final l10n = context.l10n;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border(
-          top: BorderSide(color: colors.borderAccent),
-          left: BorderSide(color: colors.borderAccent),
-          right: BorderSide(color: colors.borderAccent),
-        ),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          // Title with icon
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.add_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.quickAction_title,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n.quickAction_subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 28),
-          // Options grid
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionCard(
-                  icon: Icons.route_rounded,
-                  title: l10n.quickAction_newRoute,
-                  subtitle: l10n.quickAction_newRouteSubtitle,
-                  gradient: const [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/routes/create');
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(
-                  icon: Icons.view_in_ar_rounded,
-                  title: l10n.quickAction_newPackage,
-                  subtitle: l10n.quickAction_newPackageSubtitle,
-                  gradient: [AppColors.primary, AppColors.primaryDark],
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/packages/new');
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionCard(
-                  icon: Icons.document_scanner_rounded,
-                  title: l10n.quickAction_scan,
-                  subtitle: l10n.quickAction_scanSubtitle,
-                  gradient: const [Color(0xFF059669), Color(0xFF047857)],
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/packages/scan');
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(
-                  icon: Icons.upload_file_rounded,
-                  title: l10n.quickAction_import,
-                  subtitle: l10n.quickAction_importSubtitle,
-                  gradient: const [Color(0xFF7C3AED), Color(0xFF6D28D9)],
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/imports');
-                  },
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final List<Color> gradient;
-  final VoidCallback onTap;
-
-  const _QuickActionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.gradient,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final colorScheme = context.colorScheme;
-
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.cardBackground,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          border: Border.all(color: colors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradient),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: gradient.first.withValues(alpha: 0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 22,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: colors.textMuted,
-              ),
-            ),
-          ],
         ),
       ),
     );

@@ -14,6 +14,9 @@ class PackageResource extends JsonResource
             'tracking_code' => $this->tracking_code,
             'transporter_id' => $this->transporter_id,
             'route_id' => $this->route_id,
+            'trip_id' => $this->trip_id,
+            'sender_contact_id' => $this->sender_contact_id,
+            'receiver_contact_id' => $this->receiver_contact_id,
 
             'sender' => [
                 'name' => $this->sender_name,
@@ -64,9 +67,37 @@ class PackageResource extends JsonResource
                 'departure_date' => $this->route->departure_date->format('Y-m-d'),
             ]),
 
+            'trip' => $this->whenLoaded('trip', fn () => [
+                'id' => $this->trip->id,
+                'origin_city' => $this->trip->origin_city,
+                'origin_country' => $this->trip->origin_country,
+                'destination_city' => $this->trip->destination_city,
+                'destination_country' => $this->trip->destination_country,
+                'departure_date' => $this->trip->departure_date?->format('Y-m-d'),
+                'status' => $this->trip->status,
+            ]),
+
             'transporter' => $this->whenLoaded('transporter', fn () => [
                 'id' => $this->transporter->id,
                 'name' => $this->transporter->name,
+            ]),
+
+            'sender_contact' => $this->whenLoaded('senderContact', fn () => [
+                'id' => $this->senderContact->id,
+                'name' => $this->senderContact->name,
+                'email' => $this->senderContact->email,
+                'phone' => $this->senderContact->phone,
+                'total_packages' => $this->senderContact->total_packages,
+                'is_verified' => $this->senderContact->is_verified,
+            ]),
+
+            'receiver_contact' => $this->whenLoaded('receiverContact', fn () => [
+                'id' => $this->receiverContact->id,
+                'name' => $this->receiverContact->name,
+                'email' => $this->receiverContact->email,
+                'phone' => $this->receiverContact->phone,
+                'total_packages' => $this->receiverContact->total_packages,
+                'is_verified' => $this->receiverContact->is_verified,
             ]),
 
             'status_history' => $this->whenLoaded('statusHistory'),

@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Allow Destructive Migrations
+    |--------------------------------------------------------------------------
+    |
+    | This option controls whether destructive migrations (those that delete
+    | data) are allowed to run. Set to true only if you understand the risks.
+    |
+    */
+
+    'allow_destructive_migrations' => env('ALLOW_DESTRUCTIVE_MIGRATIONS', false),
+
 ];

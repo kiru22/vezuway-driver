@@ -19,7 +19,8 @@ class ApiResponse<T> {
     );
   }
 
-  factory ApiResponse.error(String message, {Map<String, List<String>>? errors}) {
+  factory ApiResponse.error(String message,
+      {Map<String, List<String>>? errors}) {
     return ApiResponse(
       success: false,
       message: message,

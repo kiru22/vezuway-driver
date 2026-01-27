@@ -33,7 +33,8 @@ enum NotificationState {
 }
 
 /// Provider for the PushNotificationService singleton
-final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) {
+final pushNotificationServiceProvider =
+    Provider<PushNotificationService>((ref) {
   return PushNotificationService.instance;
 });
 
@@ -82,7 +83,8 @@ class NotificationStateNotifier extends StateNotifier<NotificationState> {
     }
 
     // Check basic support
-    if (!PwaUtils.supportsNotifications() || !PwaUtils.supportsServiceWorkers()) {
+    if (!PwaUtils.supportsNotifications() ||
+        !PwaUtils.supportsServiceWorkers()) {
       state = NotificationState.notSupported;
       return;
     }
@@ -108,7 +110,8 @@ class NotificationStateNotifier extends StateNotifier<NotificationState> {
     await _handlePermissionStatus(permissionStatus);
   }
 
-  Future<void> _handlePermissionStatus(NotificationPermissionStatus status) async {
+  Future<void> _handlePermissionStatus(
+      NotificationPermissionStatus status) async {
     switch (status) {
       case NotificationPermissionStatus.granted:
         await _setupNotifications();
@@ -159,7 +162,8 @@ class NotificationStateNotifier extends StateNotifier<NotificationState> {
 
       state = NotificationState.enabled;
     } catch (e) {
-      debugPrint('[NotificationStateNotifier] Error setting up notifications: $e');
+      debugPrint(
+          '[NotificationStateNotifier] Error setting up notifications: $e');
       state = NotificationState.error;
     }
   }
@@ -171,7 +175,8 @@ class NotificationStateNotifier extends StateNotifier<NotificationState> {
       await authRepository.updateFcmToken(token);
       debugPrint('[NotificationStateNotifier] Token sent to server');
     } catch (e) {
-      debugPrint('[NotificationStateNotifier] Error sending token to server: $e');
+      debugPrint(
+          '[NotificationStateNotifier] Error sending token to server: $e');
       // Don't change state - notifications can still work locally
     }
   }

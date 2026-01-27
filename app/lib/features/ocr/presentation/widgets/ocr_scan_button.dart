@@ -12,7 +12,8 @@ import 'ocr_result_sheet.dart';
 class OcrScanButton extends ConsumerStatefulWidget {
   /// Callback cuando se aplican los datos del OCR.
   /// Ahora incluye los bytes de la imagen para guardarla en la galería.
-  final void Function(String? name, String? phone, String? city, Uint8List? imageBytes) onApply;
+  final void Function(
+      String? name, String? phone, String? city, Uint8List? imageBytes) onApply;
 
   const OcrScanButton({
     super.key,
@@ -31,7 +32,8 @@ class _OcrScanButtonState extends ConsumerState<OcrScanButton> {
     // Escuchar cambios de estado para mostrar el result sheet
     ref.listen<OcrState>(ocrProvider, (previous, next) {
       if (!_isShowingSheet &&
-          (next.status == OcrStatus.success || next.status == OcrStatus.error) &&
+          (next.status == OcrStatus.success ||
+              next.status == OcrStatus.error) &&
           previous?.status == OcrStatus.processing) {
         _showResultSheet(context);
       }
@@ -62,7 +64,9 @@ class _OcrScanButtonState extends ConsumerState<OcrScanButton> {
         label: Text(
           context.l10n.ocr_scanButton,
           style: TextStyle(
-            color: isProcessing ? AppColors.primary.withValues(alpha: 0.5) : AppColors.primary,
+            color: isProcessing
+                ? AppColors.primary.withValues(alpha: 0.5)
+                : AppColors.primary,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
@@ -123,4 +127,3 @@ class _OcrScanButtonState extends ConsumerState<OcrScanButton> {
     });
   }
 }
-

@@ -3,13 +3,10 @@
 namespace App\Modules\Routes\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Packages\Models\Package;
-use App\Modules\Packages\Resources\PackageResource;
 use App\Modules\Routes\Models\Route;
 use App\Modules\Routes\Resources\RouteResource;
-use App\Shared\Enums\PackageStatus;
-use App\Shared\Enums\RouteStatus;
-use Carbon\Carbon;
+use App\Modules\Trips\Controllers\TripController;
+use App\Modules\Trips\Resources\TripResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -19,24 +16,16 @@ class RouteController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Route::forTransporter($request->user()->id)
-            ->with(['schedules', 'stops'])
-            ->withCount('packages');
+            ->with(['stops'])
+            ->withCount('trips');
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->boolean('upcoming')) {
-            $query->upcoming();
-        }
-
-        if ($request->boolean('active')) {
+        if ($request->boolean('active_only')) {
             $query->active();
         }
 
         $perPage = min($request->integer('per_page', 15), 100);
 
-        $routes = $query->orderBy('departure_date', 'desc')
+        $routes = $query->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
         return RouteResource::collection($routes);
@@ -47,18 +36,15 @@ class RouteController extends Controller
         $this->authorize('create', Route::class);
 
         $validated = $request->validate([
+            'name' => 'nullable|string|max:200',
+            'description' => 'nullable|string|max:1000',
+            'estimated_duration_hours' => 'nullable|integer|min:1',
             'origin_city' => 'required|string|max:100',
             'origin_country' => 'required|string|max:2',
             'destination_city' => 'required|string|max:100',
             'destination_country' => 'required|string|max:2',
-            // Support both single date and array of dates
-            'departure_date' => 'required_without:departure_dates|date',
-            'departure_dates' => 'required_without:departure_date|array|min:1',
-            'departure_dates.*' => 'date',
-            'trip_duration_hours' => 'nullable|integer|min:1',
-            'estimated_arrival_date' => 'nullable|date',
             'vehicle_info' => 'nullable|array',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:1000',
             'price_per_kg' => 'nullable|numeric|min:0|max:9999.99',
             'minimum_price' => 'nullable|numeric|min:0|max:9999.99',
             'price_multiplier' => 'nullable|numeric|min:0.1|max:10',
@@ -69,29 +55,13 @@ class RouteController extends Controller
         ]);
 
         $validated['transporter_id'] = $request->user()->id;
-        $validated['status'] = RouteStatus::PLANNED->value;
+        $validated['is_active'] = true;
 
-        // Get departure dates (support both formats)
-        $departureDates = $validated['departure_dates'] ?? [$validated['departure_date']];
-        $tripDurationHours = $validated['trip_duration_hours'] ?? null;
-
-        // Set the first departure date as the main route date (for backward compatibility)
-        $firstDate = collect($departureDates)->sort()->first();
-        $validated['departure_date'] = $firstDate;
-
-        if ($tripDurationHours && ! isset($validated['estimated_arrival_date'])) {
-            $validated['estimated_arrival_date'] = Carbon::parse($firstDate)->addHours($tripDurationHours);
-        }
-
-        // Extract stops before creating route
         $stops = $validated['stops'] ?? [];
-
-        // Remove array fields before creating route
-        unset($validated['departure_dates'], $validated['trip_duration_hours'], $validated['stops']);
+        unset($validated['stops']);
 
         $route = Route::create($validated);
 
-        // Create stops for the route
         foreach ($stops as $index => $stopData) {
             $route->stops()->create([
                 'city' => $stopData['city'],
@@ -100,27 +70,14 @@ class RouteController extends Controller
             ]);
         }
 
-        // Create schedule entries for each date
-        foreach ($departureDates as $date) {
-            $estimatedArrival = $tripDurationHours
-                ? Carbon::parse($date)->addHours($tripDurationHours)
-                : $validated['estimated_arrival_date'] ?? null;
-
-            $route->schedules()->create([
-                'departure_date' => $date,
-                'estimated_arrival_date' => $estimatedArrival,
-                'status' => RouteStatus::PLANNED->value,
-            ]);
-        }
-
-        return response()->json(new RouteResource($route->load(['schedules', 'stops'])), 201);
+        return response()->json(new RouteResource($route->load('stops')), 201);
     }
 
     public function show(Request $request, Route $route): JsonResponse
     {
         $this->authorize('view', $route);
 
-        return response()->json(new RouteResource($route->load(['schedules', 'stops'])->loadCount('packages')));
+        return response()->json(new RouteResource($route->load('stops')->loadCount('trips')));
     }
 
     public function update(Request $request, Route $route): JsonResponse
@@ -128,20 +85,24 @@ class RouteController extends Controller
         $this->authorize('update', $route);
 
         $validated = $request->validate([
+            'name' => 'sometimes|string|max:200',
+            'description' => 'nullable|string|max:1000',
+            'is_active' => 'sometimes|boolean',
+            'estimated_duration_hours' => 'nullable|integer|min:1',
             'origin_city' => 'sometimes|string|max:100',
             'origin_country' => 'sometimes|string|max:2',
             'destination_city' => 'sometimes|string|max:100',
             'destination_country' => 'sometimes|string|max:2',
-            'departure_date' => 'sometimes|date',
-            'estimated_arrival_date' => 'nullable|date',
-            'actual_arrival_date' => 'nullable|date',
             'vehicle_info' => 'nullable|array',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:1000',
+            'price_per_kg' => 'nullable|numeric|min:0|max:9999.99',
+            'minimum_price' => 'nullable|numeric|min:0|max:9999.99',
+            'price_multiplier' => 'nullable|numeric|min:0.1|max:10',
         ]);
 
         $route->update($validated);
 
-        return response()->json(new RouteResource($route->load(['schedules', 'stops'])));
+        return response()->json(new RouteResource($route->load('stops')));
     }
 
     public function destroy(Request $request, Route $route): JsonResponse
@@ -150,64 +111,24 @@ class RouteController extends Controller
 
         $route->delete();
 
-        return response()->json(['message' => 'Ruta eliminada correctamente']);
+        return response()->json(['message' => 'Plantilla de ruta eliminada correctamente']);
     }
 
-    public function updateStatus(Request $request, Route $route): JsonResponse
-    {
-        $this->authorize('update', $route);
-
-        $validated = $request->validate([
-            'status' => 'required|string|in:'.implode(',', RouteStatus::values()),
-        ]);
-
-        $updateData = ['status' => $validated['status']];
-
-        if ($validated['status'] === RouteStatus::COMPLETED->value && ! $route->actual_arrival_date) {
-            $updateData['actual_arrival_date'] = now();
-        }
-
-        $route->update($updateData);
-
-        return response()->json(new RouteResource($route->load(['schedules', 'stops'])));
-    }
-
-    public function packages(Request $request, Route $route): AnonymousResourceCollection
+    public function trips(Request $request, Route $route): AnonymousResourceCollection
     {
         $this->authorize('view', $route);
 
-        $packages = $route->packages()
-            ->with(['route'])
-            ->orderBy('created_at', 'desc')
+        $trips = $route->trips()
+            ->with(['stops'])
+            ->withCount('packages')
+            ->orderBy('departure_date', 'desc')
             ->get();
 
-        return PackageResource::collection($packages);
+        return TripResource::collection($trips);
     }
 
-    public function assignPackages(Request $request, Route $route): JsonResponse
+    public function createTrip(Request $request, Route $route): JsonResponse
     {
-        $this->authorize('update', $route);
-
-        $validated = $request->validate([
-            'package_ids' => 'required|array',
-            'package_ids.*' => 'exists:packages,id',
-        ]);
-
-        // Only assign packages that are not delivered or cancelled
-        $nonAssignableStatuses = [
-            PackageStatus::DELIVERED->value,
-            PackageStatus::CANCELLED->value,
-        ];
-
-        $updated = Package::whereIn('id', $validated['package_ids'])
-            ->where('transporter_id', $request->user()->id)
-            ->whereNotIn('status', $nonAssignableStatuses)
-            ->update(['route_id' => $route->id]);
-
-        return response()->json([
-            'message' => 'Paquetes asignados correctamente',
-            'assigned_count' => $updated,
-            'route' => new RouteResource($route->load(['schedules', 'stops'])->loadCount('packages')),
-        ]);
+        return app(TripController::class)->storeFromRoute($request, $route);
     }
 }

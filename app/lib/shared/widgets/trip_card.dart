@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
-import '../../features/routes/data/models/route_model.dart';
+import '../../core/theme/theme_extensions.dart';
+import '../../features/trips/data/models/trip_model.dart';
+import '../../features/trips/data/models/trip_status.dart';
 import '../../l10n/l10n_extension.dart';
-import '../../l10n/status_localizations.dart';
 import 'status_chip.dart';
 import 'route_progress.dart';
 import 'driver_info_card.dart';
 import 'capacity_bar.dart';
 
 class TripCard extends StatelessWidget {
-  final RouteModel route;
+  final TripModel trip;
   final double pricePerKg;
   final String? driverName;
   final String? driverAvatarUrl;
@@ -25,7 +26,7 @@ class TripCard extends StatelessWidget {
 
   const TripCard({
     super.key,
-    required this.route,
+    required this.trip,
     this.pricePerKg = 2.80,
     this.driverName,
     this.driverAvatarUrl,
@@ -40,18 +41,20 @@ class TripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: AppTheme.durationNormal,
         padding: EdgeInsets.all(isCompact ? 16 : 20),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadow.withValues(alpha: 0.2),
+              color: colors.shadow.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -63,25 +66,25 @@ class TripCard extends StatelessWidget {
           children: [
             // Header: Status and date chips
             _HeaderSection(
-              route: route,
+              trip: trip,
               isCompact: isCompact,
             ),
             SizedBox(height: isCompact ? 14 : 18),
 
             // Price display
             _PriceSection(
-              pricePerKg: pricePerKg,
+              pricePerKg: trip.pricePerKg ?? pricePerKg,
               isCompact: isCompact,
             ),
             SizedBox(height: isCompact ? 16 : 22),
 
             // Route progress
             RouteProgress(
-              origin: _extractCity(route.origin),
-              destination: _extractCity(route.destination),
-              originCountry: _extractCountry(route.origin),
-              destinationCountry: _extractCountry(route.destination),
-              progress: _getRouteProgress(),
+              origin: trip.originCity,
+              destination: trip.destinationCity,
+              originCountry: trip.originCountry,
+              destinationCountry: trip.destinationCountry,
+              progress: _getTripProgress(),
               compact: isCompact,
             ),
             SizedBox(height: isCompact ? 16 : 20),
@@ -93,7 +96,7 @@ class TripCard extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    AppColors.divider,
+                    colors.divider,
                     Colors.transparent,
                   ],
                 ),
@@ -124,49 +127,25 @@ class TripCard extends StatelessWidget {
     );
   }
 
-  String _extractCity(String location) {
-    final parts = location.split(',');
-    return parts.first.trim();
-  }
-
-  String _extractCountry(String location) {
-    final parts = location.split(',');
-    if (parts.length > 1) {
-      return parts.last.trim();
-    }
-    if (location.toLowerCase().contains('madrid') ||
-        location.toLowerCase().contains('barcelona') ||
-        location.toLowerCase().contains('valencia')) {
-      return 'Espana';
-    }
-    if (location.toLowerCase().contains('kyiv') ||
-        location.toLowerCase().contains('kiev') ||
-        location.toLowerCase().contains('lviv') ||
-        location.toLowerCase().contains('odesa')) {
-      return 'Ucrania';
-    }
-    return '';
-  }
-
-  double _getRouteProgress() {
-    switch (route.status) {
-      case RouteStatus.planned:
+  double _getTripProgress() {
+    switch (trip.status) {
+      case TripStatus.planned:
         return 0.0;
-      case RouteStatus.inProgress:
+      case TripStatus.inProgress:
         return 0.5;
-      case RouteStatus.completed:
+      case TripStatus.completed:
         return 1.0;
-      case RouteStatus.cancelled:
+      case TripStatus.cancelled:
         return 0.0;
     }
   }
 }
 
 class _HeaderSection extends StatelessWidget {
-  final RouteModel route;
+  final TripModel trip;
   final bool isCompact;
 
-  const _HeaderSection({required this.route, required this.isCompact});
+  const _HeaderSection({required this.trip, required this.isCompact});
 
   @override
   Widget build(BuildContext context) {
@@ -176,19 +155,19 @@ class _HeaderSection extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         StatusChip(
-          label: route.status.localizedName(context).toUpperCase(),
-          variant: route.status.chipVariant,
+          label: trip.status.chipLabel,
+          variant: trip.status.chipVariant,
           isCompact: isCompact,
         ),
         Row(
           children: [
             StatusChip.date(
-              DateFormat('d MMM', localeCode).format(route.departureDate),
+              DateFormat('d MMM', localeCode).format(trip.departureDate),
             ),
-            if (route.arrivalDate != null) ...[
+            if (trip.departureTime != null) ...[
               const SizedBox(width: 8),
               StatusChip.time(
-                DateFormat('HH:mm').format(route.departureDate),
+                '${trip.departureTime!.hour.toString().padLeft(2, '0')}:${trip.departureTime!.minute.toString().padLeft(2, '0')}',
               ),
             ],
           ],
@@ -206,14 +185,16 @@ class _PriceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
         // Price with gradient effect
         ShaderMask(
-          shaderCallback: (bounds) => const LinearGradient(
-            colors: [AppColors.textPrimary, AppColors.textSecondary],
+          shaderCallback: (bounds) => LinearGradient(
+            colors: [colors.textPrimary, colors.textSecondary],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ).createShader(bounds),
@@ -243,7 +224,7 @@ class _PriceSection extends StatelessWidget {
               '/kg',
               style: TextStyle(
                 fontSize: isCompact ? 12 : 14,
-                color: AppColors.textMuted,
+                color: colors.textMuted,
               ),
             ),
           ],
@@ -255,13 +236,13 @@ class _PriceSection extends StatelessWidget {
 
 /// Compact version of TripCard for lists
 class TripCardCompact extends StatelessWidget {
-  final RouteModel route;
+  final TripModel trip;
   final String? driverName;
   final VoidCallback? onTap;
 
   const TripCardCompact({
     super.key,
-    required this.route,
+    required this.trip,
     this.driverName,
     this.onTap,
   });
@@ -269,15 +250,16 @@ class TripCardCompact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeCode = Localizations.localeOf(context).languageCode;
+    final colors = context.colors;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: colors.cardBackground,
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         child: Row(
           children: [
@@ -297,11 +279,11 @@ class TripCardCompact extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${_extractCity(route.origin)} - ${_extractCity(route.destination)}',
-                    style: const TextStyle(
+                    '${trip.originCity} - ${trip.destinationCity}',
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -310,14 +292,14 @@ class TripCardCompact extends StatelessWidget {
                       Icon(
                         Icons.calendar_today_rounded,
                         size: 12,
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        DateFormat('d MMM, HH:mm', localeCode).format(route.departureDate),
-                        style: const TextStyle(
+                        _formatDateTime(localeCode),
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textMuted,
+                          color: colors.textMuted,
                         ),
                       ),
                       if (driverName != null) ...[
@@ -325,15 +307,15 @@ class TripCardCompact extends StatelessWidget {
                         Icon(
                           Icons.person_outline,
                           size: 12,
-                          color: AppColors.textMuted,
+                          color: colors.textMuted,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             driverName!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textMuted,
+                              color: colors.textMuted,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -345,9 +327,9 @@ class TripCardCompact extends StatelessWidget {
               ),
             ),
             // Arrow
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textMuted,
+              color: colors.textMuted,
               size: 24,
             ),
           ],
@@ -356,20 +338,23 @@ class TripCardCompact extends StatelessWidget {
     );
   }
 
-  String _extractCity(String location) {
-    final parts = location.split(',');
-    return parts.first.trim();
+  String _formatDateTime(String localeCode) {
+    final dateStr = DateFormat('d MMM', localeCode).format(trip.departureDate);
+    if (trip.departureTime != null) {
+      return '$dateStr, ${trip.departureTime!.hour.toString().padLeft(2, '0')}:${trip.departureTime!.minute.toString().padLeft(2, '0')}';
+    }
+    return dateStr;
   }
 
   Color _getStatusColor() {
-    switch (route.status) {
-      case RouteStatus.planned:
+    switch (trip.status) {
+      case TripStatus.planned:
         return AppColors.info;
-      case RouteStatus.inProgress:
+      case TripStatus.inProgress:
         return AppColors.primary;
-      case RouteStatus.completed:
+      case TripStatus.completed:
         return AppColors.success;
-      case RouteStatus.cancelled:
+      case TripStatus.cancelled:
         return AppColors.textMuted;
     }
   }
@@ -377,14 +362,14 @@ class TripCardCompact extends StatelessWidget {
 
 /// Featured trip card with image background
 class FeaturedTripCard extends StatelessWidget {
-  final RouteModel route;
+  final TripModel trip;
   final String? imageUrl;
   final double pricePerKg;
   final VoidCallback? onTap;
 
   const FeaturedTripCard({
     super.key,
-    required this.route,
+    required this.trip,
     this.imageUrl,
     this.pricePerKg = 2.80,
     this.onTap,
@@ -393,6 +378,7 @@ class FeaturedTripCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeCode = Localizations.localeOf(context).languageCode;
+    final colors = context.colors;
 
     return GestureDetector(
       onTap: onTap,
@@ -400,7 +386,7 @@ class FeaturedTripCard extends StatelessWidget {
         height: 200,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: colors.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -413,8 +399,8 @@ class FeaturedTripCard extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppColors.surfaceLight,
-                    AppColors.cardBackground,
+                    colors.surfaceLight,
+                    colors.cardBackground,
                   ],
                 ),
               ),
@@ -427,7 +413,7 @@ class FeaturedTripCard extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    AppColors.background.withValues(alpha: 0.9),
+                    colors.background.withValues(alpha: 0.9),
                   ],
                 ),
               ),
@@ -440,24 +426,24 @@ class FeaturedTripCard extends StatelessWidget {
                 children: [
                   // Status chip
                   StatusChip(
-                    label: route.status.localizedName(context).toUpperCase(),
-                    variant: route.status.chipVariant,
+                    label: trip.status.chipLabel,
+                    variant: trip.status.chipVariant,
                   ),
                   const Spacer(),
                   // Route info
                   Text(
-                    '${_extractCity(route.origin)} - ${_extractCity(route.destination)}',
-                    style: const TextStyle(
+                    '${trip.originCity} - ${trip.destinationCity}',
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Text(
-                        '${pricePerKg.toStringAsFixed(2)} EUR/kg',
+                        '${(trip.pricePerKg ?? pricePerKg).toStringAsFixed(2)} EUR/kg',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -468,14 +454,15 @@ class FeaturedTripCard extends StatelessWidget {
                       Icon(
                         Icons.calendar_today_rounded,
                         size: 14,
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        DateFormat('d MMM', localeCode).format(route.departureDate),
-                        style: const TextStyle(
+                        DateFormat('d MMM', localeCode)
+                            .format(trip.departureDate),
+                        style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textMuted,
+                          color: colors.textMuted,
                         ),
                       ),
                     ],
@@ -487,10 +474,5 @@ class FeaturedTripCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _extractCity(String location) {
-    final parts = location.split(',');
-    return parts.first.trim();
   }
 }

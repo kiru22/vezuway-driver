@@ -9,7 +9,7 @@ help:
 	@echo "Targets:"
 	@echo "  build          Build all Docker images"
 	@echo "  up             Start all containers"
-	@echo "  up-dev         Start all containers with dev profile (includes Adminer)"
+	@echo "  up-dev         Start all containers with dev profile"
 	@echo "  down           Stop all containers"
 	@echo "  restart        Restart all containers"
 	@echo "  logs           View logs from all containers"
@@ -33,9 +33,9 @@ build:
 up:
 	docker compose -f docker-compose.yml up -d
 
-# Start containers (development mode with Adminer)
+# Start containers (development mode)
 up-dev:
-	docker compose --profile dev up -d
+	docker compose up -d
 
 # Stop containers
 down:
@@ -116,4 +116,3 @@ setup:
 	@echo "Setup complete!"
 	@echo "Backend API: http://localhost:8001"
 	@echo "Frontend:    http://localhost:3002"
-	@echo "Adminer:     http://localhost:8082 (run 'make up-dev' first)"

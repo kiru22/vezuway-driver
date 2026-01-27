@@ -1,6 +1,6 @@
 import '../../../../core/services/api_service.dart';
 import '../../../../shared/models/city_model.dart';
-import '../../../packages/data/models/package_model.dart';
+import '../../../trips/data/models/trip_model.dart';
 import '../models/route_model.dart';
 
 class RouteRepository {
@@ -8,9 +8,11 @@ class RouteRepository {
 
   RouteRepository(this._api);
 
-  Future<List<RouteModel>> getRoutes({RouteStatus? status}) async {
+  Future<List<RouteModel>> getRoutes({
+    bool? activeOnly,
+  }) async {
     final queryParams = <String, dynamic>{};
-    if (status != null) queryParams['status'] = status.apiValue;
+    if (activeOnly == true) queryParams['active_only'] = true;
 
     final response = await _api.get('/routes', queryParameters: queryParams);
     final List<dynamic> data = response.data['data'] ?? response.data;
@@ -24,37 +26,42 @@ class RouteRepository {
   }
 
   Future<RouteModel> createRoute({
+    String? name,
+    String? description,
+    int? estimatedDurationHours,
     required String origin,
     required String destination,
-    required List<DateTime> departureDates,
-    int? tripDurationHours,
+    String originCountry = 'UA',
+    String destinationCountry = 'ES',
     String? notes,
-    String originCountry = 'ES',
-    String destinationCountry = 'UA',
     List<CityModel>? stops,
     double? pricePerKg,
     double? minimumPrice,
     double? priceMultiplier,
   }) async {
     final response = await _api.post('/routes', data: {
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (estimatedDurationHours != null)
+        'estimated_duration_hours': estimatedDurationHours,
       'origin_city': origin,
       'origin_country': originCountry,
       'destination_city': destination,
       'destination_country': destinationCountry,
-      'departure_dates': departureDates
-          .map((d) => d.toIso8601String().split('T')[0])
-          .toList(),
-      if (tripDurationHours != null) 'trip_duration_hours': tripDurationHours,
       if (notes != null) 'notes': notes,
       if (pricePerKg != null) 'price_per_kg': pricePerKg,
       if (minimumPrice != null) 'minimum_price': minimumPrice,
       if (priceMultiplier != null) 'price_multiplier': priceMultiplier,
       if (stops != null && stops.isNotEmpty)
-        'stops': stops.asMap().entries.map((e) => {
-          'city': e.value.name,
-          'country': e.value.country,
-          'order': e.key,
-        }).toList(),
+        'stops': stops
+            .asMap()
+            .entries
+            .map((e) => {
+                  'city': e.value.name,
+                  'country': e.value.country,
+                  'order': e.key,
+                })
+            .toList(),
     });
     final data = response.data['data'] ?? response.data;
     return RouteModel.fromJson(data);
@@ -66,27 +73,13 @@ class RouteRepository {
     return RouteModel.fromJson(responseData);
   }
 
-  Future<RouteModel> updateStatus(String id, RouteStatus status) async {
-    final response = await _api.patch('/routes/$id/status', data: {
-      'status': status.apiValue,
-    });
-    final data = response.data['data'] ?? response.data;
-    return RouteModel.fromJson(data);
-  }
-
   Future<void> deleteRoute(String id) async {
     await _api.delete('/routes/$id');
   }
 
-  Future<List<PackageModel>> getRoutePackages(String id) async {
-    final response = await _api.get('/routes/$id/packages');
+  Future<List<TripModel>> getRouteTrips(String id) async {
+    final response = await _api.get('/routes/$id/trips');
     final List<dynamic> data = response.data['data'] ?? response.data;
-    return data.map((json) => PackageModel.fromJson(json)).toList();
-  }
-
-  Future<void> assignPackages(String routeId, List<String> packageIds) async {
-    await _api.post('/routes/$routeId/packages', data: {
-      'package_ids': packageIds,
-    });
+    return data.map((json) => TripModel.fromJson(json)).toList();
   }
 }

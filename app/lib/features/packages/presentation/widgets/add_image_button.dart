@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
@@ -45,11 +46,11 @@ class _AddImageButtonState extends State<AddImageButton> {
       return _buildCompactButton(colors, isDark, isLoading);
     }
 
-    return _buildExpandedButton(colors, isDark, isLoading);
+    return _buildExpandedButton(isLoading);
   }
 
   Widget _buildCompactButton(
-    dynamic colors,
+    AppColorsExtension colors,
     bool isDark,
     bool isLoading,
   ) {
@@ -107,11 +108,7 @@ class _AddImageButtonState extends State<AddImageButton> {
     );
   }
 
-  Widget _buildExpandedButton(
-    dynamic colors,
-    bool isDark,
-    bool isLoading,
-  ) {
+  Widget _buildExpandedButton(bool isLoading) {
     return TextButton.icon(
       onPressed: isLoading ? null : () => _showSourcePicker(context),
       icon: isLoading
@@ -181,4 +178,3 @@ class _AddImageButtonState extends State<AddImageButton> {
     }
   }
 }
-

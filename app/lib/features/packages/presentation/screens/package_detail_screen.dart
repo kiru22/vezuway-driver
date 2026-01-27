@@ -26,7 +26,8 @@ class PackageDetailScreen extends ConsumerStatefulWidget {
   const PackageDetailScreen({super.key, required this.packageId});
 
   @override
-  ConsumerState<PackageDetailScreen> createState() => _PackageDetailScreenState();
+  ConsumerState<PackageDetailScreen> createState() =>
+      _PackageDetailScreenState();
 }
 
 class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
@@ -57,6 +58,18 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
     super.dispose();
   }
 
+  void _handleStatusChange(PackageModel package) async {
+    final nextStatus = package.status.nextStatus;
+    if (nextStatus == null) return;
+
+    HapticFeedback.lightImpact();
+    await ref
+        .read(packagesProvider.notifier)
+        .updateStatus(package.id, nextStatus);
+    ref.invalidate(packageDetailProvider(package.id));
+    ref.invalidate(packageHistoryProvider(package.id));
+  }
+
   @override
   Widget build(BuildContext context) {
     final packageAsync = ref.watch(packageDetailProvider(widget.packageId));
@@ -64,11 +77,24 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
 
     return Scaffold(
       backgroundColor: colors.surface,
+      bottomNavigationBar: packageAsync.whenOrNull(
+        data: (package) => _BottomActionBar(
+          package: package,
+          onEdit: () => context.go('/packages/${package.id}/edit'),
+          onStatusChange: () => _handleStatusChange(package),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: colors.surface,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.go('/packages'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/packages');
+            }
+          },
         ),
         title: Text(
           context.l10n.packages_detailTitle,
@@ -78,7 +104,8 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
           packageAsync.whenOrNull(
                 data: (package) => IconButton(
                   icon: Icon(Icons.more_vert, color: colors.textPrimary),
-                  onPressed: () => _showActionsBottomSheet(context, ref, package),
+                  onPressed: () =>
+                      _showActionsBottomSheet(context, ref, package),
                 ),
               ) ??
               const SizedBox.shrink(),
@@ -99,31 +126,32 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.invalidate(packageDetailProvider(widget.packageId)),
+                onPressed: () =>
+                    ref.invalidate(packageDetailProvider(widget.packageId)),
                 child: Text(context.l10n.common_retry),
               ),
             ],
           ),
         ),
         data: (package) => SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Tracking Status Card (Blue)
+              // 1. Tracking Status Card (with header)
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[0],
                 slideAnimation: _animations.slideAnimations[0],
                 child: _TrackingStatusCard(package: package),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               // 2. Package Specs (Weight, Dimensions, etc.)
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[1],
                 slideAnimation: _animations.slideAnimations[1],
                 child: _PackageSpecsCard(package: package),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               // 3. Destinatario
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[2],
@@ -133,10 +161,11 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                   title: context.l10n.packages_receiver,
                   name: package.receiverName,
                   phone: package.receiverPhone,
-                  address: AddressUtils.buildFullAddress(package.receiverAddress, package.receiverCity),
+                  address: AddressUtils.buildFullAddress(
+                      package.receiverAddress, package.receiverCity),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               // 4. Remitente
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[3],
@@ -146,15 +175,16 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                   title: context.l10n.packages_sender,
                   name: package.senderName,
                   phone: package.senderPhone,
-                  address: AddressUtils.buildFullAddress(package.senderAddress, package.senderCity),
+                  address: AddressUtils.buildFullAddress(
+                      package.senderAddress, package.senderCity),
                 ),
               ),
               if (package.description != null || package.notes != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _DetailsCard(package: package),
               ],
               // 5. Sección de imágenes
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               _ImagesSection(
                 package: package,
                 onImageAdded: () {
@@ -182,7 +212,7 @@ class _PackageSpecsCard extends StatelessWidget {
     final colors = context.colors;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -201,7 +231,7 @@ class _PackageSpecsCard extends StatelessWidget {
                       : '-',
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _MetricItem(
                   icon: Icons.euro_outlined,
@@ -213,9 +243,9 @@ class _PackageSpecsCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
           Container(height: 1, color: colors.divider),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
@@ -225,10 +255,10 @@ class _PackageSpecsCard extends StatelessWidget {
                   value: _buildDimensionsString(package),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _MetricItem(
-                  icon: Icons.inventory_2_outlined,
+                  icon: Icons.widgets_outlined,
                   label: context.l10n.packages_quantityLabel,
                   value: package.quantity != null
                       ? '${package.quantity} ${context.l10n.common_pcs}'
@@ -243,7 +273,9 @@ class _PackageSpecsCard extends StatelessWidget {
   }
 
   String _buildDimensionsString(PackageModel package) {
-    if (package.lengthCm == null && package.widthCm == null && package.heightCm == null) {
+    if (package.lengthCm == null &&
+        package.widthCm == null &&
+        package.heightCm == null) {
       return '-';
     }
     final l = package.lengthCm ?? 0;
@@ -269,21 +301,21 @@ class _MetricItem extends StatelessWidget {
     final colors = context.colors;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
             icon,
-            size: 20,
+            size: 22,
             color: AppColors.primary,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,15 +324,15 @@ class _MetricItem extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: colors.textMuted,
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: colors.textPrimary,
                 ),
@@ -313,62 +345,149 @@ class _MetricItem extends StatelessWidget {
   }
 }
 
-class _TrackingStatusCard extends StatelessWidget {
+class _TrackingStatusCard extends StatefulWidget {
   final PackageModel package;
 
   const _TrackingStatusCard({required this.package});
 
   @override
+  State<_TrackingStatusCard> createState() => _TrackingStatusCardState();
+}
+
+class _TrackingStatusCardState extends State<_TrackingStatusCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _positionAnimation;
+  late Animation<double> _rotationAnimation;
+
+  // Ángulo de rotación en radianes (~15 grados)
+  static const double _tiltAngle = 0.26;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1700),
+      vsync: this,
+    );
+
+    final targetProgress = _getProgress(widget.package.status);
+
+    // Animación de posición (termina antes del rebote)
+    _positionAnimation = Tween<double>(
+      begin: 0.0,
+      end: targetProgress,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.76, curve: Curves.easeIn), // 1.3s de 1.7s
+    ));
+
+    // Animación de rotación: caballito → normal → frenado → rebote
+    // Pesos: 2 + 9 + 2 + 4 = 17 (equivale a 1.7 segundos)
+    _rotationAnimation = TweenSequence<double>([
+      // Caballito: inclinación hacia atrás (0.2 seg)
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: -_tiltAngle)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 2,
+      ),
+      // Viaje normal: vuelve a horizontal (0.9 seg)
+      TweenSequenceItem(
+        tween: Tween(begin: -_tiltAngle, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 9,
+      ),
+      // Frenado de morro: inclinación hacia adelante (0.2 seg)
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: _tiltAngle)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 2,
+      ),
+      // Rebote: vuelve a horizontal con bounce (0.4 seg)
+      TweenSequenceItem(
+        tween: Tween(begin: _tiltAngle, end: 0.0)
+            .chain(CurveTween(curve: Curves.bounceOut)),
+        weight: 4,
+      ),
+    ]).animate(_controller);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  double _getProgress(PackageStatus status) {
+    return switch (status) {
+      PackageStatus.registered => 0.1,
+      PackageStatus.inTransit => 0.5,
+      PackageStatus.delivered => 1.0,
+      PackageStatus.delayed => 0.5,
+    };
+  }
+
+  String _formatCreatedDate(BuildContext context, DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final time = DateFormat('HH:mm').format(date);
+
+    if (dateOnly == today) {
+      return '${context.l10n.common_today}, $time';
+    } else if (dateOnly == today.subtract(const Duration(days: 1))) {
+      return '${context.l10n.common_yesterday}, $time';
+    } else {
+      return '${DateFormat('dd.MM.yyyy').format(date)}, $time';
+    }
+  }
+
+  void _copyTrackingCode(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: widget.package.trackingCode));
+    HapticFeedback.lightImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.packages_codeCopied),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final progress = _getProgress(package.status);
-    // Use package route info or fallback to package cities
-    final originCity = package.route?.origin ?? package.senderCity ?? 'Origin';
-    final destinationCity = package.route?.destination ?? package.receiverCity ?? 'Destination';
-    final departureDate = package.route?.departureDate != null
-        ? _formatDate(package.route!.departureDate!)
-        : '';
+    final originCity =
+        widget.package.route?.origin ?? widget.package.senderCity ?? 'Origin';
+    final destinationCity = widget.package.route?.destination ??
+        widget.package.receiverCity ??
+        'Destination';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        boxShadow: AppTheme.shadowSoft,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: ID + Status
+          // Header: status badge + date + copy button
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'ID: ${package.trackingCode}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+              // Status badge (white semi-transparent background)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  package.status.localizedName(context),
+                  widget.package.status.localizedName(context),
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w700,
@@ -376,11 +495,51 @@ class _TrackingStatusCard extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: 12),
+              // Date (white text with opacity)
+              Text(
+                _formatCreatedDate(context, widget.package.createdAt),
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 13,
+                ),
+              ),
+              const Spacer(),
+              // Copy button (semi-transparent white background)
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _copyTrackingCode(context),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.copy_outlined,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 40),
-
-          // Route Visualizer
+          const SizedBox(height: 12),
+          // Tracking code (large white text)
+          Text(
+            '#${widget.package.trackingCode}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Route Visualizer with Animation
           LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
@@ -390,86 +549,96 @@ class _TrackingStatusCard extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.centerLeft,
                   children: [
-                  // Dotted Line (Background)
-                  Row(
-                    children: List.generate(
-                      15,
-                      (index) => Expanded(
-                        child: Container(
-                          height: 2,
-                          color: index % 2 == 0
-                              ? Colors.white.withValues(alpha: 0.3)
-                              : Colors.transparent,
+                    // Dotted Line (Background)
+                    Row(
+                      children: List.generate(
+                        15,
+                        (index) => Expanded(
+                          child: Container(
+                            height: 2,
+                            color: index % 2 == 0
+                                ? Colors.white.withValues(alpha: 0.3)
+                                : Colors.transparent,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-
-                  // Progress Line (Solid)
-                  Container(
-                    width: width * progress,
-                    height: 2,
-                    color: Colors.white,
-                  ),
-
-                  // Start Dot
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      border: Border.all(color: Colors.white, width: 2),
-                      shape: BoxShape.circle,
+                    // Progress Line (Solid) - Animated
+                    AnimatedBuilder(
+                      animation: _positionAnimation,
+                      builder: (context, child) {
+                        return Container(
+                          width: width * _positionAnimation.value,
+                          height: 2,
+                          color: Colors.white,
+                        );
+                      },
                     ),
-                  ),
-
-                  // End Dot
-                  Positioned(
-                    right: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
+                    // Start Dot
+                    Container(
+                      width: 10,
+                      height: 10,
                       decoration: BoxDecoration(
                         color: AppColors.primary,
                         border: Border.all(color: Colors.white, width: 2),
                         shape: BoxShape.circle,
                       ),
                     ),
-                  ),
-
-                  // Current Position Icon (Box)
-                  Positioned(
-                    left: (width * progress).clamp(0, width - 36),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.inventory_2_outlined,
-                        size: 20,
-                        color: package.status.color,
+                    // End Dot
+                    Positioned(
+                      right: 0,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          border: Border.all(color: Colors.white, width: 2),
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    // Current Position Icon - Animated with rotation
+                    AnimatedBuilder(
+                      animation: Listenable.merge(
+                          [_positionAnimation, _rotationAnimation]),
+                      builder: (context, child) {
+                        return Positioned(
+                          left: (width * _positionAnimation.value)
+                              .clamp(0, width - 32),
+                          child: Transform.rotate(
+                            angle: _rotationAnimation.value,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.local_shipping,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
-
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 8),
           // Cities
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -483,28 +652,18 @@ class _TrackingStatusCard extends StatelessWidget {
                       context.l10n.packages_origin,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12,
+                        fontSize: 11,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       originCity,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (departureDate.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        departureDate,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -512,20 +671,20 @@ class _TrackingStatusCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                     Text(
+                    Text(
                       context.l10n.packages_destination,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12,
+                        fontSize: 11,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       destinationCity,
                       textAlign: TextAlign.right,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -537,24 +696,6 @@ class _TrackingStatusCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('dd MMM yyyy').format(date);
-    } catch (_) {
-      return dateStr;
-    }
-  }
-
-  double _getProgress(PackageStatus status) {
-    return switch (status) {
-      PackageStatus.registered => 0.1,
-      PackageStatus.inTransit => 0.5,
-      PackageStatus.delivered => 1.0,
-      PackageStatus.delayed => 0.5,
-    };
   }
 }
 
@@ -579,7 +720,8 @@ class _DetailsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.description_outlined, size: 20, color: AppColors.primary),
+              Icon(Icons.description_outlined,
+                  size: 20, color: AppColors.primary),
               const SizedBox(width: 10),
               Text(
                 context.l10n.packages_details,
@@ -658,7 +800,7 @@ class _ContactCard extends StatelessWidget {
     final hasAddress = address != null && address!.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -689,7 +831,7 @@ class _ContactCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           // Nombre - JERARQUÍA PRIMARIA
           Text(
             name,
@@ -729,7 +871,7 @@ class _ContactCard extends StatelessWidget {
           ],
           // Botones de comunicación
           if (hasPhone) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             CommunicationButtonRow(phone: phone!),
           ],
           // Botón de mapa
@@ -785,9 +927,7 @@ class _ActionsBottomSheet extends StatelessWidget {
   });
 
   List<PackageStatus> _getAvailableStatuses() {
-    return PackageStatus.values
-        .where((s) => s != package.status)
-        .toList();
+    return PackageStatus.values.where((s) => s != package.status).toList();
   }
 
   @override
@@ -835,17 +975,16 @@ class _ActionsBottomSheet extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             // Status options
-            ..._getAvailableStatuses()
-                .map((status) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _ActionOption(
-                        icon: status.icon,
-                        iconColor: status.color,
-                        title: status.localizedName(context),
-                        description: status.localizedDescription(context),
-                        onTap: () => onStatusSelected(status),
-                      ),
-                    )),
+            ..._getAvailableStatuses().map((status) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _ActionOption(
+                    icon: status.icon,
+                    iconColor: status.color,
+                    title: status.localizedName(context),
+                    description: status.localizedDescription(context),
+                    onTap: () => onStatusSelected(status),
+                  ),
+                )),
             const SizedBox(height: 8),
             Divider(color: colors.divider),
             const SizedBox(height: 8),
@@ -984,7 +1123,8 @@ class _ImagesSectionState extends ConsumerState<_ImagesSection> {
         children: [
           Row(
             children: [
-              Icon(Icons.photo_library_outlined, size: 20, color: AppColors.primary),
+              Icon(Icons.photo_library_outlined,
+                  size: 20, color: AppColors.primary),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -998,7 +1138,8 @@ class _ImagesSectionState extends ConsumerState<_ImagesSection> {
               ),
               if (hasImages)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -1133,5 +1274,114 @@ class _ImagesSectionState extends ConsumerState<_ImagesSection> {
         setState(() => _isDeleting = false);
       }
     }
+  }
+}
+
+/// Barra inferior con botones de Editar y Cambiar estado
+class _BottomActionBar extends StatelessWidget {
+  final PackageModel package;
+  final VoidCallback onEdit;
+  final VoidCallback onStatusChange;
+
+  const _BottomActionBar({
+    required this.package,
+    required this.onEdit,
+    required this.onStatusChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final nextStatus = package.status.nextStatus;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+          16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        border: Border(
+          top: BorderSide(color: colors.border.withValues(alpha: 0.5)),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Botón Editar (outline)
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onEdit();
+              },
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colors.cardBackground,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  border: Border.all(color: colors.border),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: colors.textPrimary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      context.l10n.common_edit,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Botón Cambiar estado (solo si hay siguiente estado)
+          if (nextStatus != null) ...[
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  onStatusChange();
+                },
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        nextStatus.localizedName(context),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }

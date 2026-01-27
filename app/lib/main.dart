@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'app.dart';
 import 'core/services/push_notification_service.dart';
@@ -20,6 +21,10 @@ void main() async {
     initializeDateFormatting('es_ES', null),
     initializeDateFormatting('uk_UA', null),
   ]);
+
+  // Initialize timeago locales
+  timeago.setLocaleMessages('es', timeago.EsMessages());
+  timeago.setLocaleMessages('uk', timeago.UkMessages());
 
   // Initialize SharedPreferences for locale persistence
   final prefs = await SharedPreferences.getInstance();

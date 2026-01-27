@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/extensions/package_status_extensions.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../data/models/package_model.dart';
 import '../../data/repositories/package_repository.dart';
@@ -16,12 +17,18 @@ class PackagesState {
   final bool isLoading;
   final String? error;
   final PackageStatus? filterStatus;
+  final bool isSelectionMode;
+  final Set<String> selectedIds;
+  final bool isBulkUpdating;
 
   const PackagesState({
     this.packages = const [],
     this.isLoading = false,
     this.error,
     this.filterStatus,
+    this.isSelectionMode = false,
+    this.selectedIds = const {},
+    this.isBulkUpdating = false,
   });
 
   PackagesState copyWith({
@@ -30,12 +37,18 @@ class PackagesState {
     String? error,
     PackageStatus? filterStatus,
     bool clearFilter = false,
+    bool? isSelectionMode,
+    Set<String>? selectedIds,
+    bool? isBulkUpdating,
   }) {
     return PackagesState(
       packages: packages ?? this.packages,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       filterStatus: clearFilter ? null : (filterStatus ?? this.filterStatus),
+      isSelectionMode: isSelectionMode ?? this.isSelectionMode,
+      selectedIds: selectedIds ?? this.selectedIds,
+      isBulkUpdating: isBulkUpdating ?? this.isBulkUpdating,
     );
   }
 }
@@ -62,7 +75,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final packages = await _repository.getPackages(status: state.filterStatus);
+      final packages =
+          await _repository.getPackages(status: state.filterStatus);
       state = state.copyWith(packages: packages, isLoading: false);
     } catch (e, stack) {
       debugPrint('PackagesNotifier.loadPackages error: $e\n$stack');
@@ -83,12 +97,16 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
   }
 
   Future<bool> createPackage({
-    String? routeId,
+    String? tripId,
+    String? senderContactId,
+    String? receiverContactId,
     String? senderName,
     String? senderPhone,
+    String? senderCity,
     String? senderAddress,
     required String receiverName,
     String? receiverPhone,
+    String? receiverCity,
     String? receiverAddress,
     double? weight,
     int? lengthCm,
@@ -100,12 +118,16 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
   }) async {
     try {
       final newPackage = await _repository.createPackage(
-        routeId: routeId,
+        tripId: tripId,
+        senderContactId: senderContactId,
+        receiverContactId: receiverContactId,
         senderName: senderName,
         senderPhone: senderPhone,
+        senderCity: senderCity,
         senderAddress: senderAddress,
         receiverName: receiverName,
         receiverPhone: receiverPhone,
+        receiverCity: receiverCity,
         receiverAddress: receiverAddress,
         weight: weight,
         lengthCm: lengthCm,
@@ -127,7 +149,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     }
   }
 
-  Future<bool> updateStatus(String id, PackageStatus status, {String? notes}) async {
+  Future<bool> updateStatus(String id, PackageStatus status,
+      {String? notes}) async {
     try {
       final updated = await _repository.updateStatus(id, status, notes: notes);
       final packages = state.packages.map((p) {
@@ -143,12 +166,16 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
 
   Future<bool> updatePackage({
     required String id,
-    String? routeId,
+    String? tripId,
+    String? senderContactId,
+    String? receiverContactId,
     String? senderName,
     String? senderPhone,
+    String? senderCity,
     String? senderAddress,
     required String receiverName,
     String? receiverPhone,
+    String? receiverCity,
     String? receiverAddress,
     double? weight,
     int? lengthCm,
@@ -159,12 +186,18 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
   }) async {
     try {
       final data = <String, dynamic>{
-        if (routeId != null) 'route_id': routeId,
-        if (senderName != null && senderName.isNotEmpty) 'sender_name': senderName,
-        if (senderPhone != null && senderPhone.isNotEmpty) 'sender_phone': senderPhone,
-        if (senderAddress != null && senderAddress.isNotEmpty) 'sender_address': senderAddress,
+        if (tripId != null) 'trip_id': tripId,
+        if (senderContactId != null) 'sender_contact_id': senderContactId,
+        if (receiverContactId != null) 'receiver_contact_id': receiverContactId,
+        if (senderName != null && senderName.isNotEmpty)
+          'sender_name': senderName,
+        if (senderPhone != null && senderPhone.isNotEmpty)
+          'sender_phone': senderPhone,
+        if (senderCity != null) 'sender_city': senderCity,
+        if (senderAddress != null) 'sender_address': senderAddress,
         'receiver_name': receiverName,
         if (receiverPhone != null) 'receiver_phone': receiverPhone,
+        if (receiverCity != null) 'receiver_city': receiverCity,
         if (receiverAddress != null) 'receiver_address': receiverAddress,
         if (weight != null) 'weight_kg': weight,
         if (lengthCm != null) 'length_cm': lengthCm,
@@ -199,6 +232,108 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
       return false;
     }
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Bulk Selection Methods
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Entra en modo selección
+  void enterSelectionMode([String? initialId]) {
+    state = state.copyWith(
+      isSelectionMode: true,
+      selectedIds: initialId != null ? {initialId} : {},
+    );
+  }
+
+  /// Sale del modo selección y limpia la selección
+  void exitSelectionMode() {
+    state = state.copyWith(
+      isSelectionMode: false,
+      selectedIds: {},
+    );
+  }
+
+  /// Alterna la selección de un paquete
+  void toggleSelection(String id) {
+    final newSelected = Set<String>.from(state.selectedIds);
+    if (newSelected.contains(id)) {
+      newSelected.remove(id);
+    } else {
+      newSelected.add(id);
+    }
+    state = state.copyWith(selectedIds: newSelected);
+  }
+
+  /// Selecciona todos los paquetes que tienen un nextStatus válido
+  void selectAllWithNextStatus() {
+    final selectableIds = state.packages
+        .where((p) => p.status != PackageStatus.delivered)
+        .map((p) => p.id)
+        .toSet();
+    state = state.copyWith(selectedIds: selectableIds);
+  }
+
+  /// Avanza los paquetes seleccionados a su siguiente estado
+  /// Agrupa por nextStatus y hace llamadas API separadas
+  Future<({bool success, int count, String? error})>
+      bulkAdvanceToNextStatus() async {
+    if (state.selectedIds.isEmpty) {
+      return (success: false, count: 0, error: 'No hay paquetes seleccionados');
+    }
+
+    state = state.copyWith(isBulkUpdating: true);
+
+    try {
+      // Agrupar paquetes por su nextStatus
+      final Map<PackageStatus, List<String>> groupedByNextStatus = {};
+
+      for (final id in state.selectedIds) {
+        final package = state.packages.firstWhere(
+          (p) => p.id == id,
+          orElse: () => throw Exception('Paquete no encontrado: $id'),
+        );
+
+        final nextStatus = package.status.nextStatus;
+        if (nextStatus != null) {
+          groupedByNextStatus.putIfAbsent(nextStatus, () => []).add(id);
+        }
+      }
+
+      if (groupedByNextStatus.isEmpty) {
+        return (
+          success: false,
+          count: 0,
+          error: 'Ningún paquete puede avanzar de estado',
+        );
+      }
+
+      // Ejecutar updates por grupo
+      int totalUpdated = 0;
+      for (final entry in groupedByNextStatus.entries) {
+        final result = await _repository.bulkUpdateStatus(
+          packageIds: entry.value,
+          status: entry.key,
+        );
+        totalUpdated += result.updatedCount;
+      }
+
+      // Recargar la lista para obtener estados actualizados
+      await loadPackages();
+
+      // Salir del modo selección
+      state = state.copyWith(
+        isSelectionMode: false,
+        selectedIds: {},
+        isBulkUpdating: false,
+      );
+
+      return (success: true, count: totalUpdated, error: null);
+    } catch (e, stack) {
+      debugPrint('PackagesNotifier.bulkAdvanceToNextStatus error: $e\n$stack');
+      state = state.copyWith(isBulkUpdating: false);
+      return (success: false, count: 0, error: e.toString());
+    }
+  }
 }
 
 // Packages Provider
@@ -219,4 +354,10 @@ final packageHistoryProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>((ref, id) async {
   final repository = ref.read(packageRepositoryProvider);
   return repository.getStatusHistory(id);
+});
+
+// Package Counts Provider (conteo de paquetes por estado)
+final packageCountsProvider = FutureProvider<Map<String, int>>((ref) async {
+  final repository = ref.read(packageRepositoryProvider);
+  return repository.getPackageCounts();
 });

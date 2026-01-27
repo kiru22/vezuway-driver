@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../routes/data/models/route_model.dart';
-import '../../../routes/domain/providers/route_provider.dart';
+import '../../../trips/data/models/trip_model.dart';
+import '../../../trips/data/models/trip_status.dart';
+import '../../../trips/domain/providers/trip_provider.dart';
 import '../../../packages/domain/providers/package_provider.dart';
 
 class DashboardStats {
-  final RouteModel? nextTrip;
-  final RouteModel? activeTrip;
+  final TripModel? nextTrip;
+  final TripModel? activeTrip;
   final int packagesCount;
   final double totalWeight;
   final double totalDeclaredValue;
@@ -26,25 +27,25 @@ class DashboardStats {
 }
 
 final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
-  // Watch routes state
-  final routesState = ref.watch(routesProvider);
+  // Watch trips state
+  final tripsState = ref.watch(tripsProvider);
   final packagesState = ref.watch(packagesProvider);
 
-  // Get all routes
-  final routes = routesState.routes;
+  // Get all trips
+  final trips = tripsState.trips;
 
-  // Find next planned trip (upcoming) - considers all schedule dates
-  final plannedRoutes = routes
-      .where((r) => r.status == RouteStatus.planned && r.hasUpcomingDates)
+  // Find next planned trip (upcoming)
+  final plannedTrips = trips
+      .where((t) => t.status == TripStatus.planned)
       .toList()
-    ..sort((a, b) => (a.nextDepartureDate ?? a.departureDate)
-        .compareTo(b.nextDepartureDate ?? b.departureDate));
+    ..sort((a, b) => a.departureDate.compareTo(b.departureDate));
 
-  final nextTrip = plannedRoutes.isNotEmpty ? plannedRoutes.first : null;
+  final nextTrip = plannedTrips.isNotEmpty ? plannedTrips.first : null;
 
   // Find active trip (in progress)
-  final activeRoutes = routes.where((r) => r.status == RouteStatus.inProgress).toList();
-  final activeTrip = activeRoutes.isNotEmpty ? activeRoutes.first : null;
+  final activeTrips =
+      trips.where((t) => t.status == TripStatus.inProgress).toList();
+  final activeTrip = activeTrips.isNotEmpty ? activeTrips.first : null;
 
   // Get current trip (active or next)
   final currentTrip = activeTrip ?? nextTrip;
@@ -55,19 +56,21 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   double totalDeclaredValue = 0;
 
   if (currentTrip != null) {
-    // Filter packages by route
+    // Filter packages by trip
     final packages = packagesState.packages
-        .where((p) => p.routeId == currentTrip.id)
+        .where((p) => p.tripId == currentTrip.id)
         .toList();
 
     packagesCount = packages.length;
     totalWeight = packages.fold(0, (sum, p) => sum + (p.weight ?? 0));
-    totalDeclaredValue = packages.fold(0, (sum, p) => sum + (p.declaredValue ?? 0));
+    totalDeclaredValue =
+        packages.fold(0, (sum, p) => sum + (p.declaredValue ?? 0));
   }
 
   // Count trips
-  final totalTripsCount = routes.length;
-  final completedTripsCount = routes.where((r) => r.status == RouteStatus.completed).length;
+  final totalTripsCount = trips.length;
+  final completedTripsCount =
+      trips.where((t) => t.status == TripStatus.completed).length;
 
   return DashboardStats(
     nextTrip: nextTrip,
@@ -80,24 +83,24 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   );
 });
 
-final upcomingTripsProvider = Provider<List<RouteModel>>((ref) {
-  final routesState = ref.watch(routesProvider);
+final upcomingTripsProvider = Provider<List<TripModel>>((ref) {
+  final tripsState = ref.watch(tripsProvider);
 
-  // Get planned routes with upcoming dates and in-progress routes
-  return routesState.routes
-      .where((r) =>
-          (r.status == RouteStatus.planned && r.hasUpcomingDates) ||
-          r.status == RouteStatus.inProgress)
+  // Get planned and in-progress trips
+  return tripsState.trips
+      .where((t) =>
+          t.status == TripStatus.planned || t.status == TripStatus.inProgress)
       .toList()
     ..sort((a, b) {
-      // Active trips first, then by next departure date
-      if (a.status == RouteStatus.inProgress && b.status != RouteStatus.inProgress) {
+      // Active trips first, then by departure date
+      if (a.status == TripStatus.inProgress &&
+          b.status != TripStatus.inProgress) {
         return -1;
       }
-      if (b.status == RouteStatus.inProgress && a.status != RouteStatus.inProgress) {
+      if (b.status == TripStatus.inProgress &&
+          a.status != TripStatus.inProgress) {
         return 1;
       }
-      return (a.nextDepartureDate ?? a.departureDate)
-          .compareTo(b.nextDepartureDate ?? b.departureDate);
+      return a.departureDate.compareTo(b.departureDate);
     });
 });

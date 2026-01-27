@@ -81,7 +81,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         imageFile = File(image.path);
       }
 
-      final success = await ref.read(profileProvider.notifier).uploadAvatar(imageFile);
+      final success =
+          await ref.read(profileProvider.notifier).uploadAvatar(imageFile);
       if (success && mounted) {
         _showSuccessSnackBar(context.l10n.profile_avatarUpdated);
       } else if (mounted) {
@@ -163,7 +164,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Avatar section
-            _buildAvatarSection(user?.avatarUrl, user?.name ?? '', profileState.isLoading, colors, isDark),
+            _buildAvatarSection(user?.avatarUrl, user?.name ?? '',
+                profileState.isLoading, colors, isDark),
             const SizedBox(height: 8),
             // Email (read-only)
             Text(
@@ -181,7 +183,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const SizedBox(height: 24),
 
             // Password section (expandable)
-            _buildPasswordSection(colors, isDark, l10n, profileState.isLoading, user?.googleId != null),
+            _buildPasswordSection(colors, isDark, l10n, profileState.isLoading,
+                user?.googleId != null),
           ],
         ),
       ),
@@ -215,7 +218,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ? Image.network(
                         avatarUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildInitialAvatar(initial),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildInitialAvatar(initial),
                       )
                     : _buildInitialAvatar(initial),
               ),
@@ -313,7 +317,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   color: colors.textMuted,
                 ),
                 filled: true,
-                fillColor: isDark ? colors.surface : AppColors.lightSurfaceLight,
+                fillColor:
+                    isDark ? colors.surface : AppColors.lightSurfaceLight,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   borderSide: BorderSide.none,
@@ -324,7 +329,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  borderSide:
+                      const BorderSide(color: AppColors.primary, width: 2),
                 ),
               ),
               validator: (value) {
@@ -370,7 +376,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         children: [
           // Header (expandable)
           InkWell(
-            onTap: () => setState(() => _isPasswordSectionExpanded = !_isPasswordSectionExpanded),
+            onTap: () => setState(
+                () => _isPasswordSectionExpanded = !_isPasswordSectionExpanded),
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -416,7 +423,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       controller: _currentPasswordController,
                       label: l10n.profile_currentPassword,
                       obscure: _obscureCurrentPassword,
-                      onToggle: () => setState(() => _obscureCurrentPassword = !_obscureCurrentPassword),
+                      onToggle: () => setState(() =>
+                          _obscureCurrentPassword = !_obscureCurrentPassword),
                       colors: colors,
                       isDark: isDark,
                       validator: (value) {
@@ -431,7 +439,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       controller: _newPasswordController,
                       label: l10n.profile_newPassword,
                       obscure: _obscureNewPassword,
-                      onToggle: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+                      onToggle: () => setState(
+                          () => _obscureNewPassword = !_obscureNewPassword),
                       colors: colors,
                       isDark: isDark,
                       validator: (value) {
@@ -449,7 +458,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       controller: _confirmPasswordController,
                       label: l10n.profile_confirmPassword,
                       obscure: _obscureConfirmPassword,
-                      onToggle: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                      onToggle: () => setState(() =>
+                          _obscureConfirmPassword = !_obscureConfirmPassword),
                       colors: colors,
                       isDark: isDark,
                       validator: (value) {

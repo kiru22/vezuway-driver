@@ -2,20 +2,23 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Modules\Contacts\Models\Contact;
+use App\Shared\Enums\DriverStatus;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, HasUuid, InteractsWithMedia, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, HasUuid, InteractsWithMedia, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +35,7 @@ class User extends Authenticatable implements HasMedia
         'fcm_token',
         'google_id',
         'avatar_url',
+        'driver_status',
     ];
 
     /**
@@ -56,7 +60,16 @@ class User extends Authenticatable implements HasMedia
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'driver_status' => DriverStatus::class,
         ];
+    }
+
+    /**
+     * Contacto vinculado (si el usuario se registró desde un contacto existente)
+     */
+    public function contact(): HasOne
+    {
+        return $this->hasOne(Contact::class, 'user_id');
     }
 
     public function registerMediaCollections(): void
@@ -73,5 +86,36 @@ class User extends Authenticatable implements HasMedia
             ->height(150)
             ->sharpen(10)
             ->performOnCollections('avatar');
+    }
+
+    // User Type Helper Methods
+    public function isClient(): bool
+    {
+        return $this->hasRole('client');
+    }
+
+    public function isDriver(): bool
+    {
+        return $this->hasRole('driver');
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
+    public function isApprovedDriver(): bool
+    {
+        return $this->hasRole('driver') && $this->driver_status === DriverStatus::APPROVED;
+    }
+
+    public function isPendingDriver(): bool
+    {
+        return $this->hasRole('driver') && $this->driver_status === DriverStatus::PENDING;
+    }
+
+    public function needsRoleSelection(): bool
+    {
+        return $this->roles()->count() === 0;
     }
 }

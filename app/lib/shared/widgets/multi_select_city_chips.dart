@@ -203,15 +203,10 @@ class _CityChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Use explicit colors based on theme mode
-    final chipBg = isDark
-        ? const Color(0xFF172033)
-        : const Color(0xFFEFF6FF);
-    final chipText = isDark
-        ? const Color(0xFF60A5FA)
-        : const Color(0xFF2563EB);
-    final chipBorder = isDark
-        ? const Color(0xFF1E3A5F)
-        : const Color(0xFFBFDBFE);
+    final chipBg = isDark ? const Color(0xFF172033) : const Color(0xFFEFF6FF);
+    final chipText = isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
+    final chipBorder =
+        isDark ? const Color(0xFF1E3A5F) : const Color(0xFFBFDBFE);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -344,7 +339,9 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  _locale.startsWith('uk') ? 'Додати зупинку' : 'Agregar parada',
+                  _locale.startsWith('uk')
+                      ? 'Додати зупинку'
+                      : 'Agregar parada',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,

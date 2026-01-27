@@ -21,6 +21,8 @@ class UserResource extends JsonResource
             'avatar_url' => $avatarUrl,
             'google_id' => $this->google_id,
             'email_verified_at' => $this->email_verified_at,
+            'role' => $this->roles->first()?->name,
+            'driver_status' => $this->driver_status?->value,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -34,7 +34,8 @@ class _RouteDatesCarouselState extends State<RouteDatesCarousel> {
     final sortedDates = List<DateTime>.from(widget.dates)..sort();
 
     // Find the first future date
-    final nextDateIndex = sortedDates.indexWhere((d) => !d.isBefore(todayStart));
+    final nextDateIndex =
+        sortedDates.indexWhere((d) => !d.isBefore(todayStart));
     if (nextDateIndex >= 0) {
       _currentPage = nextDateIndex ~/ widget.pageSize;
     }
@@ -53,11 +54,13 @@ class _RouteDatesCarouselState extends State<RouteDatesCarousel> {
 
     // Get current page dates
     final startIndex = _currentPage * widget.pageSize;
-    final endIndex = (startIndex + widget.pageSize).clamp(0, sortedDates.length);
+    final endIndex =
+        (startIndex + widget.pageSize).clamp(0, sortedDates.length);
     final pageDates = sortedDates.sublist(startIndex, endIndex);
 
     // Find the next upcoming date
-    final nextDate = sortedDates.where((d) => !d.isBefore(todayStart)).firstOrNull;
+    final nextDate =
+        sortedDates.where((d) => !d.isBefore(todayStart)).firstOrNull;
 
     return Row(
       children: [
@@ -145,13 +148,17 @@ class _NavButton extends StatelessWidget {
         width: 24,
         height: 24,
         decoration: BoxDecoration(
-          color: enabled ? colors.background : colors.background.withValues(alpha: 0.5),
+          color: enabled
+              ? colors.background
+              : colors.background.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(6),
         ),
         child: Icon(
           icon,
           size: 16,
-          color: enabled ? colors.textSecondary : colors.textMuted.withValues(alpha: 0.5),
+          color: enabled
+              ? colors.textSecondary
+              : colors.textMuted.withValues(alpha: 0.5),
         ),
       ),
     );
@@ -172,32 +179,12 @@ class _DateChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-
-    Color bgColor;
-    Color textColor;
-    TextDecoration? decoration;
-
-    if (isPast) {
-      // Past dates - gray and strikethrough
-      bgColor = colors.chipGray;
-      textColor = colors.textMuted;
-      decoration = TextDecoration.lineThrough;
-    } else if (isNext) {
-      // Next upcoming date - highlighted
-      bgColor = colors.chipBlue;
-      textColor = AppColors.primary;
-      decoration = null;
-    } else {
-      // Future dates - normal style
-      bgColor = colors.background;
-      textColor = colors.textSecondary;
-      decoration = null;
-    }
+    final style = _getChipStyle(colors);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: style.bgColor,
         borderRadius: BorderRadius.circular(16),
         border: isNext ? null : Border.all(color: colors.border),
       ),
@@ -206,10 +193,42 @@ class _DateChip extends StatelessWidget {
         style: TextStyle(
           fontSize: 11,
           fontWeight: isNext ? FontWeight.w600 : FontWeight.w500,
-          color: textColor,
-          decoration: decoration,
+          color: style.textColor,
+          decoration: style.decoration,
         ),
       ),
     );
   }
+
+  _DateChipStyle _getChipStyle(dynamic colors) {
+    if (isPast) {
+      return _DateChipStyle(
+        bgColor: colors.chipGray,
+        textColor: colors.textMuted,
+        decoration: TextDecoration.lineThrough,
+      );
+    }
+    if (isNext) {
+      return _DateChipStyle(
+        bgColor: colors.chipBlue,
+        textColor: AppColors.primary,
+      );
+    }
+    return _DateChipStyle(
+      bgColor: colors.background,
+      textColor: colors.textSecondary,
+    );
+  }
+}
+
+class _DateChipStyle {
+  final Color bgColor;
+  final Color textColor;
+  final TextDecoration? decoration;
+
+  const _DateChipStyle({
+    required this.bgColor,
+    required this.textColor,
+    this.decoration,
+  });
 }

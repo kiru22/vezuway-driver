@@ -1,13 +1,21 @@
+int _toInt(dynamic value) {
+  if (value == null) return 0;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value) ?? 0;
+  if (value is double) return value.toInt();
+  return 0;
+}
+
 enum PackageStatus {
-  registered,  // Оформлено
-  inTransit,   // В дорозі
-  delivered,   // Видано
-  delayed;     // Затримується
+  registered, // Оформлено
+  inTransit, // В дорозі
+  delivered, // Видано
+  delayed; // Затримується
 
   String get apiValue {
     switch (this) {
       case PackageStatus.registered:
-        return 'pending';  // Changed from 'registered' to match DB
+        return 'pending'; // Changed from 'registered' to match DB
       case PackageStatus.inTransit:
         return 'in_transit';
       case PackageStatus.delivered:
@@ -82,10 +90,45 @@ class PackageImage {
   }
 }
 
+/// Información resumida de un contacto asociado al paquete
+class ContactInfo {
+  final String id;
+  final String name;
+  final String? email;
+  final String? phone;
+  final int totalPackages;
+  final bool isVerified;
+
+  ContactInfo({
+    required this.id,
+    required this.name,
+    this.email,
+    this.phone,
+    required this.totalPackages,
+    required this.isVerified,
+  });
+
+  factory ContactInfo.fromJson(Map<String, dynamic> json) {
+    return ContactInfo(
+      id: json['id'].toString(),
+      name: json['name'] ?? '',
+      email: json['email'],
+      phone: json['phone'],
+      totalPackages: _toInt(json['total_packages']),
+      isVerified: json['is_verified'] as bool? ?? false,
+    );
+  }
+}
+
 class PackageModel {
   final String id;
   final String? routeId;
+  final String? tripId;
+  final String? senderContactId;
+  final String? receiverContactId;
   final RouteInfo? route;
+  final ContactInfo? senderContact;
+  final ContactInfo? receiverContact;
   final String trackingCode;
   final PackageStatus status;
   final String senderName;
@@ -115,7 +158,12 @@ class PackageModel {
   PackageModel({
     required this.id,
     this.routeId,
+    this.tripId,
+    this.senderContactId,
+    this.receiverContactId,
     this.route,
+    this.senderContact,
+    this.receiverContact,
     required this.trackingCode,
     required this.status,
     required this.senderName,
@@ -151,11 +199,23 @@ class PackageModel {
     final ocr = json['ocr'] as Map<String, dynamic>?;
     final routeJson = json['route'] as Map<String, dynamic>?;
     final imagesJson = json['images'] as List<dynamic>?;
+    final senderContactJson = json['sender_contact'] as Map<String, dynamic>?;
+    final receiverContactJson =
+        json['receiver_contact'] as Map<String, dynamic>?;
 
     return PackageModel(
       id: json['id'].toString(),
       routeId: json['route_id']?.toString(),
+      tripId: json['trip_id']?.toString(),
+      senderContactId: json['sender_contact_id']?.toString(),
+      receiverContactId: json['receiver_contact_id']?.toString(),
       route: routeJson != null ? RouteInfo.fromJson(routeJson) : null,
+      senderContact: senderContactJson != null
+          ? ContactInfo.fromJson(senderContactJson)
+          : null,
+      receiverContact: receiverContactJson != null
+          ? ContactInfo.fromJson(receiverContactJson)
+          : null,
       trackingCode: json['tracking_code'],
       status: PackageStatus.fromString(json['status']),
       senderName: sender?['name'] ?? json['sender_name'] ?? '',
@@ -178,7 +238,8 @@ class PackageModel {
       notes: json['notes'],
       ocrRawText: ocr?['raw_text'] ?? json['ocr_raw_text'],
       ocrParsedData: json['ocr_parsed_data'],
-      images: imagesJson?.map((img) => PackageImage.fromJson(img)).toList() ?? [],
+      images:
+          imagesJson?.map((img) => PackageImage.fromJson(img)).toList() ?? [],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
     );
@@ -205,6 +266,9 @@ class PackageModel {
     return {
       'id': id,
       'route_id': routeId,
+      'trip_id': tripId,
+      'sender_contact_id': senderContactId,
+      'receiver_contact_id': receiverContactId,
       'tracking_code': trackingCode,
       'status': status.apiValue,
       'sender_name': senderName,
@@ -231,7 +295,12 @@ class PackageModel {
   PackageModel copyWith({
     String? id,
     String? routeId,
+    String? tripId,
+    String? senderContactId,
+    String? receiverContactId,
     RouteInfo? route,
+    ContactInfo? senderContact,
+    ContactInfo? receiverContact,
     String? trackingCode,
     PackageStatus? status,
     String? senderName,
@@ -261,7 +330,12 @@ class PackageModel {
     return PackageModel(
       id: id ?? this.id,
       routeId: routeId ?? this.routeId,
+      tripId: tripId ?? this.tripId,
+      senderContactId: senderContactId ?? this.senderContactId,
+      receiverContactId: receiverContactId ?? this.receiverContactId,
       route: route ?? this.route,
+      senderContact: senderContact ?? this.senderContact,
+      receiverContact: receiverContact ?? this.receiverContact,
       trackingCode: trackingCode ?? this.trackingCode,
       status: status ?? this.status,
       senderName: senderName ?? this.senderName,

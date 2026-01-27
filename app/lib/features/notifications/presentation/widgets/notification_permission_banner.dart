@@ -60,9 +60,8 @@ class _NotificationPermissionBannerState
     HapticFeedback.mediumImpact();
     setState(() => _isLoading = true);
 
-    final success = await ref
-        .read(notificationStateProvider.notifier)
-        .requestPermission();
+    final success =
+        await ref.read(notificationStateProvider.notifier).requestPermission();
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -168,7 +167,8 @@ class _NotificationPermissionBannerState
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
                           color: colors.surfaceLight,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusSm),
                           border: Border.all(color: colors.border),
                         ),
                         child: Center(
@@ -192,7 +192,8 @@ class _NotificationPermissionBannerState
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
                           gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusSm),
                           boxShadow: AppTheme.shadowColored,
                         ),
                         child: Center(

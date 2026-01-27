@@ -81,7 +81,8 @@ class LocaleNotifier extends StateNotifier<AppLocale> {
 
     try {
       final authState = _ref.read(authProvider);
-      if (authState.status == AuthStatus.authenticated && authState.user != null) {
+      if (authState.status == AuthStatus.authenticated &&
+          authState.user != null) {
         final repository = _ref.read(authRepositoryProvider);
         await repository.updateProfile(locale: locale.code);
       }

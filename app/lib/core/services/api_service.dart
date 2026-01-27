@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_config.dart';
 
@@ -20,16 +19,6 @@ class ApiService {
       },
     ));
 
-    // Add logging in debug mode
-    if (kDebugMode) {
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: false,
-        responseBody: true,
-        error: true,
-        logPrint: (obj) => debugPrint('DIO: $obj'),
-      ));
-    }
-
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await getToken();
@@ -39,7 +28,6 @@ class ApiService {
         return handler.next(options);
       },
       onError: (error, handler) {
-        debugPrint('API Error: ${error.response?.statusCode} - ${error.message}');
         if (error.response?.statusCode == 401) {
           // Token expired, handle logout
           clearToken();
@@ -49,16 +37,16 @@ class ApiService {
     ));
   }
 
-  Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+  Future<String?> getToken() {
+    return _storage.read(key: _tokenKey);
   }
 
-  Future<void> setToken(String token) async {
-    await _storage.write(key: _tokenKey, value: token);
+  Future<void> setToken(String token) {
+    return _storage.write(key: _tokenKey, value: token);
   }
 
-  Future<void> clearToken() async {
-    await _storage.delete(key: _tokenKey);
+  Future<void> clearToken() {
+    return _storage.delete(key: _tokenKey);
   }
 
   Future<bool> hasToken() async {
@@ -66,34 +54,28 @@ class ApiService {
     return token != null && token.isNotEmpty;
   }
 
-  // GET request
-  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
-    return await _dio.get(path, queryParameters: queryParameters);
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) {
+    return _dio.get(path, queryParameters: queryParameters);
   }
 
-  // POST request
-  Future<Response> post(String path, {dynamic data}) async {
-    return await _dio.post(path, data: data);
+  Future<Response> post(String path, {dynamic data}) {
+    return _dio.post(path, data: data);
   }
 
-  // PUT request
-  Future<Response> put(String path, {dynamic data}) async {
-    return await _dio.put(path, data: data);
+  Future<Response> put(String path, {dynamic data}) {
+    return _dio.put(path, data: data);
   }
 
-  // PATCH request
-  Future<Response> patch(String path, {dynamic data}) async {
-    return await _dio.patch(path, data: data);
+  Future<Response> patch(String path, {dynamic data}) {
+    return _dio.patch(path, data: data);
   }
 
-  // DELETE request
-  Future<Response> delete(String path) async {
-    return await _dio.delete(path);
+  Future<Response> delete(String path) {
+    return _dio.delete(path);
   }
 
-  // POST multipart request (for file uploads)
-  Future<Response> postMultipart(String path, {required FormData data}) async {
-    return await _dio.post(
+  Future<Response> postMultipart(String path, {required FormData data}) {
+    return _dio.post(
       path,
       data: data,
       options: Options(contentType: 'multipart/form-data'),

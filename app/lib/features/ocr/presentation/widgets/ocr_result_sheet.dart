@@ -201,9 +201,15 @@ class _OcrResultSheetState extends ConsumerState<OcrResultSheet> {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () => widget.onApply(
-                            _nameController.text.isNotEmpty ? _nameController.text : null,
-                            _phoneController.text.isNotEmpty ? _phoneController.text : null,
-                            _cityController.text.isNotEmpty ? _cityController.text : null,
+                            _nameController.text.isNotEmpty
+                                ? _nameController.text
+                                : null,
+                            _phoneController.text.isNotEmpty
+                                ? _phoneController.text
+                                : null,
+                            _cityController.text.isNotEmpty
+                                ? _cityController.text
+                                : null,
                           ),
                           borderRadius: BorderRadius.circular(12),
                           child: Padding(
@@ -211,7 +217,8 @@ class _OcrResultSheetState extends ConsumerState<OcrResultSheet> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.check, color: Colors.white, size: 20),
+                                const Icon(Icons.check,
+                                    color: Colors.white, size: 20),
                                 const SizedBox(width: 8),
                                 Text(
                                   context.l10n.ocr_apply,
@@ -375,7 +382,8 @@ class _OcrTextField extends StatelessWidget {
           ),
           filled: true,
           fillColor: isDark ? colors.surface : Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(

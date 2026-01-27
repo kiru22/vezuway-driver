@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_extensions.dart';
 
 class DriverInfoCard extends StatelessWidget {
   final String name;
@@ -28,6 +29,8 @@ class DriverInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return GestureDetector(
       onTap: onTap,
       child: Row(
@@ -51,7 +54,7 @@ class DriverInfoCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: compact ? 14 : 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     letterSpacing: -0.2,
                   ),
                   maxLines: 1,
@@ -64,7 +67,7 @@ class DriverInfoCard extends StatelessWidget {
                       Icon(
                         Icons.local_shipping_outlined,
                         size: 12,
-                        color: AppColors.textMuted,
+                        color: colors.textMuted,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
@@ -72,7 +75,7 @@ class DriverInfoCard extends StatelessWidget {
                           vehicle!,
                           style: TextStyle(
                             fontSize: compact ? 12 : 13,
-                            color: AppColors.textMuted,
+                            color: colors.textMuted,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -88,14 +91,15 @@ class DriverInfoCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (rating != null) _RatingBadge(rating: rating!, compact: compact),
+              if (rating != null)
+                _RatingBadge(rating: rating!, compact: compact),
               if (deliveryCount != null) ...[
                 const SizedBox(height: 4),
                 Text(
                   '$deliveryCount envios',
                   style: TextStyle(
                     fontSize: compact ? 10 : 11,
-                    color: AppColors.textMuted,
+                    color: colors.textMuted,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -127,6 +131,8 @@ class _DriverAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Stack(
       children: [
         // Glow effect
@@ -154,8 +160,8 @@ class _DriverAvatar extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.borderAccent,
-                AppColors.border,
+                colors.borderAccent,
+                colors.border,
               ],
             ),
           ),
@@ -163,7 +169,7 @@ class _DriverAvatar extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.surfaceLight,
+              color: colors.surfaceLight,
             ),
             child: ClipOval(
               child: avatarUrl != null
@@ -191,7 +197,7 @@ class _DriverAvatar extends StatelessWidget {
                 color: AppColors.verified,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.surface,
+                  color: colors.surface,
                   width: 2,
                 ),
                 boxShadow: [
@@ -257,15 +263,17 @@ class _RatingBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 8 : 10,
         vertical: compact ? 4 : 5,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: colors.surfaceLight,
         borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -281,7 +289,7 @@ class _RatingBadge extends StatelessWidget {
             style: TextStyle(
               fontSize: compact ? 12 : 13,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
         ],
@@ -351,12 +359,14 @@ class DriverProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
       ),
       child: Column(
         children: [
@@ -371,19 +381,19 @@ class DriverProfileCard extends StatelessWidget {
           // Name
           Text(
             name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(
               subtitle!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textMuted,
+                color: colors.textMuted,
               ),
             ),
           ],
@@ -458,6 +468,8 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Column(
       children: [
         Row(
@@ -467,10 +479,10 @@ class _StatItem extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ),
           ],
@@ -478,9 +490,9 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: AppColors.textMuted,
+            color: colors.textMuted,
           ),
         ),
       ],
@@ -503,15 +515,17 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           gradient: isPrimary ? AppColors.primaryGradient : null,
-          color: isPrimary ? null : AppColors.surfaceLight,
+          color: isPrimary ? null : colors.surfaceLight,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: isPrimary ? null : Border.all(color: AppColors.border),
+          border: isPrimary ? null : Border.all(color: colors.border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -519,7 +533,7 @@ class _ActionButton extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isPrimary ? Colors.white : AppColors.textPrimary,
+              color: isPrimary ? Colors.white : colors.textPrimary,
             ),
             const SizedBox(width: 8),
             Text(
@@ -527,7 +541,7 @@ class _ActionButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isPrimary ? Colors.white : AppColors.textPrimary,
+                color: isPrimary ? Colors.white : colors.textPrimary,
               ),
             ),
           ],
