@@ -62,13 +62,7 @@ class RouteController extends Controller
 
         $route = Route::create($validated);
 
-        foreach ($stops as $index => $stopData) {
-            $route->stops()->create([
-                'city' => $stopData['city'],
-                'country' => $stopData['country'],
-                'order' => $stopData['order'] ?? $index,
-            ]);
-        }
+        $this->syncStops($route, $stops);
 
         return response()->json(new RouteResource($route->load('stops')), 201);
     }
@@ -98,9 +92,20 @@ class RouteController extends Controller
             'price_per_kg' => 'nullable|numeric|min:0|max:9999.99',
             'minimum_price' => 'nullable|numeric|min:0|max:9999.99',
             'price_multiplier' => 'nullable|numeric|min:0.1|max:10',
+            'stops' => 'nullable|array',
+            'stops.*.city' => 'required_with:stops|string|max:100',
+            'stops.*.country' => 'required_with:stops|string|max:2',
+            'stops.*.order' => 'nullable|integer|min:0',
         ]);
 
+        $stops = $validated['stops'] ?? null;
+        unset($validated['stops']);
+
         $route->update($validated);
+
+        if ($stops !== null) {
+            $this->syncStops($route, $stops);
+        }
 
         return response()->json(new RouteResource($route->load('stops')));
     }
@@ -130,5 +135,21 @@ class RouteController extends Controller
     public function createTrip(Request $request, Route $route): JsonResponse
     {
         return app(TripController::class)->storeFromRoute($request, $route);
+    }
+
+    /**
+     * @param  array<int, array{city: string, country: string, order?: int}>  $stops
+     */
+    private function syncStops(Route $route, array $stops): void
+    {
+        $route->stops()->delete();
+
+        foreach ($stops as $index => $stopData) {
+            $route->stops()->create([
+                'city' => $stopData['city'],
+                'country' => $stopData['country'],
+                'order' => $stopData['order'] ?? $index,
+            ]);
+        }
     }
 }

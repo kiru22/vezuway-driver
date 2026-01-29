@@ -38,6 +38,8 @@ Route::prefix('v1')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
             Route::post('select-user-type', [AuthController::class, 'selectUserType']);
+            Route::get('rejection-info', [AuthController::class, 'getRejectionInfo']);
+            Route::post('appeal-rejection', [AuthController::class, 'appealRejection']);
         });
 
         // Profile

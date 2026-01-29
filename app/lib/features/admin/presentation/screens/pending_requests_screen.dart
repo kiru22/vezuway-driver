@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../data/models/pending_driver_model.dart';
 import '../../domain/providers/admin_provider.dart';
 import '../widgets/admin_error_view.dart';
 import '../widgets/approve_reject_dialog.dart';
@@ -28,7 +29,8 @@ class PendingRequestsScreen extends ConsumerWidget {
         await ref.read(adminActionsProvider.notifier).approveDriver(driver.id);
 
     if (success && context.mounted) {
-      _showSnackBar(context, '${driver.name} ha sido aprobado', AppColors.primary);
+      final l10n = AppLocalizations.of(context);
+      _showSnackBar(context, l10n.admin_driverApproved(driver.name), AppColors.primary);
     }
   }
 
@@ -50,7 +52,8 @@ class PendingRequestsScreen extends ConsumerWidget {
         .rejectDriver(driver.id, reason: reason);
 
     if (success && context.mounted) {
-      _showSnackBar(context, '${driver.name} ha sido rechazado', Colors.red.shade700);
+      final l10n = AppLocalizations.of(context);
+      _showSnackBar(context, l10n.admin_driverRejected(driver.name), Colors.red.shade700);
     }
   }
 
@@ -96,7 +99,7 @@ class PendingRequestsScreen extends ConsumerWidget {
   Widget _buildDriversList(
     BuildContext context,
     WidgetRef ref,
-    List drivers,
+    List<PendingDriverModel> drivers,
     AppLocalizations l10n,
   ) {
     if (drivers.isEmpty) {

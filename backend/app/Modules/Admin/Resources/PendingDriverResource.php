@@ -11,6 +11,10 @@ class PendingDriverResource extends JsonResource
     {
         $avatarUrl = $this->getFirstMediaUrl('avatar', 'thumb') ?: $this->avatar_url;
 
+        // Check if this is a reapplication (has previous rejections with appeal)
+        $latestRejection = $this->latestRejection;
+        $isReapplication = $latestRejection?->hasAppealed() ?? false;
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -26,6 +30,9 @@ class PendingDriverResource extends JsonResource
             'email_verified_at' => $this->email_verified_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'is_reapplication' => $isReapplication,
+            'previous_rejection_reason' => $isReapplication ? $latestRejection->rejection_reason : null,
+            'appeal_text' => $isReapplication ? $latestRejection->appeal_text : null,
         ];
     }
 }

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/theme_extensions.dart';
-import '../../../auth/data/models/user_model.dart';
+import '../../../../generated/l10n/app_localizations.dart';
+import '../../data/models/pending_driver_model.dart';
 
 class PendingDriverCard extends StatelessWidget {
-  final UserModel driver;
+  final PendingDriverModel driver;
   final VoidCallback onApprove;
   final VoidCallback onReject;
 
@@ -21,6 +23,7 @@ class PendingDriverCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -88,33 +91,69 @@ class PendingDriverCard extends StatelessWidget {
                 ),
 
                 // Badge de estado
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 14,
-                        color: Colors.orange.shade700,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Pendiente',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.orange.shade700,
-                          fontWeight: FontWeight.w600,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (driver.isReapplication) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.replay_rounded,
+                              size: 14,
+                              color: Colors.blue.shade700,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.admin_reapplication,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.blue.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(height: 4),
                     ],
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 14,
+                            color: Colors.orange.shade700,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.admin_statusPending,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.orange.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -150,13 +189,19 @@ class PendingDriverCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Registrado ${timeago.format(driver.createdAt, locale: 'es')}',
+                  l10n.admin_registeredAgo(timeago.format(driver.createdAt, locale: l10n.localeName)),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.textMuted,
                   ),
                 ),
               ],
             ),
+
+            // Info de re-solicitud
+            if (driver.isReapplication) ...[
+              const SizedBox(height: 16),
+              _buildReapplicationInfo(context, theme, colors, l10n),
+            ],
 
             const SizedBox(height: 16),
             const Divider(height: 1),
@@ -169,7 +214,7 @@ class PendingDriverCard extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: onReject,
                     icon: const Icon(Icons.close_rounded, size: 18),
-                    label: const Text('Rechazar'),
+                    label: Text(l10n.admin_reject),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red.shade700,
                       side: BorderSide(color: Colors.red.shade200),
@@ -185,7 +230,7 @@ class PendingDriverCard extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: onApprove,
                     icon: const Icon(Icons.check_rounded, size: 18),
-                    label: const Text('Aprobar'),
+                    label: Text(l10n.admin_approve),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -201,6 +246,64 @@ class PendingDriverCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildReapplicationInfo(
+    BuildContext context,
+    ThemeData theme,
+    AppColorsExtension colors,
+    AppLocalizations l10n,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Motivo del rechazo anterior
+          if (driver.previousRejectionReason != null) ...[
+            Text(
+              l10n.admin_previousRejectionReason,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: Colors.blue.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              driver.previousRejectionReason!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ],
+          // Apelacion del conductor
+          if (driver.appealText != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              l10n.admin_driverAppeal,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: Colors.blue.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              driver.appealText!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey.shade800,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

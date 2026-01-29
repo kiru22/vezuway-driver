@@ -520,5 +520,59 @@
   "admin_noPendingDrivers": "No hay conductores pendientes",
   "admin_allDriversReviewed": "Todos los conductores han sido revisados",
   "admin_pendingDriverSingular": "Conductor pendiente",
-  "admin_pendingDriverPlural": "Conductores pendientes"
+  "admin_pendingDriverPlural": "Conductores pendientes",
+  "admin_approve": "Aprobar",
+  "admin_reject": "Rechazar",
+  "admin_approveDriver": "Aprobar conductor",
+  "admin_rejectDriver": "Rechazar conductor",
+  "admin_approveConfirm": "¿Estás seguro que deseas aprobar a {name} como conductor? Recibirá un email de confirmación y podrá acceder a todas las funciones de la app.",
+  "@admin_approveConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_rejectConfirm": "¿Estás seguro que deseas rechazar a {name} como conductor? Recibirá un email notificándole del rechazo.",
+  "@admin_rejectConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_driverApproved": "{name} ha sido aprobado",
+  "@admin_driverApproved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_driverRejected": "{name} ha sido rechazado",
+  "@admin_driverRejected": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_rejectReasonLabel": "Motivo (opcional)",
+  "admin_rejectReasonHint": "Ej: Documentación incompleta",
+  "admin_registeredAgo": "Registrado {time}",
+  "@admin_registeredAgo": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "admin_reapplication": "Re-solicitud",
+  "admin_previousRejectionReason": "Motivo del rechazo anterior:",
+  "admin_driverAppeal": "Apelación del conductor:",
+
+  "@@_DRIVER_REJECTED": "============ DRIVER REJECTED SCREEN ============",
+  "driverRejected_title": "Solicitud rechazada",
+  "driverRejected_message": "Tu solicitud como conductor ha sido rechazada.",
+  "driverRejected_reasonLabel": "Motivo del rechazo:",
+  "driverRejected_noReasonProvided": "No se proporcionó un motivo específico.",
+  "driverRejected_appealHint": "Explica por qué crees que tu solicitud debería ser reconsiderada (mínimo 20 caracteres)...",
+  "driverRejected_submitAppeal": "Enviar apelación",
+  "driverRejected_submitting": "Enviando...",
+  "driverRejected_appealRequired": "La apelación es requerida",
+  "driverRejected_appealMinLength": "La apelación debe tener al menos 20 caracteres",
+  "driverRejected_appealSent": "Apelación enviada correctamente. Tu solicitud está siendo revisada nuevamente.",
+  "driverRejected_appealError": "Error al enviar la apelación. Inténtalo de nuevo.",
+  "driverRejected_appealAlreadySent": "Ya has enviado una apelación. Tu solicitud está siendo revisada nuevamente.",
+  "driverRejected_logout": "Cerrar sesión"
 }

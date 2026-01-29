@@ -14,6 +14,7 @@ import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/screens/user_type_selection_screen.dart';
 import 'features/auth/presentation/screens/driver_pending_screen.dart';
+import 'features/auth/presentation/screens/driver_rejected_screen.dart';
 import 'features/admin/presentation/shells/admin_shell.dart';
 import 'features/client_dashboard/presentation/screens/client_dashboard_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
@@ -65,6 +66,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (user?.isPendingDriver == true) {
           if (location != '/driver-pending' && !isProfileRoute) {
             return '/driver-pending';
+          }
+          return null;
+        }
+
+        // 4.5. Driver rechazado → SOLO puede ver rejected screen y perfil
+        if (user?.isRejectedDriver == true) {
+          if (location != '/driver-rejected' && !isProfileRoute) {
+            return '/driver-rejected';
           }
           return null;
         }
@@ -166,6 +175,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => fadeSlideTransitionPage(
           state: state,
           child: const DriverPendingScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/driver-rejected',
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const DriverRejectedScreen(),
         ),
       ),
       GoRoute(

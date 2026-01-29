@@ -1337,4 +1337,102 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get admin_pendingDriverPlural => 'Conductores pendientes';
+
+  @override
+  String get admin_approve => 'Aprobar';
+
+  @override
+  String get admin_reject => 'Rechazar';
+
+  @override
+  String get admin_approveDriver => 'Aprobar conductor';
+
+  @override
+  String get admin_rejectDriver => 'Rechazar conductor';
+
+  @override
+  String admin_approveConfirm(String name) {
+    return '¿Estás seguro que deseas aprobar a $name como conductor? Recibirá un email de confirmación y podrá acceder a todas las funciones de la app.';
+  }
+
+  @override
+  String admin_rejectConfirm(String name) {
+    return '¿Estás seguro que deseas rechazar a $name como conductor? Recibirá un email notificándole del rechazo.';
+  }
+
+  @override
+  String admin_driverApproved(String name) {
+    return '$name ha sido aprobado';
+  }
+
+  @override
+  String admin_driverRejected(String name) {
+    return '$name ha sido rechazado';
+  }
+
+  @override
+  String get admin_rejectReasonLabel => 'Motivo (opcional)';
+
+  @override
+  String get admin_rejectReasonHint => 'Ej: Documentación incompleta';
+
+  @override
+  String admin_registeredAgo(String time) {
+    return 'Registrado $time';
+  }
+
+  @override
+  String get admin_reapplication => 'Re-solicitud';
+
+  @override
+  String get admin_previousRejectionReason => 'Motivo del rechazo anterior:';
+
+  @override
+  String get admin_driverAppeal => 'Apelación del conductor:';
+
+  @override
+  String get driverRejected_title => 'Solicitud rechazada';
+
+  @override
+  String get driverRejected_message =>
+      'Tu solicitud como conductor ha sido rechazada.';
+
+  @override
+  String get driverRejected_reasonLabel => 'Motivo del rechazo:';
+
+  @override
+  String get driverRejected_noReasonProvided =>
+      'No se proporcionó un motivo específico.';
+
+  @override
+  String get driverRejected_appealHint =>
+      'Explica por qué crees que tu solicitud debería ser reconsiderada (mínimo 20 caracteres)...';
+
+  @override
+  String get driverRejected_submitAppeal => 'Enviar apelación';
+
+  @override
+  String get driverRejected_submitting => 'Enviando...';
+
+  @override
+  String get driverRejected_appealRequired => 'La apelación es requerida';
+
+  @override
+  String get driverRejected_appealMinLength =>
+      'La apelación debe tener al menos 20 caracteres';
+
+  @override
+  String get driverRejected_appealSent =>
+      'Apelación enviada correctamente. Tu solicitud está siendo revisada nuevamente.';
+
+  @override
+  String get driverRejected_appealError =>
+      'Error al enviar la apelación. Inténtalo de nuevo.';
+
+  @override
+  String get driverRejected_appealAlreadySent =>
+      'Ya has enviado una apelación. Tu solicitud está siendo revisada nuevamente.';
+
+  @override
+  String get driverRejected_logout => 'Cerrar sesión';
 }

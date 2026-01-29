@@ -5,6 +5,7 @@ namespace App\Modules\Admin\Services;
 use App\Models\User;
 use App\Modules\Admin\Mail\DriverApprovedMail;
 use App\Modules\Admin\Mail\DriverRejectedMail;
+use App\Modules\Admin\Models\DriverRejection;
 use App\Shared\Enums\DriverStatus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +25,12 @@ class UserManagementService
     public function rejectDriver(User $driver, ?string $reason): void
     {
         $driver->update(['driver_status' => DriverStatus::REJECTED]);
+
+        DriverRejection::create([
+            'user_id' => $driver->id,
+            'rejection_reason' => $reason,
+            'rejected_at' => now(),
+        ]);
 
         $this->sendRejectionNotification($driver, $reason);
     }

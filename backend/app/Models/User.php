@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Modules\Admin\Models\DriverRejection;
 use App\Modules\Contacts\Models\Contact;
 use App\Shared\Enums\DriverStatus;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -117,5 +119,26 @@ class User extends Authenticatable implements HasMedia
     public function needsRoleSelection(): bool
     {
         return $this->roles()->count() === 0;
+    }
+
+    /**
+     * All rejection records for this driver
+     */
+    public function driverRejections(): HasMany
+    {
+        return $this->hasMany(DriverRejection::class)->orderByDesc('rejected_at');
+    }
+
+    /**
+     * Get the latest rejection record (accessor, not eager-loadable)
+     */
+    public function getLatestRejectionAttribute(): ?DriverRejection
+    {
+        return $this->driverRejections()->first();
+    }
+
+    public function isRejectedDriver(): bool
+    {
+        return $this->hasRole('driver') && $this->driver_status === DriverStatus::REJECTED;
     }
 }

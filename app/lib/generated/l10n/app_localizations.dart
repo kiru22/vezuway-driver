@@ -2605,6 +2605,168 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Conductores pendientes'**
   String get admin_pendingDriverPlural;
+
+  /// No description provided for @admin_approve.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobar'**
+  String get admin_approve;
+
+  /// No description provided for @admin_reject.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazar'**
+  String get admin_reject;
+
+  /// No description provided for @admin_approveDriver.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobar conductor'**
+  String get admin_approveDriver;
+
+  /// No description provided for @admin_rejectDriver.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazar conductor'**
+  String get admin_rejectDriver;
+
+  /// No description provided for @admin_approveConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro que deseas aprobar a {name} como conductor? Recibirá un email de confirmación y podrá acceder a todas las funciones de la app.'**
+  String admin_approveConfirm(String name);
+
+  /// No description provided for @admin_rejectConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro que deseas rechazar a {name} como conductor? Recibirá un email notificándole del rechazo.'**
+  String admin_rejectConfirm(String name);
+
+  /// No description provided for @admin_driverApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} ha sido aprobado'**
+  String admin_driverApproved(String name);
+
+  /// No description provided for @admin_driverRejected.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} ha sido rechazado'**
+  String admin_driverRejected(String name);
+
+  /// No description provided for @admin_rejectReasonLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo (opcional)'**
+  String get admin_rejectReasonLabel;
+
+  /// No description provided for @admin_rejectReasonHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: Documentación incompleta'**
+  String get admin_rejectReasonHint;
+
+  /// No description provided for @admin_registeredAgo.
+  ///
+  /// In es, this message translates to:
+  /// **'Registrado {time}'**
+  String admin_registeredAgo(String time);
+
+  /// No description provided for @admin_reapplication.
+  ///
+  /// In es, this message translates to:
+  /// **'Re-solicitud'**
+  String get admin_reapplication;
+
+  /// No description provided for @admin_previousRejectionReason.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo del rechazo anterior:'**
+  String get admin_previousRejectionReason;
+
+  /// No description provided for @admin_driverAppeal.
+  ///
+  /// In es, this message translates to:
+  /// **'Apelación del conductor:'**
+  String get admin_driverAppeal;
+
+  /// No description provided for @driverRejected_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud rechazada'**
+  String get driverRejected_title;
+
+  /// No description provided for @driverRejected_message.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu solicitud como conductor ha sido rechazada.'**
+  String get driverRejected_message;
+
+  /// No description provided for @driverRejected_reasonLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Motivo del rechazo:'**
+  String get driverRejected_reasonLabel;
+
+  /// No description provided for @driverRejected_noReasonProvided.
+  ///
+  /// In es, this message translates to:
+  /// **'No se proporcionó un motivo específico.'**
+  String get driverRejected_noReasonProvided;
+
+  /// No description provided for @driverRejected_appealHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Explica por qué crees que tu solicitud debería ser reconsiderada (mínimo 20 caracteres)...'**
+  String get driverRejected_appealHint;
+
+  /// No description provided for @driverRejected_submitAppeal.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar apelación'**
+  String get driverRejected_submitAppeal;
+
+  /// No description provided for @driverRejected_submitting.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviando...'**
+  String get driverRejected_submitting;
+
+  /// No description provided for @driverRejected_appealRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'La apelación es requerida'**
+  String get driverRejected_appealRequired;
+
+  /// No description provided for @driverRejected_appealMinLength.
+  ///
+  /// In es, this message translates to:
+  /// **'La apelación debe tener al menos 20 caracteres'**
+  String get driverRejected_appealMinLength;
+
+  /// No description provided for @driverRejected_appealSent.
+  ///
+  /// In es, this message translates to:
+  /// **'Apelación enviada correctamente. Tu solicitud está siendo revisada nuevamente.'**
+  String get driverRejected_appealSent;
+
+  /// No description provided for @driverRejected_appealError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al enviar la apelación. Inténtalo de nuevo.'**
+  String get driverRejected_appealError;
+
+  /// No description provided for @driverRejected_appealAlreadySent.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya has enviado una apelación. Tu solicitud está siendo revisada nuevamente.'**
+  String get driverRejected_appealAlreadySent;
+
+  /// No description provided for @driverRejected_logout.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get driverRejected_logout;
 }
 
 class _AppLocalizationsDelegate

@@ -38,6 +38,10 @@ class AuthController extends Controller
             'locale' => $validated['locale'] ?? 'es',
         ]);
 
+        // Asignar rol de transportista automáticamente
+        $user->assignRole('driver');
+        $user->update(['driver_status' => DriverStatus::PENDING]);
+
         // Vincular contacto existente si hay uno con este email
         $this->contactService->linkContactToUser($validated['email'], $user->id);
 
@@ -251,6 +255,10 @@ class AuthController extends Controller
                     'locale' => 'es',
                 ]);
 
+                // Asignar rol de transportista automáticamente
+                $user->assignRole('driver');
+                $user->update(['driver_status' => DriverStatus::PENDING]);
+
                 // Vincular contacto existente si hay uno con este email
                 $this->contactService->linkContactToUser($email, $user->id);
             }
@@ -347,5 +355,73 @@ class AuthController extends Controller
 
             return null;
         }
+    }
+
+    public function getRejectionInfo(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isRejectedDriver()) {
+            return response()->json([
+                'message' => 'No eres un conductor rechazado',
+            ], 403);
+        }
+
+        $rejection = $user->latestRejection;
+
+        if (! $rejection) {
+            return response()->json([
+                'message' => 'No se encontró información de rechazo',
+            ], 404);
+        }
+
+        return response()->json([
+            'rejection_reason' => $rejection->rejection_reason,
+            'rejected_at' => $rejection->rejected_at->toIso8601String(),
+            'has_appealed' => $rejection->hasAppealed(),
+            'appealed_at' => $rejection->appealed_at?->toIso8601String(),
+        ]);
+    }
+
+    public function appealRejection(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'appeal_text' => 'required|string|min:20|max:1000',
+        ]);
+
+        $user = $request->user();
+
+        if (! $user->isRejectedDriver()) {
+            return response()->json([
+                'message' => 'No eres un conductor rechazado',
+            ], 403);
+        }
+
+        $rejection = $user->latestRejection;
+
+        if (! $rejection) {
+            return response()->json([
+                'message' => 'No se encontró información de rechazo',
+            ], 404);
+        }
+
+        if ($rejection->hasAppealed()) {
+            return response()->json([
+                'message' => 'Ya has enviado una apelación',
+            ], 400);
+        }
+
+        // Save appeal and change user status back to pending
+        $rejection->update([
+            'appeal_text' => $validated['appeal_text'],
+            'appealed_at' => now(),
+        ]);
+
+        $user->update(['driver_status' => DriverStatus::PENDING]);
+
+        return response()->json([
+            'message' => 'Apelación enviada correctamente',
+            'user' => new UserResource($user->fresh()),
+        ]);
     }
 }

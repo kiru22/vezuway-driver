@@ -461,5 +461,59 @@
   "admin_noPendingDrivers": "Немає водіїв на розгляді",
   "admin_allDriversReviewed": "Всі водії перевірені",
   "admin_pendingDriverSingular": "Водій на розгляді",
-  "admin_pendingDriverPlural": "Водіїв на розгляді"
+  "admin_pendingDriverPlural": "Водіїв на розгляді",
+  "admin_approve": "Схвалити",
+  "admin_reject": "Відхилити",
+  "admin_approveDriver": "Схвалити водія",
+  "admin_rejectDriver": "Відхилити водія",
+  "admin_approveConfirm": "Ви впевнені, що хочете схвалити {name} як водія? Він отримає email з підтвердженням і зможе користуватися всіма функціями додатку.",
+  "@admin_approveConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_rejectConfirm": "Ви впевнені, що хочете відхилити {name} як водія? Він отримає email з повідомленням про відхилення.",
+  "@admin_rejectConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_driverApproved": "{name} був схвалений",
+  "@admin_driverApproved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_driverRejected": "{name} був відхилений",
+  "@admin_driverRejected": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_rejectReasonLabel": "Причина (необов''язково)",
+  "admin_rejectReasonHint": "Напр: Неповна документація",
+  "admin_registeredAgo": "Зареєстрований {time}",
+  "@admin_registeredAgo": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "admin_reapplication": "Повторна заявка",
+  "admin_previousRejectionReason": "Причина попередньої відмови:",
+  "admin_driverAppeal": "Апеляція водія:",
+
+  "@@_DRIVER_REJECTED": "============ DRIVER REJECTED SCREEN ============",
+  "driverRejected_title": "Заявку відхилено",
+  "driverRejected_message": "Вашу заявку на роль водія було відхилено.",
+  "driverRejected_reasonLabel": "Причина відмови:",
+  "driverRejected_noReasonProvided": "Конкретна причина не вказана.",
+  "driverRejected_appealHint": "Поясніть, чому вважаєте, що вашу заявку слід переглянути (мінімум 20 символів)...",
+  "driverRejected_submitAppeal": "Надіслати апеляцію",
+  "driverRejected_submitting": "Надсилання...",
+  "driverRejected_appealRequired": "Апеляція є обов''язковою",
+  "driverRejected_appealMinLength": "Апеляція повинна містити щонайменше 20 символів",
+  "driverRejected_appealSent": "Апеляцію успішно надіслано. Вашу заявку переглядають повторно.",
+  "driverRejected_appealError": "Помилка надсилання апеляції. Спробуйте ще раз.",
+  "driverRejected_appealAlreadySent": "Ви вже надіслали апеляцію. Вашу заявку переглядають повторно.",
+  "driverRejected_logout": "Вийти"
 }

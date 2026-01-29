@@ -1340,4 +1340,101 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get admin_pendingDriverPlural => 'Водіїв на розгляді';
+
+  @override
+  String get admin_approve => 'Схвалити';
+
+  @override
+  String get admin_reject => 'Відхилити';
+
+  @override
+  String get admin_approveDriver => 'Схвалити водія';
+
+  @override
+  String get admin_rejectDriver => 'Відхилити водія';
+
+  @override
+  String admin_approveConfirm(String name) {
+    return 'Ви впевнені, що хочете схвалити $name як водія? Він отримає email з підтвердженням і зможе користуватися всіма функціями додатку.';
+  }
+
+  @override
+  String admin_rejectConfirm(String name) {
+    return 'Ви впевнені, що хочете відхилити $name як водія? Він отримає email з повідомленням про відхилення.';
+  }
+
+  @override
+  String admin_driverApproved(String name) {
+    return '$name був схвалений';
+  }
+
+  @override
+  String admin_driverRejected(String name) {
+    return '$name був відхилений';
+  }
+
+  @override
+  String get admin_rejectReasonLabel => 'Причина (необов\'язково)';
+
+  @override
+  String get admin_rejectReasonHint => 'Напр: Неповна документація';
+
+  @override
+  String admin_registeredAgo(String time) {
+    return 'Зареєстрований $time';
+  }
+
+  @override
+  String get admin_reapplication => 'Повторна заявка';
+
+  @override
+  String get admin_previousRejectionReason => 'Причина попередньої відмови:';
+
+  @override
+  String get admin_driverAppeal => 'Апеляція водія:';
+
+  @override
+  String get driverRejected_title => 'Заявку відхилено';
+
+  @override
+  String get driverRejected_message =>
+      'Вашу заявку на роль водія було відхилено.';
+
+  @override
+  String get driverRejected_reasonLabel => 'Причина відмови:';
+
+  @override
+  String get driverRejected_noReasonProvided => 'Конкретна причина не вказана.';
+
+  @override
+  String get driverRejected_appealHint =>
+      'Поясніть, чому вважаєте, що вашу заявку слід переглянути (мінімум 20 символів)...';
+
+  @override
+  String get driverRejected_submitAppeal => 'Надіслати апеляцію';
+
+  @override
+  String get driverRejected_submitting => 'Надсилання...';
+
+  @override
+  String get driverRejected_appealRequired => 'Апеляція є обов\'язковою';
+
+  @override
+  String get driverRejected_appealMinLength =>
+      'Апеляція повинна містити щонайменше 20 символів';
+
+  @override
+  String get driverRejected_appealSent =>
+      'Апеляцію успішно надіслано. Вашу заявку переглядають повторно.';
+
+  @override
+  String get driverRejected_appealError =>
+      'Помилка надсилання апеляції. Спробуйте ще раз.';
+
+  @override
+  String get driverRejected_appealAlreadySent =>
+      'Ви вже надіслали апеляцію. Вашу заявку переглядають повторно.';
+
+  @override
+  String get driverRejected_logout => 'Вийти';
 }

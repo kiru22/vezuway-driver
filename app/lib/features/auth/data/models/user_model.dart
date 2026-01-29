@@ -108,5 +108,7 @@ class UserModel {
   bool get isApprovedDriver =>
       isDriver && driverStatus == DriverStatus.approved;
   bool get isPendingDriver => isDriver && driverStatus == DriverStatus.pending;
+  bool get isRejectedDriver =>
+      isDriver && driverStatus == DriverStatus.rejected;
   bool get needsRoleSelection => role == null;
 }

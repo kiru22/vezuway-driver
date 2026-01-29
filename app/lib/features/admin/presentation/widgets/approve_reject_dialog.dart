@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/styled_form_field.dart';
-import '../../../auth/data/models/user_model.dart';
+import '../../data/models/pending_driver_model.dart';
 
 class ApproveRejectDialog extends StatefulWidget {
-  final UserModel driver;
+  final PendingDriverModel driver;
   final bool isApproval;
 
   const ApproveRejectDialog({
@@ -21,6 +22,16 @@ class ApproveRejectDialog extends StatefulWidget {
 class _ApproveRejectDialogState extends State<ApproveRejectDialog> {
   final _reasonController = TextEditingController();
 
+  Color get _accentColor =>
+      widget.isApproval ? AppColors.primary : Colors.red.shade700;
+
+  Color get _bgColor => widget.isApproval
+      ? AppColors.primary.withValues(alpha: 0.1)
+      : Colors.red.shade50;
+
+  IconData get _icon =>
+      widget.isApproval ? Icons.check_circle_outline : Icons.cancel_outlined;
+
   @override
   void dispose() {
     _reasonController.dispose();
@@ -30,6 +41,15 @@ class _ApproveRejectDialogState extends State<ApproveRejectDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+
+    final title =
+        widget.isApproval ? l10n.admin_approveDriver : l10n.admin_rejectDriver;
+    final message = widget.isApproval
+        ? l10n.admin_approveConfirm(widget.driver.name)
+        : l10n.admin_rejectConfirm(widget.driver.name);
+    final actionLabel =
+        widget.isApproval ? l10n.admin_approve : l10n.admin_reject;
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -42,34 +62,21 @@ class _ApproveRejectDialogState extends State<ApproveRejectDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Icono y título
             Row(
               children: [
                 Container(
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: widget.isApproval
-                        ? AppColors.primary.withValues(alpha: 0.1)
-                        : Colors.red.shade50,
+                    color: _bgColor,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    widget.isApproval
-                        ? Icons.check_circle_outline
-                        : Icons.cancel_outlined,
-                    color: widget.isApproval
-                        ? AppColors.primary
-                        : Colors.red.shade700,
-                    size: 28,
-                  ),
+                  child: Icon(_icon, color: _accentColor, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    widget.isApproval
-                        ? 'Aprobar conductor'
-                        : 'Rechazar conductor',
+                    title,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -78,48 +85,24 @@ class _ApproveRejectDialogState extends State<ApproveRejectDialog> {
               ],
             ),
             const SizedBox(height: 24),
-
-            // Mensaje
-            RichText(
-              text: TextSpan(
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.black87,
-                ),
-                children: [
-                  TextSpan(
-                    text: widget.isApproval
-                        ? '¿Estás seguro que deseas aprobar a '
-                        : '¿Estás seguro que deseas rechazar a ',
-                  ),
-                  TextSpan(
-                    text: widget.driver.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(
-                    text: widget.isApproval
-                        ? ' como conductor? Recibirá un email de confirmación y podrá acceder a todas las funciones de la app.'
-                        : ' como conductor? Recibirá un email notificándole del rechazo.',
-                  ),
-                ],
+            Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.black87,
               ),
             ),
-
-            // Campo de razón (solo para rechazo)
             if (!widget.isApproval) ...[
               const SizedBox(height: 24),
               StyledFormField(
                 controller: _reasonController,
-                label: 'Motivo del rechazo (opcional)',
+                label: l10n.admin_rejectReasonLabel,
                 prefixIcon: Icons.description_outlined,
                 maxLines: 3,
                 textInputAction: TextInputAction.done,
-                hint: 'Ej: Documentación incompleta',
+                hint: l10n.admin_rejectReasonHint,
               ),
             ],
-
             const SizedBox(height: 32),
-
-            // Botones de acción
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -127,35 +110,35 @@ class _ApproveRejectDialogState extends State<ApproveRejectDialog> {
                   onPressed: () => Navigator.pop(context),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
+                      horizontal: 16,
                       vertical: 14,
                     ),
                   ),
-                  child: const Text('Cancelar'),
+                  child: Text(l10n.common_cancel),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                      context,
-                      widget.isApproval ? true : _reasonController.text.trim(),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.isApproval
-                        ? AppColors.primary
-                        : Colors.red.shade700,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 14,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(
+                        context,
+                        widget.isApproval ? true : _reasonController.text.trim(),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accentColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
+                    child: Text(actionLabel),
                   ),
-                  child: Text(widget.isApproval ? 'Aprobar' : 'Rechazar'),
                 ),
               ],
             ),

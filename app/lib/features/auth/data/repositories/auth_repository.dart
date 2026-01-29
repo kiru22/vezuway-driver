@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import '../../../../core/services/api_service.dart';
+import '../models/rejection_info_model.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
@@ -142,5 +143,17 @@ class AuthRepository {
       'user_type': userType,
     });
     return UserModel.fromJson(response.data);
+  }
+
+  Future<RejectionInfoModel> getRejectionInfo() async {
+    final response = await _api.get('/auth/rejection-info');
+    return RejectionInfoModel.fromJson(response.data);
+  }
+
+  Future<UserModel> appealRejection(String appealText) async {
+    final response = await _api.post('/auth/appeal-rejection', data: {
+      'appeal_text': appealText,
+    });
+    return UserModel.fromJson(response.data['user']);
   }
 }

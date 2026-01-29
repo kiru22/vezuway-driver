@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/utils/date_utils.dart' as date_utils;
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../generated/l10n/app_localizations.dart';
+import '../../../../shared/utils/date_utils.dart' as date_utils;
 import '../../data/models/trip_model.dart';
 
 class TripsCalendar extends StatefulWidget {
@@ -104,7 +104,7 @@ class _TripsCalendarState extends State<TripsCalendar> {
           ),
           const SizedBox(height: 8),
           // Calendar grid
-          _buildCalendarGrid(colors),
+          _buildCalendarGrid(),
 
           // Clear filter button
           if (widget.showClearFilter) ...[
@@ -136,7 +136,7 @@ class _TripsCalendarState extends State<TripsCalendar> {
     );
   }
 
-  Widget _buildCalendarGrid(dynamic colors) {
+  Widget _buildCalendarGrid() {
     final firstDayOfMonth =
         DateTime(_currentMonth.year, _currentMonth.month, 1);
     final lastDayOfMonth =
@@ -147,7 +147,7 @@ class _TripsCalendarState extends State<TripsCalendar> {
 
     // Empty cells for days before the first of the month
     for (var i = 1; i < firstWeekday; i++) {
-      days.add(const SizedBox(width: 36, height: 36));
+      days.add(const SizedBox.shrink());
     }
 
     // Days of the month
@@ -169,9 +169,13 @@ class _TripsCalendarState extends State<TripsCalendar> {
       ));
     }
 
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
+    return GridView.count(
+      crossAxisCount: 7,
+      childAspectRatio: 1,
+      crossAxisSpacing: 4,
+      mainAxisSpacing: 4,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       children: days,
     );
   }
@@ -214,46 +218,37 @@ class _CalendarDay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isTodayNotSelected = isToday && !isSelected;
+    final showDot = hasPackages && !isToday;
 
-    Color? bgColor;
-    Color textColor;
-    Gradient? gradient;
-    Border? border;
+    final Color textColor;
+    final Color? bgColor;
+    final Gradient? gradient;
 
-    if (isToday && !isSelected) {
-      // Today (not selected): green gradient background, white text
+    if (isTodayNotSelected) {
       gradient = AppColors.primaryGradient;
+      bgColor = null;
       textColor = Colors.white;
     } else if (hasTrip) {
-      // Has trip: light green background, green text
+      gradient = null;
       bgColor = AppColors.success.withValues(alpha: 0.15);
       textColor = AppColors.success;
-      // Add border if selected
-      if (isSelected) {
-        border = Border.all(
-          color: AppColors.primary,
-          width: 2,
-        );
-      }
     } else {
-      // Normal day
+      gradient = null;
       bgColor = Colors.transparent;
       textColor = colors.textSecondary;
     }
 
-    // Show dot for trips with packages (but not when today)
-    final showDot = hasPackages && !isToday;
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 36,
-        height: 36,
         decoration: BoxDecoration(
-          color: gradient == null ? bgColor : null,
+          color: bgColor,
           gradient: gradient,
           borderRadius: BorderRadius.circular(10),
-          border: border,
+          border: isSelected && hasTrip
+              ? Border.all(color: AppColors.primary, width: 2)
+              : null,
         ),
         child: Stack(
           children: [
@@ -269,7 +264,6 @@ class _CalendarDay extends StatelessWidget {
                 ),
               ),
             ),
-            // Small dot indicator for trips with packages
             if (showDot)
               Positioned(
                 bottom: 4,

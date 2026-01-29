@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/services/api_service.dart';
+import '../../data/models/rejection_info_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
@@ -203,6 +204,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
   void updateUser(UserModel user) {
     state = state.copyWith(user: user);
   }
+
+  Future<bool> appealRejection(String appealText) async {
+    state = state.copyWith(status: AuthStatus.loading, error: null);
+
+    try {
+      final user = await _repository.appealRejection(appealText);
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: user,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        error: 'Error al enviar la apelacion',
+      );
+      return false;
+    }
+  }
 }
 
 // Auth Provider
@@ -211,4 +231,10 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.read(authRepositoryProvider),
     ref.read(googleSignInProvider),
   );
+});
+
+// Rejection Info Provider
+final rejectionInfoProvider = FutureProvider<RejectionInfoModel>((ref) async {
+  final repository = ref.read(authRepositoryProvider);
+  return repository.getRejectionInfo();
 });

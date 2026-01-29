@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/data/models/user_model.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
+import '../../data/models/pending_driver_model.dart';
 import '../../data/repositories/admin_repository.dart';
 
 // Admin Repository Provider
@@ -42,7 +43,7 @@ final driverUsersCountProvider = Provider<int>((ref) {
 });
 
 // Pending Drivers Provider
-final pendingDriversProvider = FutureProvider<List<UserModel>>((ref) async {
+final pendingDriversProvider = FutureProvider<List<PendingDriverModel>>((ref) async {
   final repository = ref.read(adminRepositoryProvider);
   return repository.getPendingDrivers();
 });
