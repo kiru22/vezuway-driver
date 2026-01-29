@@ -442,6 +442,23 @@
   "notifications_notNow": "Ahora no",
 
   "@@_TRIPS": "============ TRIPS ============",
+  "tripsRoutes_title": "Viajes y Rutas",
+  "tripsRoutes_trips": "Viajes",
+  "tripsRoutes_routes": "Rutas",
+  "tripsRoutes_noTrips": "No hay viajes",
+  "tripsRoutes_noTripsSubtitle": "Crea tu primer viaje",
+  "tripsRoutes_createTrip": "Crear viaje",
+  "trips_sectionActive": "ACTIVOS",
+  "trips_sectionUpcoming": "PRÓXIMOS",
+  "trips_sectionHistory": "HISTORIAL",
+  "trips_packagesCount": "{count} paquetes",
+  "@trips_packagesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "trips_changeStatus": "Cambiar estado",
+  "trips_retry": "Reintentar",
   "trips_clearFilter": "Borrar filtro",
 
   "@@_MY_ORDERS": "============ MY ORDERS ============",

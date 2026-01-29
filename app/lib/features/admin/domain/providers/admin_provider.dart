@@ -9,20 +9,47 @@ final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository(ref.read(apiServiceProvider));
 });
 
-// User Role Filter Provider
-final userRoleFilterProvider = StateProvider<String?>((ref) => null);
-
-// All Users Provider (watches filter)
+// All Users Provider (fetches all, filtering done locally)
 final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
   final repository = ref.read(adminRepositoryProvider);
-  final roleFilter = ref.watch(userRoleFilterProvider);
-  return repository.getAllUsers(roleFilter: roleFilter);
+  return repository.getAllUsers();
+});
+
+// Filtered Users Providers (derived, for TabBarView)
+final clientUsersProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
+  return ref.watch(allUsersProvider).whenData(
+        (users) => users.where((u) => u.isClient).toList(),
+      );
+});
+
+final driverUsersProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
+  return ref.watch(allUsersProvider).whenData(
+        (users) => users.where((u) => u.isDriver).toList(),
+      );
+});
+
+// User Count Providers (derived)
+final allUsersCountProvider = Provider<int>((ref) {
+  return ref.watch(allUsersProvider).valueOrNull?.length ?? 0;
+});
+
+final clientUsersCountProvider = Provider<int>((ref) {
+  return ref.watch(clientUsersProvider).valueOrNull?.length ?? 0;
+});
+
+final driverUsersCountProvider = Provider<int>((ref) {
+  return ref.watch(driverUsersProvider).valueOrNull?.length ?? 0;
 });
 
 // Pending Drivers Provider
 final pendingDriversProvider = FutureProvider<List<UserModel>>((ref) async {
   final repository = ref.read(adminRepositoryProvider);
   return repository.getPendingDrivers();
+});
+
+// Pending Drivers Count Provider (derived)
+final pendingDriversCountProvider = Provider<int>((ref) {
+  return ref.watch(pendingDriversProvider).valueOrNull?.length ?? 0;
 });
 
 // Admin Actions State

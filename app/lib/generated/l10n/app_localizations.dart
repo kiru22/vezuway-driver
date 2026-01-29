@@ -2210,6 +2210,78 @@ abstract class AppLocalizations {
   /// **'Ahora no'**
   String get notifications_notNow;
 
+  /// No description provided for @tripsRoutes_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Viajes y Rutas'**
+  String get tripsRoutes_title;
+
+  /// No description provided for @tripsRoutes_trips.
+  ///
+  /// In es, this message translates to:
+  /// **'Viajes'**
+  String get tripsRoutes_trips;
+
+  /// No description provided for @tripsRoutes_routes.
+  ///
+  /// In es, this message translates to:
+  /// **'Rutas'**
+  String get tripsRoutes_routes;
+
+  /// No description provided for @tripsRoutes_noTrips.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay viajes'**
+  String get tripsRoutes_noTrips;
+
+  /// No description provided for @tripsRoutes_noTripsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primer viaje'**
+  String get tripsRoutes_noTripsSubtitle;
+
+  /// No description provided for @tripsRoutes_createTrip.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear viaje'**
+  String get tripsRoutes_createTrip;
+
+  /// No description provided for @trips_sectionActive.
+  ///
+  /// In es, this message translates to:
+  /// **'ACTIVOS'**
+  String get trips_sectionActive;
+
+  /// No description provided for @trips_sectionUpcoming.
+  ///
+  /// In es, this message translates to:
+  /// **'PRÓXIMOS'**
+  String get trips_sectionUpcoming;
+
+  /// No description provided for @trips_sectionHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'HISTORIAL'**
+  String get trips_sectionHistory;
+
+  /// No description provided for @trips_packagesCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} paquetes'**
+  String trips_packagesCount(int count);
+
+  /// No description provided for @trips_changeStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar estado'**
+  String get trips_changeStatus;
+
+  /// No description provided for @trips_retry.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get trips_retry;
+
   /// No description provided for @trips_clearFilter.
   ///
   /// In es, this message translates to:

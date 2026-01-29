@@ -1138,6 +1138,44 @@ class AppLocalizationsUk extends AppLocalizations {
   String get notifications_notNow => 'Не зараз';
 
   @override
+  String get tripsRoutes_title => 'Рейси і Маршрути';
+
+  @override
+  String get tripsRoutes_trips => 'Рейси';
+
+  @override
+  String get tripsRoutes_routes => 'Маршрути';
+
+  @override
+  String get tripsRoutes_noTrips => 'Немає рейсів';
+
+  @override
+  String get tripsRoutes_noTripsSubtitle => 'Створіть перший рейс';
+
+  @override
+  String get tripsRoutes_createTrip => 'Створити рейс';
+
+  @override
+  String get trips_sectionActive => 'АКТИВНІ';
+
+  @override
+  String get trips_sectionUpcoming => 'НАСТУПНІ';
+
+  @override
+  String get trips_sectionHistory => 'ІСТОРІЯ';
+
+  @override
+  String trips_packagesCount(int count) {
+    return '$count посилок';
+  }
+
+  @override
+  String get trips_changeStatus => 'Змінити статус';
+
+  @override
+  String get trips_retry => 'Повторити';
+
+  @override
   String get trips_clearFilter => 'Скинути фільтр';
 
   @override

@@ -20,6 +20,7 @@ import '../../../ocr/presentation/widgets/ocr_scan_button.dart';
 import '../widgets/package_image_gallery.dart';
 import '../widgets/add_image_button.dart';
 import '../../../../shared/widgets/styled_form_field.dart';
+import '../../../../shared/widgets/submit_bottom_bar.dart';
 import '../../../contacts/data/models/contact_model.dart';
 import '../../../contacts/presentation/widgets/contact_search_field.dart';
 
@@ -667,7 +668,11 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             ),
 
             // Submit button
-            _buildSubmitButton(colors),
+            SubmitBottomBar(
+              onPressed: _isLoading ? null : _handleSubmit,
+              label: context.l10n.packages_submitPackage,
+              isLoading: _isLoading,
+            ),
           ],
         ),
       ),
@@ -1676,81 +1681,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
-  Widget _buildSubmitButton(AppColorsExtension colors) {
-    final isDark = context.isDarkMode;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? colors.surface : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? colors.border : AppColors.lightBorder,
-          ),
-        ),
-        boxShadow: isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: _isLoading ? null : AppColors.primaryGradient,
-              color:
-                  _isLoading ? AppColors.primary.withValues(alpha: 0.5) : null,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: _isLoading
-                  ? null
-                  : [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: _isLoading ? null : _handleSubmit,
-                borderRadius: BorderRadius.circular(14),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  alignment: Alignment.center,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          context.l10n.packages_submitPackage,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // Numeric input for weight/quantity - Clean minimal style with glow effect

@@ -6,7 +6,6 @@ import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../domain/providers/admin_provider.dart';
 import '../widgets/admin_error_view.dart';
-import '../widgets/admin_stats_card.dart';
 import '../widgets/approve_reject_dialog.dart';
 import '../widgets/pending_driver_card.dart';
 
@@ -109,30 +108,19 @@ class PendingRequestsScreen extends ConsumerWidget {
       );
     }
 
-    final statsLabel = drivers.length == 1
-        ? l10n.admin_pendingDriverSingular
-        : l10n.admin_pendingDriverPlural;
-
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(pendingDriversProvider),
       child: ListView(
         padding: const EdgeInsets.all(16),
-        children: [
-          AdminStatsCard(
-            count: drivers.length,
-            label: statsLabel,
-            icon: Icons.pending_actions_rounded,
-            color: Colors.orange.shade600,
-          ),
-          const SizedBox(height: 8),
-          ...drivers.map(
-            (driver) => PendingDriverCard(
-              driver: driver,
-              onApprove: () => _handleApprove(context, ref, driver),
-              onReject: () => _handleReject(context, ref, driver),
-            ),
-          ),
-        ],
+        children: drivers
+            .map(
+              (driver) => PendingDriverCard(
+                driver: driver,
+                onApprove: () => _handleApprove(context, ref, driver),
+                onReject: () => _handleReject(context, ref, driver),
+              ),
+            )
+            .toList(),
       ),
     );
   }

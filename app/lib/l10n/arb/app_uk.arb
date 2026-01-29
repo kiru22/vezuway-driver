@@ -383,6 +383,23 @@
   "notifications_enable": "Увiмкнути",
   "notifications_notNow": "Не зараз",
 
+  "tripsRoutes_title": "Рейси і Маршрути",
+  "tripsRoutes_trips": "Рейси",
+  "tripsRoutes_routes": "Маршрути",
+  "tripsRoutes_noTrips": "Немає рейсів",
+  "tripsRoutes_noTripsSubtitle": "Створіть перший рейс",
+  "tripsRoutes_createTrip": "Створити рейс",
+  "trips_sectionActive": "АКТИВНІ",
+  "trips_sectionUpcoming": "НАСТУПНІ",
+  "trips_sectionHistory": "ІСТОРІЯ",
+  "trips_packagesCount": "{count} посилок",
+  "@trips_packagesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "trips_changeStatus": "Змінити статус",
+  "trips_retry": "Повторити",
   "trips_clearFilter": "Скинути фільтр",
 
   "@@_MY_ORDERS": "============ MY ORDERS ============",

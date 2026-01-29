@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/pill_tab_bar.dart';
 import '../../../../shared/widgets/user_menu_sheet.dart';
+import '../../domain/providers/admin_provider.dart';
+import '../screens/all_users_screen.dart';
+import '../screens/pending_requests_screen.dart';
 
 class AdminShell extends ConsumerStatefulWidget {
-  final Widget child;
-
-  const AdminShell({super.key, required this.child});
+  const AdminShell({super.key});
 
   @override
   ConsumerState<AdminShell> createState() => _AdminShellState();
@@ -32,28 +32,10 @@ class _AdminShellState extends ConsumerState<AdminShell>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _syncTabWithRoute();
-  }
-
-  void _syncTabWithRoute() {
-    final location = GoRouterState.of(context).matchedLocation;
-    final newIndex = location.contains('/admin/users') ? 1 : 0;
-    if (_tabController.index != newIndex) {
-      _tabController.animateTo(newIndex);
-    }
-  }
-
-  void _onTabChanged(int index) {
-    final routes = ['/admin/requests', '/admin/users'];
-    context.go(routes[index]);
-  }
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final pendingCount = ref.watch(pendingDriversCountProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -90,12 +72,21 @@ class _AdminShellState extends ConsumerState<AdminShell>
               child: PillTabBar(
                 controller: _tabController,
                 labels: [l10n.admin_requests, l10n.admin_users],
-                onTap: _onTabChanged,
+                badges: [pendingCount, null],
+                badgeStyles: const [BadgeStyle.success, null],
               ),
             ),
 
-            // Content
-            Expanded(child: widget.child),
+            // Content - TabBarView para transición suave
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: const [
+                  PendingRequestsScreen(),
+                  AllUsersScreen(),
+                ],
+              ),
+            ),
           ],
         ),
       ),

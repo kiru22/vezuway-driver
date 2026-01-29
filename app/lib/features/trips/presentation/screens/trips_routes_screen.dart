@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../../shared/widgets/delete_confirmation_dialog.dart';
 import '../../../../shared/widgets/pill_tab_bar.dart';
@@ -53,19 +54,20 @@ class _TripsRoutesScreenState extends ConsumerState<TripsRoutesScreen>
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: colors.background,
       body: Column(
         children: [
-          const AppHeader(
-            title: 'Рейси і Маршрути',
+          AppHeader(
+            title: l10n.tripsRoutes_title,
             showMenu: false,
           ),
           // Tab bar
           PillTabBar(
             controller: _tabController,
-            labels: const ['Рейси', 'Маршрути'],
+            labels: [l10n.tripsRoutes_trips, l10n.tripsRoutes_routes],
             onTap: (index) {
               ref.read(tripsRoutesTabIndexProvider.notifier).state = index;
             },

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_extensions.dart';
 import '../../data/models/contact_model.dart';
 import '../../domain/providers/contact_provider.dart';
 
@@ -267,47 +268,109 @@ class _ContactSearchFieldState extends ConsumerState<ContactSearchField> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final isDark = context.isDarkMode;
+
     return CompositedTransformTarget(
       link: _layerLink,
-      child: TextFormField(
-        controller: _controller,
-        focusNode: _focusNode,
-        decoration: InputDecoration(
-          labelText: widget.label,
-          hintText: widget.hintText,
-          prefixIcon: Icon(widget.icon ?? Icons.person_outline),
-          suffixIcon: _isSearching
-              ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                )
-              : _controller.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _controller.clear();
-                        widget.onManualEntry('');
-                        _removeOverlay();
-                      },
-                    )
-                  : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          ),
+                ],
         ),
-        validator: widget.validator,
-        onChanged: (value) {
-          widget.onManualEntry(value);
-          if (value.length >= 2) {
-            _search(value);
-          } else {
-            _removeOverlay();
-          }
-        },
+        child: TextFormField(
+          controller: _controller,
+          focusNode: _focusNode,
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+          decoration: InputDecoration(
+            labelText: widget.label,
+            hintText: widget.hintText,
+            labelStyle: TextStyle(
+              color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+            floatingLabelStyle: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+            hintStyle: TextStyle(
+              color: isDark ? colors.textMuted : AppColors.lightTextMuted,
+            ),
+            prefixIcon: Icon(
+              widget.icon ?? Icons.person_outline,
+              size: 20,
+              color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
+            ),
+            suffixIcon: _isSearching
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : _controller.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _controller.clear();
+                          widget.onManualEntry('');
+                          _removeOverlay();
+                        },
+                      )
+                    : null,
+            filled: true,
+            fillColor: isDark ? colors.surface : Colors.white,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark ? colors.border : AppColors.lightBorder,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark ? colors.border : AppColors.lightBorder,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.error, width: 2),
+            ),
+          ),
+          validator: widget.validator,
+          onChanged: (value) {
+            widget.onManualEntry(value);
+            if (value.length >= 2) {
+              _search(value);
+            } else {
+              _removeOverlay();
+            }
+          },
+        ),
       ),
     );
   }

@@ -9,6 +9,9 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/currency_dropdown.dart';
+import '../../../../shared/widgets/form_app_bar.dart';
+import '../../../../shared/widgets/submit_bottom_bar.dart';
+import '../../../../shared/widgets/themed_card.dart';
 import '../../domain/providers/route_provider.dart';
 import '../widgets/route_country_section.dart';
 import '../widgets/route_form_widgets.dart';
@@ -122,61 +125,39 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = context.l10n;
+    final isDark = context.isDarkMode;
     final currencySymbol = getCurrencySymbol(_currency);
 
     return Scaffold(
-      backgroundColor: colors.surface,
-      appBar: AppBar(
-        backgroundColor: colors.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.close, color: colors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          l10n.routes_createTitle,
-          style: TextStyle(
-            color: colors.textPrimary,
-            fontWeight: FontWeight.w600,
+      backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
+      appBar: FormAppBar(
+        title: l10n.routes_createTitle,
+        onClose: () => context.pop(),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  _buildRouteDetailsHeader(colors, l10n),
+                  const SizedBox(height: 16),
+                  _buildTimeline(),
+                  const SizedBox(height: 32),
+                  _buildPricingSection(colors, l10n, currencySymbol),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
+          SubmitBottomBar(
             onPressed: _isLoading ? null : _handleSubmit,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.primary,
-                    ),
-                  )
-                : Text(
-                    l10n.common_save,
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+            label: l10n.routes_publishRoute,
+            isLoading: _isLoading,
           ),
         ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            _buildRouteDetailsHeader(colors, l10n),
-            const SizedBox(height: 16),
-            _buildTimeline(),
-            const SizedBox(height: 32),
-            _buildPricingSection(colors, l10n, currencySymbol),
-            const SizedBox(height: 32),
-            _buildSubmitButton(l10n),
-            const SizedBox(height: 20),
-          ],
-        ),
       ),
     );
   }
@@ -244,8 +225,8 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
   }
 
   Widget _buildPricingSection(
-    dynamic colors,
-    dynamic l10n,
+    AppColorsExtension colors,
+    AppLocalizations l10n,
     String currencySymbol,
   ) {
     return Column(
@@ -261,13 +242,9 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
+        ThemedCard(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colors.cardBackground,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colors.border),
-          ),
+          borderRadius: 16,
           child: Column(
             children: [
               Row(
@@ -306,43 +283,4 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
     );
   }
 
-  Widget _buildSubmitButton(AppLocalizations l10n) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleSubmit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: _isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    l10n.routes_publishRoute,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward, size: 20),
-                ],
-              ),
-      ),
-    );
-  }
 }

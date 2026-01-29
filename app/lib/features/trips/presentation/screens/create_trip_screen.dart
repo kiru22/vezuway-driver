@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../shared/utils/country_utils.dart';
+import '../../../../shared/widgets/submit_bottom_bar.dart';
+import '../../../../shared/widgets/themed_card.dart';
 import '../../../routes/data/models/route_model.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 import '../../domain/providers/trip_provider.dart';
@@ -78,12 +81,13 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = context.isDarkMode;
     final routesState = ref.watch(routesProvider);
 
     return Scaffold(
-      backgroundColor: colors.surface,
+      backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
       appBar: AppBar(
-        backgroundColor: colors.surface,
+        backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
@@ -97,152 +101,163 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          12,
-          20,
-          MediaQuery.of(context).padding.bottom + 12,
-        ),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          border: Border(
-            top: BorderSide(color: colors.border.withValues(alpha: 0.5)),
-          ),
-        ),
-        child: _SubmitButton(
-          onPressed: _submit,
-          isLoading: _isLoading,
-          tripCount: _selectedDates.length,
-        ),
-      ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.primary))
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  // 1. Route selector FIRST
-                  if (routesState.routes.isNotEmpty &&
-                      widget.routeId == null) ...[
-                    _SectionTitle(title: 'ШАБЛОН МАРШРУТУ'),
-                    const SizedBox(height: 8),
-                    _RouteSelector(
-                      routes: routesState.routes,
-                      selectedRoute: _selectedRoute,
-                      onChanged: (route) {
-                        setState(() {
-                          _selectedRoute = route;
-                          if (route != null) {
-                            _useTemplate = true;
-                            _originCity = route.origin;
-                            _originCountry = route.originCountry;
-                            _destinationCity = route.destination;
-                            _destinationCountry = route.destinationCountry;
-                          } else {
-                            _useTemplate = false;
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+          : Column(
+              children: [
+                Expanded(
+                  child: Form(
+                    key: _formKey,
+                    child: ListView(
+                      padding: const EdgeInsets.all(20),
+                      children: [
+                        // 1. Route selector FIRST
+                        if (routesState.routes.isNotEmpty &&
+                            widget.routeId == null) ...[
+                          _SectionTitle(title: 'ШАБЛОН МАРШРУТУ'),
+                          const SizedBox(height: 8),
+                          _RouteSelector(
+                            routes: routesState.routes,
+                            selectedRoute: _selectedRoute,
+                            onChanged: (route) {
+                              setState(() {
+                                _selectedRoute = route;
+                                if (route != null) {
+                                  _useTemplate = true;
+                                  _originCity = route.origin;
+                                  _originCountry = route.originCountry;
+                                  _destinationCity = route.destination;
+                                  _destinationCountry = route.destinationCountry;
+                                } else {
+                                  _useTemplate = false;
+                                }
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                        ],
 
-                  // Route details preview (if template selected)
-                  if (_selectedRoute != null) ...[
-                    _RoutePreview(route: _selectedRoute!),
-                    const SizedBox(height: 24),
-                  ] else if (!_useTemplate && widget.routeId == null) ...[
-                    // Manual entry for origin/destination
-                    _SectionTitle(title: 'ПУНКТ ВІДПРАВЛЕННЯ'),
-                    const SizedBox(height: 8),
-                    _CityCountryInput(
-                      cityHint: 'Місто',
-                      initialCity: _originCity,
-                      initialCountry: _originCountry,
-                      onCityChanged: (v) => _originCity = v,
-                      onCountryChanged: (v) =>
-                          setState(() => _originCountry = v),
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionTitle(title: 'ПУНКТ ПРИЗНАЧЕННЯ'),
-                    const SizedBox(height: 8),
-                    _CityCountryInput(
-                      cityHint: 'Місто',
-                      initialCity: _destinationCity,
-                      initialCountry: _destinationCountry,
-                      onCityChanged: (v) => _destinationCity = v,
-                      onCountryChanged: (v) =>
-                          setState(() => _destinationCountry = v),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                        // Route details preview (if template selected)
+                        if (_selectedRoute != null) ...[
+                          _RoutePreview(route: _selectedRoute!),
+                          const SizedBox(height: 24),
+                        ] else if (!_useTemplate && widget.routeId == null) ...[
+                          // Manual entry for origin/destination
+                          _SectionTitle(title: 'ПУНКТ ВІДПРАВЛЕННЯ'),
+                          const SizedBox(height: 8),
+                          _CityCountryInput(
+                            cityHint: 'Місто',
+                            initialCity: _originCity,
+                            initialCountry: _originCountry,
+                            onCityChanged: (v) => _originCity = v,
+                            onCountryChanged: (v) =>
+                                setState(() => _originCountry = v),
+                          ),
+                          const SizedBox(height: 16),
+                          _SectionTitle(title: 'ПУНКТ ПРИЗНАЧЕННЯ'),
+                          const SizedBox(height: 8),
+                          _CityCountryInput(
+                            cityHint: 'Місто',
+                            initialCity: _destinationCity,
+                            initialCountry: _destinationCountry,
+                            onCityChanged: (v) => _destinationCity = v,
+                            onCountryChanged: (v) =>
+                                setState(() => _destinationCountry = v),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
 
-                  // 2. Calendar with multiselect
-                  _SectionTitle(title: 'ДАТИ ВИЇЗДУ'),
-                  const SizedBox(height: 8),
-                  _MultiSelectCalendar(
-                    selectedDates: _selectedDates,
-                    onDatesChanged: (dates) {
-                      setState(() => _selectedDates = dates);
-                    },
+                        // 2. Calendar with multiselect
+                        _SectionTitle(title: 'ДАТИ ВИЇЗДУ'),
+                        const SizedBox(height: 8),
+                        _MultiSelectCalendar(
+                          selectedDates: _selectedDates,
+                          onDatesChanged: (dates) {
+                            setState(() => _selectedDates = dates);
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        // Selected dates chips
+                        if (_selectedDates.isNotEmpty) ...[
+                          _SelectedDatesChips(
+                            dates: _selectedDates,
+                            onRemove: (date) {
+                              setState(() {
+                                _selectedDates.remove(date);
+                              });
+                            },
+                            onClear: () {
+                              setState(() {
+                                _selectedDates.clear();
+                              });
+                            },
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+
+                        // 3. Time picker (optional)
+                        _SectionTitle(title: 'ЧАС ВИЇЗДУ (необов\'язково)'),
+                        const SizedBox(height: 8),
+                        _TimePickerField(
+                          value: _departureTime,
+                          onChanged: (time) =>
+                              setState(() => _departureTime = time),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // 4. Notes
+                        _SectionTitle(title: 'НОТАТКИ (необов\'язково)'),
+                        const SizedBox(height: 8),
+                        ThemedCard(
+                          child: TextFormField(
+                            initialValue: _notes,
+                            maxLines: 3,
+                            decoration: InputDecoration(
+                              hintText: 'Додаткова інформація...',
+                              hintStyle: TextStyle(
+                                color: isDark
+                                    ? colors.textMuted
+                                    : AppColors.lightTextSecondary,
+                              ),
+                              filled: true,
+                              fillColor: Colors.transparent,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: (v) => _notes = v,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  // Selected dates chips
-                  if (_selectedDates.isNotEmpty) ...[
-                    _SelectedDatesChips(
-                      dates: _selectedDates,
-                      onRemove: (date) {
-                        setState(() {
-                          _selectedDates.remove(date);
-                        });
-                      },
-                      onClear: () {
-                        setState(() {
-                          _selectedDates.clear();
-                        });
-                      },
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-
-                  // 3. Time picker (optional)
-                  _SectionTitle(title: 'ЧАС ВИЇЗДУ (необов\'язково)'),
-                  const SizedBox(height: 8),
-                  _TimePickerField(
-                    value: _departureTime,
-                    onChanged: (time) => setState(() => _departureTime = time),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 4. Notes
-                  _SectionTitle(title: 'НОТАТКИ (необов\'язково)'),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    initialValue: _notes,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: 'Додаткова інформація...',
-                      filled: true,
-                      fillColor: colors.cardBackground,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colors.border),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colors.border),
-                      ),
-                    ),
-                    onChanged: (v) => _notes = v,
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                ),
+                SubmitBottomBar(
+                  onPressed:
+                      _selectedDates.isEmpty || _isLoading ? null : _submit,
+                  label: _getSubmitButtonLabel(),
+                  isLoading: _isLoading,
+                ),
+              ],
             ),
     );
+  }
+
+  String _getSubmitButtonLabel() {
+    if (_selectedDates.isEmpty) return 'Виберіть дати';
+    if (_selectedDates.length == 1) return 'Створити рейс';
+    return 'Створити ${_selectedDates.length} рейсів';
   }
 
   Future<void> _submit() async {
@@ -386,13 +401,9 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
     final colors = context.colors;
     final monthFormat = DateFormat('MMMM yyyy', 'uk');
 
-    return Container(
+    return ThemedCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: colors.border),
-      ),
+      borderRadius: AppTheme.radiusMd,
       child: Column(
         children: [
           // Month navigation
@@ -445,7 +456,7 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
     );
   }
 
-  Widget _buildCalendarGrid(dynamic colors) {
+  Widget _buildCalendarGrid(AppColorsExtension colors) {
     final firstDayOfMonth =
         DateTime(_currentMonth.year, _currentMonth.month, 1);
     final lastDayOfMonth =
@@ -685,13 +696,8 @@ class _TimePickerField extends StatelessWidget {
         );
         onChanged(picked);
       },
-      child: Container(
+      child: ThemedCard(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: colors.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colors.border),
-        ),
         child: Row(
           children: [
             Icon(Icons.access_time, size: 20, color: colors.textMuted),
@@ -737,24 +743,26 @@ class _RouteSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = context.isDarkMode;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.border),
-      ),
+    return ThemedCard(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<RouteModel?>(
           value: selectedRoute,
           isExpanded: true,
           hint: Text(
             'Виберіть шаблон',
-            style: TextStyle(color: colors.textMuted),
+            style: TextStyle(
+              color: isDark ? colors.textMuted : AppColors.lightTextSecondary,
+            ),
           ),
-          icon: Icon(Icons.expand_more, color: colors.textMuted),
-          dropdownColor: colors.cardBackground,
+          icon: Icon(
+            Icons.expand_more,
+            color: isDark ? colors.textMuted : AppColors.lightTextSecondary,
+          ),
+          dropdownColor: isDark ? colors.surface : Colors.white,
+          borderRadius: BorderRadius.circular(12),
           items: [
             DropdownMenuItem<RouteModel?>(
               value: null,
@@ -791,13 +799,9 @@ class _RoutePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return Container(
+    return ThemedCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-      ),
+      borderColor: AppColors.primary.withValues(alpha: 0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -904,45 +908,56 @@ class _CityCountryInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = context.isDarkMode;
 
     return Row(
       children: [
         Expanded(
           flex: 2,
-          child: TextFormField(
-            initialValue: initialCity,
-            decoration: InputDecoration(
-              hintText: cityHint,
-              filled: true,
-              fillColor: colors.cardBackground,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colors.border),
+          child: ThemedCard(
+            child: TextFormField(
+              initialValue: initialCity,
+              decoration: InputDecoration(
+                hintText: cityHint,
+                hintStyle: TextStyle(
+                  color: isDark
+                      ? colors.textMuted
+                      : AppColors.lightTextSecondary,
+                ),
+                filled: true,
+                fillColor: Colors.transparent,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colors.border),
-              ),
+              onChanged: onCityChanged,
             ),
-            onChanged: onCityChanged,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Container(
+          child: ThemedCard(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: colors.cardBackground,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.border),
-            ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: initialCountry,
                 isExpanded: true,
-                icon:
-                    Icon(Icons.expand_more, color: colors.textMuted, size: 20),
-                dropdownColor: colors.cardBackground,
+                icon: Icon(
+                  Icons.expand_more,
+                  color: isDark ? colors.textMuted : AppColors.lightTextSecondary,
+                  size: 20,
+                ),
+                dropdownColor: isDark ? colors.surface : Colors.white,
+                borderRadius: BorderRadius.circular(12),
                 items: ['UA', 'ES', 'PL', 'DE']
                     .map((c) => DropdownMenuItem(
                           value: c,
@@ -962,84 +977,3 @@ class _CityCountryInput extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// SUBMIT BUTTON
-// ============================================================================
-
-class _SubmitButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  final bool isLoading;
-  final int tripCount;
-
-  const _SubmitButton({
-    required this.onPressed,
-    required this.isLoading,
-    required this.tripCount,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isEnabled = tripCount > 0;
-
-    return GestureDetector(
-      onTap: isLoading || !isEnabled
-          ? null
-          : () {
-              HapticFeedback.mediumImpact();
-              onPressed();
-            },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          gradient: isEnabled ? AppColors.primaryGradient : null,
-          color: isEnabled ? null : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isEnabled
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Center(
-          child: isLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.check,
-                      color: isEnabled ? Colors.white : Colors.grey.shade500,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      tripCount == 0
-                          ? 'Виберіть дати'
-                          : tripCount == 1
-                              ? 'Створити рейс'
-                              : 'Створити $tripCount рейсів',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isEnabled ? Colors.white : Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
-}

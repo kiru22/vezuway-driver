@@ -14,8 +14,6 @@ import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/screens/user_type_selection_screen.dart';
 import 'features/auth/presentation/screens/driver_pending_screen.dart';
-import 'features/admin/presentation/screens/all_users_screen.dart';
-import 'features/admin/presentation/screens/pending_requests_screen.dart';
 import 'features/admin/presentation/shells/admin_shell.dart';
 import 'features/client_dashboard/presentation/screens/client_dashboard_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
@@ -84,7 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ];
 
           if (forbiddenForAdmin.any((route) => location.startsWith(route))) {
-            return '/admin/requests';
+            return '/admin';
           }
         }
 
@@ -115,7 +113,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // 8. Ya autenticado en ruta de auth → redirigir según tipo
         if (isAuthRoute) {
           if (user?.isSuperAdmin == true) {
-            return '/admin/requests';
+            return '/admin';
           } else if (user?.isClient == true) {
             return '/client-dashboard';
           } else {
@@ -126,7 +124,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         // 9. Autenticado en splash → redirigir según tipo
         if (location == '/') {
           if (user?.isSuperAdmin == true) {
-            return '/admin/requests';
+            return '/admin';
           } else if (user?.isClient == true) {
             return '/client-dashboard';
           } else {
@@ -247,25 +245,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const ClientDashboardScreen(),
         ),
       ),
-      // Admin Shell
-      ShellRoute(
-        builder: (context, state, child) => AdminShell(child: child),
-        routes: [
-          GoRoute(
-            path: '/admin/requests',
-            pageBuilder: (context, state) => fadeSlideTransitionPage(
-              state: state,
-              child: const PendingRequestsScreen(),
-            ),
-          ),
-          GoRoute(
-            path: '/admin/users',
-            pageBuilder: (context, state) => fadeSlideTransitionPage(
-              state: state,
-              child: const AllUsersScreen(),
-            ),
-          ),
-        ],
+      // Admin Panel (sin ShellRoute - usa TabBarView interno)
+      GoRoute(
+        path: '/admin',
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const AdminShell(),
+        ),
       ),
       // Driver Shell
       ShellRoute(
@@ -273,87 +259,39 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/home',
-            pageBuilder: (context, state) {
-              const currentIndex = 0;
-              final container = ProviderScope.containerOf(context);
-              final prevIndex = container.read(currentTabIndexProvider);
-              final slideFromRight =
-                  shouldSlideFromRight(prevIndex, currentIndex);
-
-              Future.microtask(() {
-                container.read(currentTabIndexProvider.notifier).state =
-                    currentIndex;
-              });
-
-              return horizontalSlideTransitionPage(
-                state: state,
-                slideFromRight: slideFromRight,
-                child: const HomeScreen(),
-              );
-            },
+            pageBuilder: (context, state) => _buildTabPage(
+              context: context,
+              state: state,
+              tabIndex: 0,
+              child: const HomeScreen(),
+            ),
           ),
           GoRoute(
             path: '/packages',
-            pageBuilder: (context, state) {
-              const currentIndex = 1;
-              final container = ProviderScope.containerOf(context);
-              final prevIndex = container.read(currentTabIndexProvider);
-              final slideFromRight =
-                  shouldSlideFromRight(prevIndex, currentIndex);
-
-              Future.microtask(() {
-                container.read(currentTabIndexProvider.notifier).state =
-                    currentIndex;
-              });
-
-              return horizontalSlideTransitionPage(
-                state: state,
-                slideFromRight: slideFromRight,
-                child: const PackagesScreen(),
-              );
-            },
+            pageBuilder: (context, state) => _buildTabPage(
+              context: context,
+              state: state,
+              tabIndex: 1,
+              child: const PackagesScreen(),
+            ),
           ),
           GoRoute(
             path: '/routes',
-            pageBuilder: (context, state) {
-              const currentIndex = 2;
-              final container = ProviderScope.containerOf(context);
-              final prevIndex = container.read(currentTabIndexProvider);
-              final slideFromRight =
-                  shouldSlideFromRight(prevIndex, currentIndex);
-
-              Future.microtask(() {
-                container.read(currentTabIndexProvider.notifier).state =
-                    currentIndex;
-              });
-
-              return horizontalSlideTransitionPage(
-                state: state,
-                slideFromRight: slideFromRight,
-                child: const TripsRoutesScreen(),
-              );
-            },
+            pageBuilder: (context, state) => _buildTabPage(
+              context: context,
+              state: state,
+              tabIndex: 2,
+              child: const TripsRoutesScreen(),
+            ),
           ),
           GoRoute(
             path: '/contacts',
-            pageBuilder: (context, state) {
-              const currentIndex = 3;
-              final container = ProviderScope.containerOf(context);
-              final prevIndex = container.read(currentTabIndexProvider);
-              final slideFromRight =
-                  shouldSlideFromRight(prevIndex, currentIndex);
-
-              Future.microtask(() {
-                container.read(currentTabIndexProvider.notifier).state =
-                    currentIndex;
-              });
-
-              return horizontalSlideTransitionPage(
-                state: state,
-                slideFromRight: slideFromRight,
-                child: const ContactsScreen(),
-              );
-            },
+            pageBuilder: (context, state) => _buildTabPage(
+              context: context,
+              state: state,
+              tabIndex: 3,
+              child: const ContactsScreen(),
+            ),
           ),
           GoRoute(
             path: '/imports',
@@ -377,6 +315,29 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+/// Helper function to build tab pages with horizontal slide transitions.
+/// Reduces duplication in the ShellRoute tab definitions.
+Page<void> _buildTabPage({
+  required BuildContext context,
+  required GoRouterState state,
+  required int tabIndex,
+  required Widget child,
+}) {
+  final container = ProviderScope.containerOf(context);
+  final prevIndex = container.read(currentTabIndexProvider);
+  final slideFromRight = shouldSlideFromRight(prevIndex, tabIndex);
+
+  Future.microtask(() {
+    container.read(currentTabIndexProvider.notifier).state = tabIndex;
+  });
+
+  return horizontalSlideTransitionPage(
+    state: state,
+    slideFromRight: slideFromRight,
+    child: child,
+  );
+}
 
 class LogisticsApp extends ConsumerWidget {
   const LogisticsApp({super.key});

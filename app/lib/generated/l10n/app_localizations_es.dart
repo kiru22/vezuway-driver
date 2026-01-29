@@ -1135,6 +1135,44 @@ class AppLocalizationsEs extends AppLocalizations {
   String get notifications_notNow => 'Ahora no';
 
   @override
+  String get tripsRoutes_title => 'Viajes y Rutas';
+
+  @override
+  String get tripsRoutes_trips => 'Viajes';
+
+  @override
+  String get tripsRoutes_routes => 'Rutas';
+
+  @override
+  String get tripsRoutes_noTrips => 'No hay viajes';
+
+  @override
+  String get tripsRoutes_noTripsSubtitle => 'Crea tu primer viaje';
+
+  @override
+  String get tripsRoutes_createTrip => 'Crear viaje';
+
+  @override
+  String get trips_sectionActive => 'ACTIVOS';
+
+  @override
+  String get trips_sectionUpcoming => 'PRÓXIMOS';
+
+  @override
+  String get trips_sectionHistory => 'HISTORIAL';
+
+  @override
+  String trips_packagesCount(int count) {
+    return '$count paquetes';
+  }
+
+  @override
+  String get trips_changeStatus => 'Cambiar estado';
+
+  @override
+  String get trips_retry => 'Reintentar';
+
+  @override
   String get trips_clearFilter => 'Borrar filtro';
 
   @override

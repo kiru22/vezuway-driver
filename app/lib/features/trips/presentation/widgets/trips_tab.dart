@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/country_flag.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/grouped_stops_display.dart';
@@ -30,6 +31,7 @@ class TripsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
     final tripsState = ref.watch(tripsProvider);
 
     if (tripsState.isLoading) {
@@ -50,7 +52,7 @@ class TripsTab extends ConsumerWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.read(tripsProvider.notifier).loadTrips(),
-              child: const Text('Reintentar'),
+              child: Text(l10n.trips_retry),
             ),
           ],
         ),
@@ -58,7 +60,7 @@ class TripsTab extends ConsumerWidget {
     }
 
     if (tripsState.trips.isEmpty) {
-      return _buildEmptyState(context);
+      return _buildEmptyState(context, l10n);
     }
 
     return RefreshIndicator(
@@ -88,7 +90,7 @@ class TripsTab extends ConsumerWidget {
             // Active trips (filtered)
             if (tripsState.filteredActiveTrips.isNotEmpty) ...[
               _SectionHeader(
-                title: 'АКТИВНІ',
+                title: l10n.trips_sectionActive,
                 count: tripsState.filteredActiveTrips.length,
               ),
               const SizedBox(height: 12),
@@ -103,7 +105,7 @@ class TripsTab extends ConsumerWidget {
             // Upcoming trips (filtered)
             if (tripsState.filteredUpcomingTrips.isNotEmpty) ...[
               _SectionHeader(
-                title: 'НАСТУПНІ',
+                title: l10n.trips_sectionUpcoming,
                 count: tripsState.filteredUpcomingTrips.length,
               ),
               const SizedBox(height: 12),
@@ -118,7 +120,7 @@ class TripsTab extends ConsumerWidget {
             // Completed trips (filtered)
             if (tripsState.filteredCompletedTrips.isNotEmpty) ...[
               _SectionHeader(
-                title: 'ІСТОРІЯ',
+                title: l10n.trips_sectionHistory,
                 count: tripsState.filteredCompletedTrips.length,
               ),
               const SizedBox(height: 12),
@@ -137,12 +139,12 @@ class TripsTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     return EmptyState(
       icon: Icons.directions_car_outlined,
-      title: 'Немає рейсів',
-      subtitle: 'Створіть перший рейс',
-      buttonText: 'Створити рейс',
+      title: l10n.tripsRoutes_noTrips,
+      subtitle: l10n.tripsRoutes_noTripsSubtitle,
+      buttonText: l10n.tripsRoutes_createTrip,
       onButtonPressed: onCreateTrip,
     );
   }
@@ -303,7 +305,7 @@ class TripCard extends StatelessWidget {
             children: [
               _InfoChip(
                 icon: Icons.inventory_2_outlined,
-                label: '${trip.packagesCount} посилок',
+                label: AppLocalizations.of(context).trips_packagesCount(trip.packagesCount),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -368,7 +370,7 @@ class TripCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Змінити статус',
+              AppLocalizations.of(context).trips_changeStatus,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,

@@ -9,6 +9,7 @@ import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/data/cities_data.dart';
 import '../../../../shared/models/city_model.dart';
 import '../../../../shared/widgets/country_dropdown.dart';
+import '../../../../shared/widgets/themed_card.dart';
 
 /// Represents a route section with a country and multiple cities
 class RouteSection {
@@ -104,13 +105,9 @@ class RouteCountrySectionCompact extends StatelessWidget {
     final l10n = context.l10n;
     final locale = l10n.localeName;
 
-    return Container(
+    return ThemedCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.border),
-      ),
+      borderRadius: 16,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
