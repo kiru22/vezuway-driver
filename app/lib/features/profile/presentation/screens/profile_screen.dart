@@ -7,8 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/form_app_bar.dart';
 import '../../../../shared/widgets/gradient_button.dart';
@@ -153,7 +155,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final profileState = ref.watch(profileProvider);
 
     return Scaffold(
-      backgroundColor: isDark ? colors.surface : AppColors.lightBackground,
+      backgroundColor: isDark ? colors.background : AppColors.lightBackground,
       appBar: FormAppBar(
         title: l10n.profile_title,
         onClose: () => context.pop(),
@@ -163,11 +165,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Avatar section
             _buildAvatarSection(user?.avatarUrl, user?.name ?? '',
                 profileState.isLoading, colors, isDark),
             const SizedBox(height: 8),
-            // Email (read-only)
             Text(
               user?.email ?? '',
               textAlign: TextAlign.center,
@@ -178,11 +178,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             const SizedBox(height: 32),
 
-            // Name form
             _buildNameSection(colors, isDark, l10n, profileState.isLoading),
             const SizedBox(height: 24),
 
-            // Password section (expandable)
             _buildPasswordSection(colors, isDark, l10n, profileState.isLoading,
                 user?.googleId != null),
           ],
@@ -195,7 +193,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     String? avatarUrl,
     String name,
     bool isLoading,
-    dynamic colors,
+    AppColorsExtension colors,
     bool isDark,
   ) {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
@@ -280,9 +278,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildNameSection(
-    dynamic colors,
+    AppColorsExtension colors,
     bool isDark,
-    dynamic l10n,
+    AppLocalizations l10n,
     bool isLoading,
   ) {
     return Container(
@@ -355,9 +353,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildPasswordSection(
-    dynamic colors,
+    AppColorsExtension colors,
     bool isDark,
-    dynamic l10n,
+    AppLocalizations l10n,
     bool isLoading,
     bool isGoogleUser,
   ) {
@@ -374,7 +372,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Header (expandable)
           InkWell(
             onTap: () => setState(
                 () => _isPasswordSectionExpanded = !_isPasswordSectionExpanded),
@@ -410,7 +407,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
-          // Expandable content
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: Padding(
@@ -497,7 +493,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String label,
     required bool obscure,
     required VoidCallback onToggle,
-    required dynamic colors,
+    required AppColorsExtension colors,
     required bool isDark,
     required String? Function(String?) validator,
   }) {

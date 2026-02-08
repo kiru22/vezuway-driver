@@ -4,10 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Modules\Packages\Models\Package;
+use App\Modules\Packages\Services\TrackingCodeService;
 use App\Modules\Routes\Models\Route;
 use App\Shared\Enums\PackageStatus;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class PackageSeeder extends Seeder
 {
@@ -16,6 +16,8 @@ class PackageSeeder extends Seeder
      */
     public function run(): void
     {
+        $service = app(TrackingCodeService::class);
+
         // Get first route or create one if none exists
         $route = Route::first();
         $user = User::first();
@@ -132,7 +134,14 @@ class PackageSeeder extends Seeder
             if ($user) {
                 $packageData['transporter_id'] = $user->id;
             }
-            $packageData['tracking_code'] = 'PKG-'.strtoupper(Str::random(8));
+
+            // Generate codes explicitly since WithoutModelEvents skips model events
+            $packageData['tracking_code'] = $service->generate(
+                $packageData['receiver_city'] ?? null,
+                $packageData['trip_id'] ?? null,
+            );
+            $packageData['public_id'] = $service->generatePublicId();
+
             Package::create($packageData);
         }
     }

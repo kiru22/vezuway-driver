@@ -7,6 +7,7 @@ import '../../../../shared/widgets/user_menu_sheet.dart';
 import '../../domain/providers/admin_provider.dart';
 import '../screens/all_users_screen.dart';
 import '../screens/pending_requests_screen.dart';
+import '../screens/plan_requests_screen.dart';
 
 class AdminShell extends ConsumerStatefulWidget {
   const AdminShell({super.key});
@@ -22,7 +23,7 @@ class _AdminShellState extends ConsumerState<AdminShell>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -36,13 +37,13 @@ class _AdminShellState extends ConsumerState<AdminShell>
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final pendingCount = ref.watch(pendingDriversCountProvider);
+    final planRequestsCount = ref.watch(adminPlanRequestsCountProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
@@ -66,23 +67,22 @@ class _AdminShellState extends ConsumerState<AdminShell>
               ),
             ),
 
-            // Tab Bar
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: PillTabBar(
                 controller: _tabController,
-                labels: [l10n.admin_requests, l10n.admin_users],
-                badges: [pendingCount, null],
-                badgeStyles: const [BadgeStyle.success, null],
+                labels: [l10n.admin_requests, l10n.admin_planRequests, l10n.admin_users],
+                badges: [pendingCount, planRequestsCount, null],
+                badgeStyles: const [BadgeStyle.success, BadgeStyle.neutral, null],
               ),
             ),
 
-            // Content - TabBarView para transición suave
             Expanded(
               child: TabBarView(
                 controller: _tabController,
                 children: const [
                   PendingRequestsScreen(),
+                  PlanRequestsScreen(),
                   AllUsersScreen(),
                 ],
               ),

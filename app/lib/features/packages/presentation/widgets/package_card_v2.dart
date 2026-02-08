@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
@@ -131,30 +132,61 @@ class _PackageCardV2State extends State<PackageCardV2>
     }
   }
 
-  /// Obtiene la ciudad de origen (senderCity o route.origin)
-  String get _originCity {
-    if (widget.package.senderCity != null &&
-        widget.package.senderCity!.isNotEmpty) {
-      return widget.package.senderCity!;
-    }
-    if (widget.package.route != null &&
-        widget.package.route!.origin.isNotEmpty) {
-      return widget.package.route!.origin;
-    }
-    return '—';
-  }
+  /// Obtiene la ciudad de origen (senderCity o route.origin), null si no hay
+  String? get _originCity =>
+      _nonEmpty(widget.package.senderCity) ??
+      _nonEmpty(widget.package.route?.origin);
 
   /// Obtiene la ciudad de destino (receiverCity o route.destination)
-  String get _destinationCity {
-    if (widget.package.receiverCity != null &&
-        widget.package.receiverCity!.isNotEmpty) {
-      return widget.package.receiverCity!;
+  String get _destinationCity =>
+      _nonEmpty(widget.package.receiverCity) ??
+      _nonEmpty(widget.package.route?.destination) ??
+      '—';
+
+  bool get _hasOriginAddress => _nonEmpty(widget.package.senderAddress) != null;
+
+  bool get _hasDestinationAddress =>
+      _nonEmpty(widget.package.receiverAddress) != null;
+
+  /// Returns the string if non-null and non-empty, otherwise null.
+  static String? _nonEmpty(String? value) =>
+      (value != null && value.isNotEmpty) ? value : null;
+
+  /// Icono de origen: punto sólido si tiene dirección, outline si solo ciudad
+  Widget _buildOriginIcon() {
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: _hasOriginAddress ? AppColors.primary : Colors.transparent,
+        shape: BoxShape.circle,
+        border: _hasOriginAddress
+            ? null
+            : Border.all(color: AppColors.primary, width: 1.5),
+      ),
+    );
+  }
+
+  /// Border color based on selection/expansion state
+  Color _resolveBorderColor(AppColorsExtension colors) {
+    if (widget.isSelected) {
+      return AppColors.primary.withValues(alpha: 0.6);
     }
-    if (widget.package.route != null &&
-        widget.package.route!.destination.isNotEmpty) {
-      return widget.package.route!.destination;
+    if (widget.isExpanded) {
+      return AppColors.primary.withValues(alpha: 0.4);
     }
-    return '—';
+    return colors.border;
+  }
+
+  /// Icono de destino: pin sólido si tiene dirección, outline si solo ciudad
+  Widget _buildDestinationIcon() {
+    return Icon(
+      _hasDestinationAddress
+          ? Icons.location_on
+          : Icons.location_on_outlined,
+      size: 14,
+      color: AppColors.primary,
+    );
   }
 
   @override
@@ -165,7 +197,6 @@ class _PackageCardV2State extends State<PackageCardV2>
     final hasAddress = widget.package.receiverAddress != null &&
         widget.package.receiverAddress!.isNotEmpty;
 
-    // Determinar si el borde debe estar seleccionado
     final isHighlighted = widget.isExpanded || widget.isSelected;
 
     return GestureDetector(
@@ -177,11 +208,7 @@ class _PackageCardV2State extends State<PackageCardV2>
           color: colors.cardBackground,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           border: Border.all(
-            color: widget.isSelected
-                ? AppColors.primary.withValues(alpha: 0.6)
-                : widget.isExpanded
-                    ? AppColors.primary.withValues(alpha: 0.4)
-                    : colors.border,
+            color: _resolveBorderColor(colors),
             width: isHighlighted ? 1.5 : 1,
           ),
           boxShadow: [
@@ -200,7 +227,6 @@ class _PackageCardV2State extends State<PackageCardV2>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Checkbox animado (aparece desde la izquierda)
                 SizeTransition(
                   sizeFactor: _checkboxAnimation,
                   axis: Axis.horizontal,
@@ -210,27 +236,23 @@ class _PackageCardV2State extends State<PackageCardV2>
                     onTap: widget.onSelectionToggle,
                   ),
                 ),
-                // Borde izquierdo con color del estado
                 Container(
                   width: 4,
                   decoration: BoxDecoration(
                     color: widget.package.status.color,
                   ),
                 ),
-                // Contenido principal
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Contenido compacto: 2 filas
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Fila 1: Tracking + Badge
                             Row(
                               children: [
                                 Expanded(
@@ -266,20 +288,64 @@ class _PackageCardV2State extends State<PackageCardV2>
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
-                            // Fila 2: Ruta + Métricas + Precio
+                            if (widget.package.receiverName.isNotEmpty)
+                              Text(
+                                widget.package.receiverName,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: colors.textSecondary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    '$_originCity → $_destinationCity',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: colors.textSecondary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  child: Row(
+                                    children: [
+                                      if (_originCity != null) ...[
+                                        _buildOriginIcon(),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            _originCity!,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: colors.textSecondary,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4),
+                                          child: Text(
+                                            '→',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: colors.textSecondary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      _buildDestinationIcon(),
+                                      const SizedBox(width: 2),
+                                      Flexible(
+                                        child: Text(
+                                          _destinationCity,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: colors.textSecondary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -309,19 +375,16 @@ class _PackageCardV2State extends State<PackageCardV2>
                         ),
                       ),
 
-                      // Sección expandible
                       SizeTransition(
                         sizeFactor: _expandAnimation,
                         child: Column(
                           children: [
-                            // Divider sutil
                             Container(
                               height: 1,
                               margin:
                                   const EdgeInsets.symmetric(horizontal: 12),
                               color: colors.border.withValues(alpha: 0.3),
                             ),
-                            // Botones de comunicación
                             if (hasPhone)
                               CommunicationButtonRow(
                                 phone: widget.package.receiverPhone!,
@@ -329,12 +392,10 @@ class _PackageCardV2State extends State<PackageCardV2>
                                     const EdgeInsets.fromLTRB(12, 10, 12, 8),
                               ),
 
-                            // Botones de acción: Mapa + Cambiar estado
                             Padding(
                               padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
                               child: Row(
                                 children: [
-                                  // Botón de mapa
                                   if (hasAddress)
                                     Expanded(
                                       child: MapButton(
@@ -347,7 +408,6 @@ class _PackageCardV2State extends State<PackageCardV2>
                                       widget.package.status !=
                                           PackageStatus.delivered)
                                     const SizedBox(width: 8),
-                                  // Botón de cambiar estado
                                   if (widget.package.status !=
                                       PackageStatus.delivered)
                                     Expanded(
@@ -379,7 +439,7 @@ class _PackageCardV2State extends State<PackageCardV2>
     );
   }
 
-  /// Construye el string de métricas: "10kg • 1шт • Nombre"
+  /// Construye el string de métricas: "10kg • 1шт"
   String _buildMetricsString() {
     final parts = <String>[];
 
@@ -388,14 +448,6 @@ class _PackageCardV2State extends State<PackageCardV2>
     }
     if (widget.package.quantity != null && widget.package.quantity! > 0) {
       parts.add('${widget.package.quantity}${context.l10n.common_pcs}');
-    }
-
-    // Nombre del receptor (truncado si es necesario)
-    final name = widget.package.receiverName;
-    if (name.isNotEmpty) {
-      // Tomar solo el primer nombre para mantenerlo compacto
-      final firstName = name.split(' ').first;
-      parts.add(firstName);
     }
 
     return parts.join(' • ');
@@ -471,6 +523,8 @@ class _SelectionCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
+    final resolved = _resolveColors(colors);
+
     return GestureDetector(
       onTap: isEnabled
           ? () {
@@ -486,18 +540,10 @@ class _SelectionCheckbox extends StatelessWidget {
           width: 22,
           height: 22,
           decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary
-                : isEnabled
-                    ? Colors.transparent
-                    : colors.border.withValues(alpha: 0.3),
+            color: resolved.background,
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: isSelected
-                  ? AppColors.primary
-                  : isEnabled
-                      ? colors.border
-                      : colors.border.withValues(alpha: 0.5),
+              color: resolved.border,
               width: 2,
             ),
           ),
@@ -510,6 +556,19 @@ class _SelectionCheckbox extends StatelessWidget {
               : null,
         ),
       ),
+    );
+  }
+
+  ({Color background, Color border}) _resolveColors(AppColorsExtension colors) {
+    if (isSelected) {
+      return (background: AppColors.primary, border: AppColors.primary);
+    }
+    if (isEnabled) {
+      return (background: Colors.transparent, border: colors.border);
+    }
+    return (
+      background: colors.border.withValues(alpha: 0.3),
+      border: colors.border.withValues(alpha: 0.5),
     );
   }
 }

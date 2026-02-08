@@ -23,6 +23,7 @@ class UserResource extends JsonResource
             'email_verified_at' => $this->email_verified_at,
             'role' => $this->roles->first()?->name,
             'driver_status' => $this->driver_status?->value,
+            'active_plan_key' => $this->active_plan_key,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

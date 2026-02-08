@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -40,7 +41,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _formKey = GlobalKey<FormState>();
   int _selectedTabIndex = 1; // Default to receiver tab
 
-  // Sender fields
   final _senderNameController = TextEditingController();
   final _senderPhoneController = TextEditingController();
   final _senderExactAddressController = TextEditingController();
@@ -49,21 +49,21 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   bool _senderShowAddress = false;
   ContactModel? _selectedSenderContact;
 
-  // Receiver fields
   final _receiverNameController = TextEditingController();
   final _receiverPhoneController = TextEditingController();
   final _receiverExactAddressController = TextEditingController();
   final _receiverGoogleMapsController = TextEditingController();
+  final _novaPostNumberController = TextEditingController();
   CityModel? _receiverCity;
   bool _receiverShowAddress = false;
   ContactModel? _selectedReceiverContact;
 
-  // Package details
   final _weightController = TextEditingController();
   final _lengthController = TextEditingController();
   final _widthController = TextEditingController();
   final _heightController = TextEditingController();
   final _quantityController = TextEditingController(text: '1');
+  final _descriptionController = TextEditingController();
 
   TripModel? _selectedTrip;
   double _volumetricWeight = 0.0;
@@ -72,17 +72,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   bool _isManualPrice = false; // Flag to track if price is manual
   bool _isLoading = false;
 
-  // Lista de imágenes locales para enviar con el paquete
   final List<Uint8List> _packageImages = [];
-
-  // Lista de imágenes existentes (del servidor) al editar
   List<PackageImage> _existingImages = [];
 
   @override
   void initState() {
     super.initState();
 
-    // Listeners for reactive price calculation
     for (final controller in [
       _weightController,
       _lengthController,
@@ -93,7 +89,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       controller.addListener(_updatePriceCalculation);
     }
 
-    // Preselect route after frame renders
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isEditMode) {
         _loadExistingPackage();
@@ -130,40 +125,38 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   }
 
   void _populateFieldsFromPackage(PackageModel package) {
-    // Sender fields
     _senderNameController.text = package.senderName;
     _senderPhoneController.text = package.senderPhone ?? '';
-    // Set sender city from model
     if (package.senderCity != null && package.senderCity!.isNotEmpty) {
       _senderCity = CityModel(
         name: package.senderCity!,
         country: package.senderCountry ?? 'UA',
       );
     }
-    // Set sender address
     if (package.senderAddress != null && package.senderAddress!.isNotEmpty) {
       _senderExactAddressController.text = package.senderAddress!;
       _senderShowAddress = true;
     }
 
-    // Receiver fields
     _receiverNameController.text = package.receiverName;
     _receiverPhoneController.text = package.receiverPhone ?? '';
-    // Set receiver city from model
     if (package.receiverCity != null && package.receiverCity!.isNotEmpty) {
       _receiverCity = CityModel(
         name: package.receiverCity!,
         country: package.receiverCountry ?? 'ES',
       );
     }
-    // Set receiver address
     if (package.receiverAddress != null &&
         package.receiverAddress!.isNotEmpty) {
       _receiverExactAddressController.text = package.receiverAddress!;
       _receiverShowAddress = true;
     }
 
-    // Package details
+    if (package.novaPostNumber != null && package.novaPostNumber!.isNotEmpty) {
+      _novaPostNumberController.text = package.novaPostNumber!;
+      _receiverShowAddress = true;
+    }
+
     if (package.weight != null) {
       _weightController.text = package.weight.toString();
     }
@@ -180,7 +173,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       _quantityController.text = package.quantity.toString();
     }
 
-    // Select trip if assigned
     if (package.tripId != null) {
       final tripsState = ref.read(tripsProvider);
       final trip =
@@ -190,7 +182,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       }
     }
 
-    // Load existing images
+    _descriptionController.text = package.description ?? '';
+
     if (package.images.isNotEmpty) {
       _existingImages = List.from(package.images);
     }
@@ -201,7 +194,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
   @override
   void dispose() {
-    // Remove listeners before disposing controllers
     for (final controller in [
       _weightController,
       _lengthController,
@@ -220,11 +212,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     _receiverPhoneController.dispose();
     _receiverExactAddressController.dispose();
     _receiverGoogleMapsController.dispose();
+    _novaPostNumberController.dispose();
     _weightController.dispose();
     _lengthController.dispose();
     _widthController.dispose();
     _heightController.dispose();
     _quantityController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -310,11 +304,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     });
   }
 
-  // Get the final price (manual or calculated)
   double get _finalPrice =>
       _isManualPrice && _manualPrice != null ? _manualPrice! : _calculatedPrice;
 
-  // Show dialog to edit price manually
   Future<void> _showPriceEditDialog() async {
     final controller = TextEditingController(
       text: _isManualPrice && _manualPrice != null
@@ -362,7 +354,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         return;
       }
 
-      // Manual price entered
       final price = double.tryParse(trimmed);
       if (price != null && price >= 0) {
         _isManualPrice = true;
@@ -394,7 +385,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           _receiverCity = _findCityByName(city);
         }
       }
-      // Añadir la imagen escaneada a la galería
       if (imageBytes != null) {
         _packageImages.add(imageBytes);
       }
@@ -418,20 +408,21 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   Future<void> _handleRemoveExistingImage(String mediaId) async {
     if (!widget.isEditMode || widget.packageId == null) return;
 
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Видалити фото?'),
-        content: const Text('Це фото буде видалено назавжди.'),
+        title: Text(l10n.packages_deleteImageTitle),
+        content: Text(l10n.packages_deleteImageConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Скасувати'),
+            child: Text(l10n.common_cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Видалити'),
+            child: Text(l10n.common_delete),
           ),
         ],
       ),
@@ -449,7 +440,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Помилка видалення: $e'),
+            content: Text(context.l10n.packages_imageError),
             backgroundColor: AppColors.error,
           ),
         );
@@ -506,26 +497,28 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       googleMapsLink: _receiverGoogleMapsController.text.trim(),
     );
 
+    // Common fields shared between create and update
+    String? trimOrNull(TextEditingController c) =>
+        c.text.isNotEmpty ? c.text.trim() : null;
+
+    final notifier = ref.read(packagesProvider.notifier);
     final bool success;
 
     if (widget.isEditMode) {
-      // Update existing package
-      success = await ref.read(packagesProvider.notifier).updatePackage(
+      success = await notifier.updatePackage(
             id: widget.packageId!,
             tripId: _selectedTrip!.id,
             senderContactId: _selectedSenderContact?.id,
             receiverContactId: _selectedReceiverContact?.id,
             senderName: _senderNameController.text.trim(),
-            senderPhone: _senderPhoneController.text.isNotEmpty
-                ? _senderPhoneController.text.trim()
-                : null,
+            senderPhone: trimOrNull(_senderPhoneController),
             senderCity: _senderCity?.name,
+            senderCountry: _senderCity?.country,
             senderAddress: senderAddress.isNotEmpty ? senderAddress : null,
             receiverName: _receiverNameController.text.trim(),
-            receiverPhone: _receiverPhoneController.text.isNotEmpty
-                ? _receiverPhoneController.text.trim()
-                : null,
+            receiverPhone: trimOrNull(_receiverPhoneController),
             receiverCity: _receiverCity?.name,
+            receiverCountry: _receiverCity?.country,
             receiverAddress:
                 receiverAddress.isNotEmpty ? receiverAddress : null,
             weight: weight,
@@ -534,24 +527,23 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             heightCm: height,
             quantity: quantity,
             declaredValue: _finalPrice > 0 ? _finalPrice : null,
+            description: trimOrNull(_descriptionController),
+            novaPostNumber: trimOrNull(_novaPostNumberController),
           );
     } else {
-      // Create new package
-      success = await ref.read(packagesProvider.notifier).createPackage(
+      success = await notifier.createPackage(
             tripId: _selectedTrip!.id,
             senderContactId: _selectedSenderContact?.id,
             receiverContactId: _selectedReceiverContact?.id,
             senderName: _senderNameController.text.trim(),
-            senderPhone: _senderPhoneController.text.isNotEmpty
-                ? _senderPhoneController.text.trim()
-                : null,
+            senderPhone: trimOrNull(_senderPhoneController),
             senderCity: _senderCity?.name,
+            senderCountry: _senderCity?.country,
             senderAddress: senderAddress.isNotEmpty ? senderAddress : null,
             receiverName: _receiverNameController.text.trim(),
-            receiverPhone: _receiverPhoneController.text.isNotEmpty
-                ? _receiverPhoneController.text.trim()
-                : null,
+            receiverPhone: trimOrNull(_receiverPhoneController),
             receiverCity: _receiverCity?.name,
+            receiverCountry: _receiverCity?.country,
             receiverAddress:
                 receiverAddress.isNotEmpty ? receiverAddress : null,
             weight: weight,
@@ -560,6 +552,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             heightCm: height,
             quantity: quantity,
             declaredValue: _finalPrice > 0 ? _finalPrice : null,
+            description: trimOrNull(_descriptionController),
+            novaPostNumber: trimOrNull(_novaPostNumberController),
             images: _packageImages.isNotEmpty ? _packageImages : null,
           );
     }
@@ -630,44 +624,69 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
     final isDark = context.isDarkMode;
     final screenHeight = MediaQuery.of(context).size.height;
-    final isCompact = screenHeight < 750;
+    final isCompact = screenHeight < 850;
+    final isUltraCompact = screenHeight < 700;
 
     return Scaffold(
-      // Subtle gray background for light theme so white cards pop
-      backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
+      // Subtle tonal difference: darker bg so cards/inputs pop
+      backgroundColor: isDark ? colors.background : AppColors.lightInputBg,
       appBar: _buildAppBar(),
       body: Form(
         key: _formKey,
         child: Column(
           children: [
             Expanded(
-              child: ListView(
-                padding: EdgeInsets.all(isCompact ? 12 : 20),
-                children: [
-                  // Trip selector
-                  _buildTripSelector(trips, colors),
-                  SizedBox(height: isCompact ? 12 : 20),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final viewH = constraints.maxHeight;
+                  final pad = isCompact ? 8.0 : 20.0;
 
-                  // Pill tabs for Sender/Receiver
-                  _buildPillTabs(colors),
-                  SizedBox(height: isCompact ? 8 : 16),
+                  // Interpolate gaps based on available viewport height
+                  final rangeStart = isCompact ? 450.0 : 600.0;
+                  final rangeSize = isCompact ? 150.0 : 200.0;
+                  final t = ((viewH - rangeStart) / rangeSize).clamp(0.0, 1.0);
 
-                  // Person form (changes based on tab)
-                  _buildPersonForm(colors, isCompact),
-                  SizedBox(height: isCompact ? 12 : 24),
+                  final sectionGap = isCompact
+                      ? 6.0 + 18.0 * t   // 6→24
+                      : 16.0 + 16.0 * t;  // 16→32
+                  final intraGap = isCompact
+                      ? 4.0 + 8.0 * t     // 4→12
+                      : 12.0 + 8.0 * t;   // 12→20
 
-                  // Price Calculator
-                  _buildPriceCalculator(colors, isCompact),
-                  SizedBox(height: isCompact ? 12 : 24),
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.all(pad),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildTripSelector(trips, colors),
+                        SizedBox(height: intraGap),
 
-                  // Sección de imágenes del paquete
-                  _buildImagesSection(colors),
-                  SizedBox(height: isCompact ? 12 : 24),
-                ],
+                        _buildPillTabs(colors, isUltraCompact: isUltraCompact),
+                        SizedBox(height: sectionGap),
+
+                        _buildPersonForm(colors, isCompact, isUltraCompact: isUltraCompact),
+                        SizedBox(height: sectionGap),
+
+                        _buildPriceCalculator(colors, isCompact, isUltraCompact: isUltraCompact),
+                        SizedBox(height: sectionGap),
+
+                        StyledFormField(
+                          controller: _descriptionController,
+                          label: context.l10n.packageDescription,
+                          maxLines: 3,
+                          keyboardType: TextInputType.multiline,
+                        ),
+                        SizedBox(height: sectionGap),
+
+                        _buildImagesSection(colors),
+                        SizedBox(height: 6),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
 
-            // Submit button
             SubmitBottomBar(
               onPressed: _isLoading ? null : _handleSubmit,
               label: context.l10n.packages_submitPackage,
@@ -876,7 +895,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
-  Widget _buildPillTabs(AppColorsExtension colors) {
+  Widget _buildPillTabs(AppColorsExtension colors, {bool isUltraCompact = false}) {
     final isDark = context.isDarkMode;
 
     return Container(
@@ -894,7 +913,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
           return Stack(
             children: [
-              // Sliding indicator
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutCubic,
@@ -916,58 +934,11 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                   ),
                 ),
               ),
-              // Tab labels
               Row(
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _switchTab(0),
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(
-                              color: _selectedTabIndex == 0
-                                  ? Colors.white
-                                  : (isDark
-                                      ? colors.textSecondary
-                                      : AppColors.statusNeutralText),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                            child: Text(context.l10n.packages_tabSender),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildTabLabel(0, context.l10n.packages_tabSender, isDark, colors, isUltraCompact),
                   const SizedBox(width: 4),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _switchTab(1),
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: TextStyle(
-                              color: _selectedTabIndex == 1
-                                  ? Colors.white
-                                  : (isDark
-                                      ? colors.textSecondary
-                                      : AppColors.statusNeutralText),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                            child: Text(context.l10n.packages_tabReceiver),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildTabLabel(1, context.l10n.packages_tabReceiver, isDark, colors, isUltraCompact),
                 ],
               ),
             ],
@@ -977,7 +948,33 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     );
   }
 
-  Widget _buildPersonForm(AppColorsExtension colors, bool isCompact) {
+  Widget _buildTabLabel(int index, String label, bool isDark, AppColorsExtension colors, bool isUltraCompact) {
+    final isActive = _selectedTabIndex == index;
+    final inactiveColor = isDark ? colors.textSecondary : AppColors.statusNeutralText;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _switchTab(index),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: isUltraCompact ? 8 : 14),
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                color: isActive ? Colors.white : inactiveColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              child: Text(label),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonForm(AppColorsExtension colors, bool isCompact, {bool isUltraCompact = false}) {
     final isSender = _selectedTabIndex == 0;
     final nameController =
         isSender ? _senderNameController : _receiverNameController;
@@ -994,14 +991,12 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         ? context.l10n.packages_phoneHintSpain
         : context.l10n.packages_phoneHintUkraine;
 
-    // Get available cities from route stops
     final availableCities = _getAvailableCities();
-    final gap = isCompact ? 8.0 : 12.0;
+    final gap = isUltraCompact ? 4.0 : (isCompact ? 8.0 : 12.0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // OCR scan button row
         Row(
           children: [
             Expanded(
@@ -1021,7 +1016,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         ),
         SizedBox(height: gap),
 
-        // Name field with contact search (only required for receiver)
         ContactSearchField(
           key: ValueKey('contact_search_$_selectedTabIndex'),
           controller: nameController,
@@ -1030,6 +1024,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               ? context.l10n.packages_senderNameHint
               : context.l10n.packages_receiverNameHint,
           icon: Icons.person_outline,
+          dense: isUltraCompact,
           onContactSelected: (contact) {
             setState(() {
               if (isSender) {
@@ -1083,25 +1078,24 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
         ),
         SizedBox(height: gap),
 
-        // Phone field
         StyledFormField(
           controller: phoneController,
           label: context.l10n.packages_phoneLabel,
           hint: phoneHint,
           prefixIcon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
+          dense: isUltraCompact,
         ),
         SizedBox(height: gap),
 
-        // City dropdown + Address button row
         Row(
           children: [
-            // City dropdown
             Expanded(
               child: _buildCityDropdown(
                 selectedCity: selectedCity,
                 cities: availableCities,
                 colors: colors,
+                isUltraCompact: isUltraCompact,
                 onChanged: (city) {
                   setState(() {
                     if (isSender) {
@@ -1114,9 +1108,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            // Address expand button
             SizedBox(
-              height: 48,
+              height: isUltraCompact ? 40 : 48,
               child: TextButton.icon(
                 onPressed: () {
                   setState(() {
@@ -1152,13 +1145,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           ],
         ),
 
-        // Expandable address section
         AnimatedCrossFade(
           firstChild: const SizedBox.shrink(),
           secondChild: _buildExpandableAddressSection(
             exactAddressController: exactAddressController,
             googleMapsController: googleMapsController,
             colors: colors,
+            isUkraine: !isSender && _receiverCity?.country == 'UA',
           ),
           crossFadeState: showAddress
               ? CrossFadeState.showSecond
@@ -1174,12 +1167,13 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     required List<CityModel> cities,
     required AppColorsExtension colors,
     required ValueChanged<CityModel?> onChanged,
+    bool isUltraCompact = false,
   }) {
     // If no stops defined, show disabled text (cities come from route stops)
     if (cities.isEmpty) {
       final isDark = context.isDarkMode;
       return Container(
-        height: 48,
+        height: isUltraCompact ? 40 : 48,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: isDark ? colors.surface : Colors.white,
@@ -1218,8 +1212,16 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
     final isDark = context.isDarkMode;
 
+    // Ensure selectedCity is in the list; if not, find match by name
+    var resolvedCity = selectedCity;
+    if (resolvedCity != null && !cities.contains(resolvedCity)) {
+      resolvedCity = cities
+          .where((c) => c.name == resolvedCity!.name)
+          .firstOrNull;
+    }
+
     return Container(
-      height: 48,
+      height: isUltraCompact ? 40 : 48,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: isDark ? colors.surface : Colors.white,
@@ -1239,7 +1241,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<CityModel>(
-          value: selectedCity,
+          value: resolvedCity,
           hint: Row(
             children: [
               Icon(
@@ -1296,6 +1298,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     required TextEditingController exactAddressController,
     required TextEditingController googleMapsController,
     required AppColorsExtension colors,
+    bool isUkraine = false,
   }) {
     final isDark = context.isDarkMode;
 
@@ -1303,7 +1306,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? colors.surface : AppColors.lightInputBg,
+        color: isDark ? colors.background : AppColors.lightInputBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? colors.border : AppColors.lightBorder,
@@ -1312,7 +1315,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Text(
             context.l10n.packages_deliverySection,
             style: TextStyle(
@@ -1325,7 +1327,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Exact address field
           StyledFormField(
             controller: exactAddressController,
             label: context.l10n.packages_exactAddress,
@@ -1334,20 +1335,45 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Google Maps link field
-          StyledFormField(
-            controller: googleMapsController,
-            label: context.l10n.packages_googleMapsLink,
-            hint: 'https://maps.google.com/...',
-            prefixIcon: Icons.map_outlined,
-            keyboardType: TextInputType.url,
+          Row(
+            children: [
+              Expanded(
+                child: StyledFormField(
+                  controller: googleMapsController,
+                  label: context.l10n.packages_googleMapsLink,
+                  hint: 'https://maps.google.com/...',
+                  prefixIcon: Icons.map_outlined,
+                  keyboardType: TextInputType.url,
+                ),
+              ),
+              if (isUkraine) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: StyledFormField(
+                    controller: _novaPostNumberController,
+                    label: context.l10n.packages_novaPostNumber,
+                    hint: '123',
+                    prefixWidget: SvgPicture.asset(
+                      'assets/icons/nova_post.svg',
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFFE3000F),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    keyboardType: TextInputType.text,
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPriceCalculator(AppColorsExtension colors, bool isCompact) {
+  Widget _buildPriceCalculator(AppColorsExtension colors, bool isCompact, {bool isUltraCompact = false}) {
     final pricePerKg = _selectedTrip?.pricePerKg;
     final hasPricing = pricePerKg != null;
     final billingWeight =
@@ -1355,9 +1381,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             ? _volumetricWeight
             : (double.tryParse(_weightController.text) ?? 0);
     final isDark = context.isDarkMode;
-    final padding = isCompact ? 12.0 : 20.0;
-    final gap = isCompact ? 10.0 : 20.0;
-    final smallGap = isCompact ? 4.0 : 8.0;
+    final padding = isUltraCompact ? 8.0 : (isCompact ? 12.0 : 20.0);
+    final gap = isUltraCompact ? 6.0 : (isCompact ? 10.0 : 20.0);
+    final smallGap = isUltraCompact ? 2.0 : (isCompact ? 4.0 : 8.0);
 
     return Container(
       padding: EdgeInsets.all(padding),
@@ -1380,79 +1406,101 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Weight + Quantity row
-          Row(
-            children: [
-              // Weight
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.packages_weightKg,
-                      style: TextStyle(
-                        color: isDark
-                            ? colors.textSecondary
-                            : AppColors.statusNeutralText,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+          if (!isUltraCompact) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.packages_weightKg,
+                        style: TextStyle(
+                          color: isDark
+                              ? colors.textSecondary
+                              : AppColors.statusNeutralText,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: smallGap),
-                    _NumericInput(
-                      controller: _weightController,
-                      hint: '0.0',
-                      allowDecimal: true,
-                      isCompact: isCompact,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Quantity
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      context.l10n.packages_quantityPcs,
-                      style: TextStyle(
-                        color: isDark
-                            ? colors.textSecondary
-                            : AppColors.statusNeutralText,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
+                      SizedBox(height: smallGap),
+                      _NumericInput(
+                        controller: _weightController,
+                        hint: '0.0',
+                        allowDecimal: true,
+                        isCompact: isCompact,
                       ),
-                    ),
-                    SizedBox(height: smallGap),
-                    _NumericInput(
-                      controller: _quantityController,
-                      hint: '1',
-                      isCompact: isCompact,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.packages_quantityPcs,
+                        style: TextStyle(
+                          color: isDark
+                              ? colors.textSecondary
+                              : AppColors.statusNeutralText,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      SizedBox(height: smallGap),
+                      _NumericInput(
+                        controller: _quantityController,
+                        hint: '1',
+                        isCompact: isCompact,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _NumericInput(
+                    controller: _weightController,
+                    hint: 'kg',
+                    allowDecimal: true,
+                    isCompact: true,
+                    isUltraCompact: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _NumericInput(
+                    controller: _quantityController,
+                    hint: 'uds',
+                    isCompact: true,
+                    isUltraCompact: true,
+                  ),
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: gap),
 
-          // Dimensions label
-          Text(
-            context.l10n.packages_dimensionsCm,
-            style: TextStyle(
-              color:
-                  isDark ? colors.textSecondary : AppColors.statusNeutralText,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.3,
+          if (!isUltraCompact) ...[
+            Text(
+              context.l10n.packages_dimensionsCm,
+              style: TextStyle(
+                color:
+                    isDark ? colors.textSecondary : AppColors.statusNeutralText,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
             ),
-          ),
-          SizedBox(height: smallGap),
+            SizedBox(height: smallGap),
+          ],
 
-          // Dimensions row (L x W x H)
           Row(
             children: [
               Expanded(
@@ -1460,22 +1508,25 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                   controller: _lengthController,
                   label: context.l10n.packages_lengthLabel,
                   isCompact: isCompact,
+                  isUltraCompact: isUltraCompact,
                 ),
               ),
-              SizedBox(width: isCompact ? 8 : 12),
+              SizedBox(width: isUltraCompact ? 8 : (isCompact ? 10 : 12)),
               Expanded(
                 child: _DimensionInput(
                   controller: _widthController,
                   label: context.l10n.packages_widthLabel,
                   isCompact: isCompact,
+                  isUltraCompact: isUltraCompact,
                 ),
               ),
-              SizedBox(width: isCompact ? 8 : 12),
+              SizedBox(width: isUltraCompact ? 8 : (isCompact ? 10 : 12)),
               Expanded(
                 child: _DimensionInput(
                   controller: _heightController,
                   label: context.l10n.packages_heightLabel,
                   isCompact: isCompact,
+                  isUltraCompact: isUltraCompact,
                 ),
               ),
             ],
@@ -1484,9 +1535,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
           if (hasPricing) ...[
             SizedBox(height: gap),
             Divider(color: isDark ? colors.border : AppColors.lightBorder),
-            SizedBox(height: isCompact ? 8 : 16),
+            SizedBox(height: isUltraCompact ? 4 : (isCompact ? 8 : 16)),
 
-            // Tariff info and total
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -1500,7 +1550,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                           color: isDark
                               ? colors.textSecondary
                               : AppColors.lightTextSecondary,
-                          fontSize: isCompact ? 12 : 13,
+                          fontSize: isUltraCompact ? 11 : (isCompact ? 12 : 13),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1513,7 +1563,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                               color: isDark
                                   ? colors.textMuted
                                   : AppColors.lightTextMuted,
-                              fontSize: isCompact ? 11 : 12,
+                              fontSize: isUltraCompact ? 10 : (isCompact ? 11 : 12),
                             ),
                           ),
                         ),
@@ -1526,7 +1576,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                               color: isDark
                                   ? colors.textSecondary
                                   : AppColors.statusNeutralText,
-                              fontSize: isCompact ? 12 : 13,
+                              fontSize: isUltraCompact ? 11 : (isCompact ? 12 : 13),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1539,7 +1589,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                   onTap: _showPriceEditDialog,
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: isCompact ? 10 : 12,
+                      horizontal: 12,
                       vertical: isCompact ? 6 : 8,
                     ),
                     decoration: BoxDecoration(
@@ -1561,7 +1611,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                             padding: const EdgeInsets.only(right: 4),
                             child: Icon(
                               Icons.edit_outlined,
-                              size: isCompact ? 14 : 16,
+                              size: isUltraCompact ? 12 : (isCompact ? 14 : 16),
                               color: AppColors.warning,
                             ),
                           ),
@@ -1571,7 +1621,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                             color: _isManualPrice
                                 ? AppColors.warning
                                 : AppColors.primary,
-                            fontSize: isCompact ? 18 : 22,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -1689,12 +1739,14 @@ class _NumericInput extends StatefulWidget {
   final String hint;
   final bool allowDecimal;
   final bool isCompact;
+  final bool isUltraCompact;
 
   const _NumericInput({
     required this.controller,
     required this.hint,
     this.allowDecimal = false,
     this.isCompact = false,
+    this.isUltraCompact = false,
   });
 
   @override
@@ -1723,8 +1775,8 @@ class _NumericInputState extends State<_NumericInput> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = context.isDarkMode;
-    final fontSize = widget.isCompact ? 22.0 : 28.0;
-    final verticalPadding = widget.isCompact ? 6.0 : 12.0;
+    final fontSize = widget.isUltraCompact ? 18.0 : (widget.isCompact ? 22.0 : 28.0);
+    final verticalPadding = widget.isUltraCompact ? 2.0 : (widget.isCompact ? 6.0 : 12.0);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -1780,11 +1832,13 @@ class _DimensionInput extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final bool isCompact;
+  final bool isUltraCompact;
 
   const _DimensionInput({
     required this.controller,
     required this.label,
     this.isCompact = false,
+    this.isUltraCompact = false,
   });
 
   @override
@@ -1813,66 +1867,83 @@ class _DimensionInputState extends State<_DimensionInput> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = context.isDarkMode;
-    final fontSize = widget.isCompact ? 18.0 : 24.0;
-    final inputWidth = widget.isCompact ? 55.0 : 70.0;
+    final isAnyCompact = widget.isUltraCompact || widget.isCompact;
+    final fontSize = isAnyCompact ? 15.0 : 18.0;
+    final inputHeight = isAnyCompact ? 48.0 : 52.0;
+    final hMargin = widget.isUltraCompact ? 6.0 : (widget.isCompact ? 4.0 : 2.0);
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          widget.label,
-          style: TextStyle(
-            color: isDark ? colors.textSecondary : AppColors.lightTextMuted,
-            fontSize: widget.isCompact ? 11 : 13,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: widget.isCompact ? 2 : 4),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: inputWidth,
-          padding: EdgeInsets.symmetric(vertical: widget.isCompact ? 4 : 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: _isFocused
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 12,
-                      spreadRadius: 0,
-                    ),
-                  ]
-                : null,
-          ),
-          child: TextField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            cursorWidth: 1.5,
-            cursorColor: AppColors.primary,
-            style: TextStyle(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w700,
-              fontSize: fontSize,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: hMargin),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: inputHeight,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: _isFocused
+                  ? [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        spreadRadius: 0,
+                      ),
+                    ]
+                  : null,
             ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-              isDense: true,
-              hintText: '0',
-              hintStyle: TextStyle(
-                color: isDark ? colors.textMuted : AppColors.lightInputMuted,
-                fontWeight: FontWeight.w400,
-                fontSize: fontSize,
+            child: Center(
+              child: TextField(
+                controller: widget.controller,
+                focusNode: _focusNode,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                cursorWidth: 1.5,
+                cursorColor: AppColors.primary,
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: fontSize,
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: isDark ? colors.surface : Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 10,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? colors.border : AppColors.lightBorder,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? colors.border : AppColors.lightBorder,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                        color: AppColors.primary, width: 2),
+                  ),
+                  hintText: widget.label,
+                  hintStyle: TextStyle(
+                    color: isDark ? colors.textMuted : AppColors.lightInputMuted,
+                    fontWeight: FontWeight.w400,
+                    fontSize: fontSize,
+                  ),
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
               ),
             ),
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-            ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

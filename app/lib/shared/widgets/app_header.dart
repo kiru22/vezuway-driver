@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_extensions.dart';
 import '../../l10n/l10n_extension.dart';
+import 'splash_screen.dart';
 
 class AppHeader extends StatelessWidget {
   final VoidCallback? onMenuTap;
   final bool showMenu;
   final String? title;
   final Widget? trailing;
+  final IconData icon;
+  final Widget? iconWidget;
 
   const AppHeader({
     super.key,
@@ -16,6 +19,8 @@ class AppHeader extends StatelessWidget {
     this.showMenu = true,
     this.title,
     this.trailing,
+    this.icon = Icons.local_shipping_rounded,
+    this.iconWidget,
   });
 
   @override
@@ -28,7 +33,6 @@ class AppHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            // Logo with glow effect - takes remaining space
             Flexible(
               child: Row(
                 children: [
@@ -36,20 +40,22 @@ class AppHeader extends StatelessWidget {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.local_shipping_rounded,
-                      color: Colors.white,
-                      size: 22,
+                    child: iconWidget ?? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        logoAssetPath,
+                        width: 42,
+                        height: 42,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -101,7 +107,6 @@ class AppHeader extends StatelessWidget {
                 ],
               ),
             ),
-            // Menu button
             if (trailing != null)
               trailing!
             else if (showMenu)
@@ -125,11 +130,7 @@ class _MenuButton extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        if (onTap != null) {
-          onTap!();
-        } else {
-          Scaffold.of(context).openEndDrawer();
-        }
+        (onTap ?? () => Scaffold.of(context).openEndDrawer())();
       },
       child: Container(
         width: 44,

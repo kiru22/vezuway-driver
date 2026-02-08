@@ -129,7 +129,7 @@ class _CreateRouteScreenState extends ConsumerState<CreateRouteScreen> {
     final currencySymbol = getCurrencySymbol(_currency);
 
     return Scaffold(
-      backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
+      backgroundColor: isDark ? colors.background : AppColors.lightInputBg,
       appBar: FormAppBar(
         title: l10n.routes_createTitle,
         onClose: () => context.pop(),

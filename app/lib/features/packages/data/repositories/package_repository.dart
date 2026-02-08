@@ -43,10 +43,12 @@ class PackageRepository {
     String? senderName,
     String? senderPhone,
     String? senderCity,
+    String? senderCountry,
     String? senderAddress,
     required String receiverName,
     String? receiverPhone,
     String? receiverCity,
+    String? receiverCountry,
     String? receiverAddress,
     double? weight,
     int? lengthCm,
@@ -54,9 +56,10 @@ class PackageRepository {
     int? heightCm,
     int? quantity,
     double? declaredValue,
+    String? description,
+    String? novaPostNumber,
     List<Uint8List>? images,
   }) async {
-    // Build FormData for multipart request
     final formData = FormData.fromMap({
       if (tripId != null) 'trip_id': tripId,
       if (senderContactId != null) 'sender_contact_id': senderContactId,
@@ -67,12 +70,16 @@ class PackageRepository {
         'sender_phone': senderPhone,
       if (senderCity != null && senderCity.isNotEmpty)
         'sender_city': senderCity,
+      if (senderCountry != null && senderCountry.isNotEmpty)
+        'sender_country': senderCountry,
       if (senderAddress != null && senderAddress.isNotEmpty)
         'sender_address': senderAddress,
       'receiver_name': receiverName,
       if (receiverPhone != null) 'receiver_phone': receiverPhone,
       if (receiverCity != null && receiverCity.isNotEmpty)
         'receiver_city': receiverCity,
+      if (receiverCountry != null && receiverCountry.isNotEmpty)
+        'receiver_country': receiverCountry,
       if (receiverAddress != null) 'receiver_address': receiverAddress,
       if (weight != null) 'weight_kg': weight,
       if (lengthCm != null) 'length_cm': lengthCm,
@@ -80,9 +87,12 @@ class PackageRepository {
       if (heightCm != null) 'height_cm': heightCm,
       if (quantity != null) 'quantity': quantity,
       if (declaredValue != null) 'declared_value': declaredValue,
+      if (description != null && description.isNotEmpty)
+        'description': description,
+      if (novaPostNumber != null && novaPostNumber.isNotEmpty)
+        'nova_post_number': novaPostNumber,
     });
 
-    // Add images if provided
     if (images != null && images.isNotEmpty) {
       for (var i = 0; i < images.length; i++) {
         formData.files.add(MapEntry(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/package_box_icon.dart';
 import '../../../packages/data/models/package_model.dart';
 import '../../../packages/domain/providers/package_provider.dart';
 import '../../../packages/presentation/widgets/package_card_v2.dart';
@@ -70,6 +71,10 @@ class MyPackagesList extends ConsumerWidget {
             if (activePackages.isEmpty) {
               return EmptyState(
                 icon: Icons.inventory_2_outlined,
+                iconWidget: PackageBoxIcon(
+                  size: 40,
+                  color: AppColors.primary.withValues(alpha: 0.7),
+                ),
                 title: l10n.clientDashboard_noShipments,
                 subtitle: l10n.clientDashboard_createFirst,
               );

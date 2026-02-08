@@ -61,10 +61,10 @@ class _TripsRoutesScreenState extends ConsumerState<TripsRoutesScreen>
       body: Column(
         children: [
           AppHeader(
+            icon: Icons.timeline_rounded,
             title: l10n.tripsRoutes_title,
             showMenu: false,
           ),
-          // Tab bar
           PillTabBar(
             controller: _tabController,
             labels: [l10n.tripsRoutes_trips, l10n.tripsRoutes_routes],
@@ -73,15 +73,14 @@ class _TripsRoutesScreenState extends ConsumerState<TripsRoutesScreen>
             },
           ),
           const SizedBox(height: 16),
-          // Tab content
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
                 TripsTab(
                   onCreateTrip: () => context.push('/trips/create'),
-                  onStatusChange: _handleTripStatusChange,
                   onDelete: _handleTripDelete,
+                  onEdit: (tripId) => context.push('/trips/$tripId/edit'),
                 ),
                 RoutesTab(
                   onCreateRoute: () => context.push('/routes/create'),
@@ -96,20 +95,17 @@ class _TripsRoutesScreenState extends ConsumerState<TripsRoutesScreen>
     );
   }
 
-  void _handleTripStatusChange(String tripId, dynamic newStatus) {
-    ref.read(tripsProvider.notifier).updateStatus(tripId, newStatus);
-  }
-
   Future<void> _handleTripDelete(String tripId) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDeleteConfirmationDialog(
       context: context,
-      itemType: 'viaje',
+      itemType: l10n.trips_itemTypeTrip,
     );
     if (confirmed == true && mounted) {
       final success = await ref.read(tripsProvider.notifier).deleteTrip(tripId);
       if (mounted) {
         _showSnackBar(
-          success ? 'Viaje eliminado' : 'Error al eliminar viaje',
+          success ? l10n.trips_tripDeleted : l10n.trips_tripDeleteError,
           success,
         );
       }
@@ -117,16 +113,19 @@ class _TripsRoutesScreenState extends ConsumerState<TripsRoutesScreen>
   }
 
   Future<void> _handleRouteDelete(String routeId) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDeleteConfirmationDialog(
       context: context,
-      itemType: 'plantilla de ruta',
+      itemType: l10n.trips_itemTypeRouteTemplate,
     );
     if (confirmed == true && mounted) {
       final success =
           await ref.read(routesProvider.notifier).deleteRoute(routeId);
       if (mounted) {
         _showSnackBar(
-          success ? 'Plantilla eliminada' : 'Error al eliminar plantilla',
+          success
+              ? l10n.trips_routeTemplateDeleted
+              : l10n.trips_routeTemplateDeleteError,
           success,
         );
       }

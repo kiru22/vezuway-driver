@@ -4,16 +4,17 @@ namespace App\Modules\Packages\Models;
 
 use App\Models\User;
 use App\Modules\Contacts\Models\Contact;
+use App\Modules\Packages\Services\TrackingCodeService;
 use App\Modules\Routes\Models\Route;
 use App\Modules\Trips\Models\Trip;
 use App\Shared\Enums\PackageStatus;
+use App\Shared\Enums\TripStatus;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -24,6 +25,7 @@ class Package extends Model implements HasMedia
 
     protected $fillable = [
         'tracking_code',
+        'public_id',
         'transporter_id',
         'route_id',
         'trip_id',
@@ -43,6 +45,7 @@ class Package extends Model implements HasMedia
         'receiver_country',
         'receiver_latitude',
         'receiver_longitude',
+        'nova_post_number',
         'weight_kg',
         'length_cm',
         'width_cm',
@@ -74,19 +77,19 @@ class Package extends Model implements HasMedia
     protected static function booted(): void
     {
         static::creating(function ($package) {
+            $service = app(TrackingCodeService::class);
+
             if (empty($package->tracking_code)) {
-                $package->tracking_code = self::generateTrackingCode();
+                $package->tracking_code = $service->generate(
+                    $package->receiver_city,
+                    $package->trip_id,
+                );
+            }
+
+            if (empty($package->public_id)) {
+                $package->public_id = $service->generatePublicId();
             }
         });
-    }
-
-    public static function generateTrackingCode(): string
-    {
-        do {
-            $code = 'PKG-'.strtoupper(Str::random(8));
-        } while (self::where('tracking_code', $code)->exists());
-
-        return $code;
     }
 
     public function transporter(): BelongsTo
@@ -135,6 +138,37 @@ class Package extends Model implements HasMedia
         ]);
 
         $this->update(['status' => $status]);
+
+        if ($status === PackageStatus::DELIVERED) {
+            $this->autoCompleteTripIfAllDelivered();
+        }
+    }
+
+    /**
+     * Auto-complete the trip when all its packages are delivered.
+     */
+    private function autoCompleteTripIfAllDelivered(): void
+    {
+        if (! $this->trip_id) {
+            return;
+        }
+
+        $trip = $this->trip;
+        if ($trip === null || $trip->status === TripStatus::COMPLETED) {
+            return;
+        }
+
+        $hasPendingPackages = $trip->packages()
+            ->where('id', '!=', $this->id)
+            ->where('status', '!=', PackageStatus::DELIVERED->value)
+            ->exists();
+
+        if (! $hasPendingPackages) {
+            $trip->update([
+                'status' => TripStatus::COMPLETED->value,
+                'actual_arrival_date' => now(),
+            ]);
+        }
     }
 
     public function scopeForTransporter($query, string $transporterId)
@@ -149,12 +183,15 @@ class Package extends Model implements HasMedia
 
     public function scopeSearch($query, string $term)
     {
-        return $query->where(function ($q) use ($term) {
-            $q->where('tracking_code', 'like', "%{$term}%")
-                ->orWhere('sender_name', 'like', "%{$term}%")
-                ->orWhere('receiver_name', 'like', "%{$term}%")
-                ->orWhere('sender_city', 'like', "%{$term}%")
-                ->orWhere('receiver_city', 'like', "%{$term}%");
+        $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+
+        return $query->where(function ($q) use ($escaped) {
+            $q->where('tracking_code', 'like', "%{$escaped}%")
+                ->orWhere('public_id', 'like', "%{$escaped}%")
+                ->orWhere('sender_name', 'like', "%{$escaped}%")
+                ->orWhere('receiver_name', 'like', "%{$escaped}%")
+                ->orWhere('sender_city', 'like', "%{$escaped}%")
+                ->orWhere('receiver_city', 'like', "%{$escaped}%");
         });
     }
 

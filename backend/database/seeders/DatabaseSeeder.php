@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@vezuway.com'],
             ['name' => 'Admin', 'password' => Hash::make('password')]
         );
-        if (!$admin->hasRole('super_admin')) {
+        if (! $admin->hasRole('super_admin')) {
             $admin->assignRole('super_admin');
         }
 
@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'driver@vezuway.com'],
             ['name' => 'Driver Aprobado', 'password' => Hash::make('password'), 'driver_status' => DriverStatus::APPROVED]
         );
-        if (!$driver->hasRole('driver')) {
+        if (! $driver->hasRole('driver')) {
             $driver->assignRole('driver');
         }
 
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'pending@vezuway.com'],
             ['name' => 'Driver Pendiente', 'password' => Hash::make('password'), 'driver_status' => DriverStatus::PENDING]
         );
-        if (!$pending->hasRole('driver')) {
+        if (! $pending->hasRole('driver')) {
             $pending->assignRole('driver');
         }
 
@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'client@vezuway.com'],
             ['name' => 'Cliente Test', 'password' => Hash::make('password')]
         );
-        if (!$client->hasRole('client')) {
+        if (! $client->hasRole('client')) {
             $client->assignRole('client');
         }
 

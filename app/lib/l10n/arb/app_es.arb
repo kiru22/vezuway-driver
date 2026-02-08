@@ -143,9 +143,9 @@
   "packages_unassigned": "Sin asignar",
   "packages_tabSender": "Remitente",
   "packages_tabReceiver": "Destinatario",
-  "packages_widthLabel": "An",
-  "packages_heightLabel": "Al",
-  "packages_lengthLabel": "La",
+  "packages_widthLabel": "Ancho",
+  "packages_heightLabel": "Alto",
+  "packages_lengthLabel": "Largo",
   "packages_quantityLabel": "Cantidad",
   "packages_tariffLabel": "TARIFA",
   "packages_totalPrice": "TOTAL",
@@ -163,7 +163,7 @@
   "packages_deliverySection": "ENTREGA",
   "packages_hide": "Ocultar",
   "packages_exactAddress": "Direccion exacta",
-  "packages_googleMapsLink": "Enlace a Google Maps",
+  "packages_googleMapsLink": "Google Maps",
   "packages_weightKg": "PESO (KG)",
   "packages_quantityPcs": "CANTIDAD (UDS)",
   "packages_dimensionsCm": "DIMENSIONES (CM)",
@@ -175,6 +175,7 @@
   "packages_origin": "Origen",
   "packages_destination": "Destino",
   "packages_departureDate": "Fecha de salida",
+  "packageDescription": "Descripcion",
   "packages_imagesSection": "Imagenes del paquete",
   "packages_addImage": "Anadir imagen",
   "packages_noImages": "Sin imagenes",
@@ -200,6 +201,22 @@
       "count": { "type": "int" }
     }
   },
+  "packages_filterStatus": "Estado",
+  "packages_filterTrip": "Viaje",
+  "packages_filterCity": "Ciudad",
+  "packages_filterAllTrips": "Todos los viajes",
+  "packages_filterSearchCity": "Buscar ciudad...",
+  "packages_filterClearCities": "Limpiar",
+  "packages_filterActiveTrips": "ACTIVOS",
+  "packages_filterUpcomingTrips": "PRÓXIMOS",
+  "packages_filterPastTrips": "PASADOS",
+  "packages_countShort": "{count} paq.",
+  "@packages_countShort": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "packages_novaPostNumber": "Nova Post",
 
   "@@_ROUTES": "============ ROUTES ============",
   "routes_title": "Rutas",
@@ -268,6 +285,8 @@
   },
   "routes_finalDestination": "Destino Final",
   "routes_addCity": "Agregar Ciudad",
+  "routes_addStop": "Agregar parada",
+  "routes_noIntermediateStops": "Sin paradas intermedias",
   "routes_deleteStop": "eliminar",
   "routes_pricingSection": "PRECIOS",
   "routes_amount": "Monto",
@@ -448,6 +467,8 @@
   "tripsRoutes_noTrips": "No hay viajes",
   "tripsRoutes_noTripsSubtitle": "Crea tu primer viaje",
   "tripsRoutes_createTrip": "Crear viaje",
+  "tripsRoutes_noRouteTemplates": "No hay plantillas de rutas",
+  "tripsRoutes_noRouteTemplatesSubtitle": "Crea una plantilla para crear viajes rápidamente",
   "trips_sectionActive": "ACTIVOS",
   "trips_sectionUpcoming": "PRÓXIMOS",
   "trips_sectionHistory": "HISTORIAL",
@@ -460,6 +481,63 @@
   "trips_changeStatus": "Cambiar estado",
   "trips_retry": "Reintentar",
   "trips_clearFilter": "Borrar filtro",
+  "trips_routeTemplate": "PLANTILLA DE RUTA",
+  "trips_originPoint": "PUNTO DE ORIGEN",
+  "trips_destinationPoint": "PUNTO DE DESTINO",
+  "trips_departureDates": "FECHAS DE SALIDA",
+  "trips_departureDate": "FECHA DE SALIDA",
+  "trips_departureTimeOptional": "HORA DE SALIDA (opcional)",
+  "trips_notesOptional": "NOTAS (opcional)",
+  "trips_additionalInfo": "Información adicional...",
+  "trips_selectDates": "Selecciona fechas",
+  "trips_createTripCount": "Crear {count} viajes",
+  "@trips_createTripCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "trips_selectAtLeastOneDate": "Selecciona al menos una fecha",
+  "trips_selectTemplateOrCities": "Selecciona una plantilla o indica las ciudades",
+  "trips_tripCreated": "¡Viaje creado!",
+  "trips_tripsCreated": "¡{count} viajes creados!",
+  "@trips_tripsCreated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "trips_tripsPartiallyCreated": "Creados {success} de {total} viajes",
+  "@trips_tripsPartiallyCreated": {
+    "placeholders": {
+      "success": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "trips_errorCreating": "Error al crear viajes",
+  "trips_resetSelection": "Resetear selección",
+  "trips_notSpecified": "No especificado",
+  "trips_selectTemplate": "Selecciona una plantilla",
+  "trips_noTemplate": "Sin plantilla (introducir manualmente)",
+  "trips_errorLoadingTemplate": "Error al cargar la plantilla",
+  "trips_cityHint": "Ciudad",
+  "trips_weekdayMon": "Lu",
+  "trips_weekdayTue": "Ma",
+  "trips_weekdayWed": "Mi",
+  "trips_weekdayThu": "Ju",
+  "trips_weekdayFri": "Vi",
+  "trips_weekdaySat": "Sá",
+  "trips_weekdaySun": "Do",
+  "trips_editTrip": "Editar viaje",
+  "trips_editTripSubtitle": "Modificar detalles del viaje",
+  "trips_deleteTripSubtitle": "Eliminar este viaje",
+  "trips_tripUpdated": "Viaje actualizado",
+  "trips_cannotDeletePast": "No se puede eliminar un viaje con fecha pasada",
+  "trips_cannotDeleteWithPackages": "No se puede eliminar un viaje con paquetes asignados",
+  "trips_itemTypeTrip": "viaje",
+  "trips_itemTypeRouteTemplate": "plantilla de ruta",
+  "trips_tripDeleted": "Viaje eliminado",
+  "trips_tripDeleteError": "Error al eliminar viaje",
+  "trips_routeTemplateDeleted": "Plantilla eliminada",
+  "trips_routeTemplateDeleteError": "Error al eliminar plantilla",
 
   "@@_MY_ORDERS": "============ MY ORDERS ============",
   "myOrders_title": "Mis Pedidos",
@@ -498,6 +576,7 @@
 
   "@@_ADMIN": "============ ADMIN PANEL ============",
   "admin_panelTitle": "Panel de Admin",
+  "admin_userManagement": "Gestión de Usuarios",
   "admin_users": "Usuarios",
   "admin_requests": "Solicitudes",
   "admin_allUsers": "Todos",
@@ -560,6 +639,37 @@
   "admin_reapplication": "Re-solicitud",
   "admin_previousRejectionReason": "Motivo del rechazo anterior:",
   "admin_driverAppeal": "Apelación del conductor:",
+  "admin_planRequests": "Planes",
+  "admin_noPlanRequests": "Sin solicitudes de plan",
+  "admin_noPlanRequestsSubtitle": "Cuando los conductores soliciten un plan, aparecerán aquí",
+  "admin_approvePlan": "Aprobar plan",
+  "admin_rejectPlan": "Rechazar plan",
+  "admin_approvePlanConfirm": "¿Aprobar el plan {plan} para {name}?",
+  "@admin_approvePlanConfirm": {
+    "placeholders": {
+      "plan": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "admin_rejectPlanConfirm": "¿Rechazar el plan {plan} para {name}?",
+  "@admin_rejectPlanConfirm": {
+    "placeholders": {
+      "plan": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "admin_planApproved": "Plan aprobado para {name}",
+  "@admin_planApproved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_planRejected": "Plan rechazado para {name}",
+  "@admin_planRejected": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
 
   "@@_DRIVER_REJECTED": "============ DRIVER REJECTED SCREEN ============",
   "driverRejected_title": "Solicitud rechazada",
@@ -574,5 +684,86 @@
   "driverRejected_appealSent": "Apelación enviada correctamente. Tu solicitud está siendo revisada nuevamente.",
   "driverRejected_appealError": "Error al enviar la apelación. Inténtalo de nuevo.",
   "driverRejected_appealAlreadySent": "Ya has enviado una apelación. Tu solicitud está siendo revisada nuevamente.",
-  "driverRejected_logout": "Cerrar sesión"
+  "driverRejected_logout": "Cerrar sesión",
+
+  "@@_PLANS": "============ PLANS & PRICING ============",
+  "plans_menuTitle": "Planes y precios",
+  "plans_title": "Elige tu plan ideal",
+  "plans_subtitle": "Herramientas premium para tu negocio",
+  "plans_basic": "Básico",
+  "plans_pro": "Pro",
+  "plans_premium": "Premium",
+  "plans_perMonth": "/mes",
+  "plans_priceLabel": "{name} — {price}\u20AC/mes",
+  "@plans_priceLabel": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "price": { "type": "int" }
+    }
+  },
+  "plans_scanner": "Escáner",
+  "plans_sms": "SMS",
+  "plans_shipmentHistory": "Historial de envíos",
+  "plans_contactBook": "Libro de contactos",
+  "plans_contactList": "Lista de contactos",
+  "plans_selectPlan": "Solicitar plan",
+  "@plans_selectPlan": {
+    "placeholders": {
+      "plan": {"type": "String"}
+    }
+  },
+  "plans_popular": "Popular",
+  "plans_featureScanner": "Escáner",
+  "plans_featureSms": "Mensajes SMS",
+  "plans_featureHistory": "Historial",
+  "plans_requestSuccess": "Solicitud enviada correctamente",
+  "plans_requestError": "Error al enviar la solicitud",
+  "plans_currentPlan": "Plan actual",
+  "plans_requested": "Solicitado",
+
+  "@@_MARKETING": "============ MARKETING ACTIONS ============",
+  "marketing_trackingTitle": "Enviar seguimiento",
+  "marketing_trackingDesc": "Informa al cliente del estado de su paquete. Genera confianza y profesionalidad",
+  "marketing_trackingMessage": "Hola {name}, tu paquete {tracking} está registrado y será recogido pronto. ¡Te mantendremos informado!",
+  "@marketing_trackingMessage": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "tracking": {"type": "String"}
+    }
+  },
+  "marketing_loyaltyTitle": "Enviar fidelización",
+  "marketing_loyaltyDesc": "Ofrece un descuento y fideliza al cliente. Los clientes recurrentes son los más rentables",
+  "marketing_loyaltyMessage": "Hola {name}, gracias por confiar en nosotros. En tu próximo envío tienes un 10% de descuento. ¡Contáctanos cuando lo necesites!",
+  "@marketing_loyaltyMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "marketing_tripTitle": "Avisar próximo viaje",
+  "marketing_tripDesc": "Notifica tu próximo viaje y capta envíos. Cada mensaje puede ser un nuevo paquete",
+  "marketing_tripMessage": "Hola {name}, tengo viaje {origin} → {destination} el {date}. ¿Tienes algo para enviar? ¡Contáctame!",
+  "@marketing_tripMessage": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "origin": {"type": "String"},
+      "destination": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "marketing_upgradeCta": "Desbloquear con Plan Pro",
+  "marketing_premiumFeature": "Función Premium",
+  "marketing_noPhone": "Sin teléfono",
+  "marketing_noPackage": "Sin paquetes pendientes",
+  "marketing_noTrip": "Sin viajes programados",
+
+  "@@_ADMIN_USER_DETAIL": "============ ADMIN USER DETAIL ============",
+  "admin_userDetail": "Detalle de usuario",
+  "admin_personalInfo": "Información personal",
+  "admin_userPlan": "Plan activo",
+  "admin_userNoPlan": "Sin plan",
+  "admin_dates": "Fechas",
+  "admin_lastUpdate": "Última actualización",
+  "admin_userLanguage": "Idioma",
+  "admin_userTheme": "Tema",
+  "admin_superAdmin": "Administrador"
 }

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_extensions.dart';
+import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/widgets/package_box_icon.dart';
 import '../../data/models/contact_model.dart';
 
 class ContactListTile extends StatelessWidget {
@@ -16,145 +20,147 @@ class ContactListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mutedColor = Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6);
+    final colors = context.colors;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-      ),
-      elevation: 0,
-      color: Theme.of(context).cardColor,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Avatar con iniciales
-              Hero(
-                tag: 'contact-avatar-${contact.id}',
-                child: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  child: Text(
-                    contact.initials,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+        child: Container(
+          decoration: BoxDecoration(
+            color: colors.cardBackground,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            border: Border.all(color: colors.border),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow.withValues(alpha: 0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'contact-avatar-${contact.id}',
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                    child: Text(
+                      contact.initials,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
+                const SizedBox(width: 16),
 
-              // Info principal
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            contact.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              contact.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: colors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        if (contact.isVerified) ...[
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.verified,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
+                          if (contact.isVerified) ...[
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.verified,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    if (contact.emailOrPhone != null)
-                      Text(
-                        contact.emailOrPhone!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.color
-                              ?.withValues(alpha: 0.7),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: 14,
-                          color: mutedColor,
-                        ),
-                        const SizedBox(width: 4),
+                      const SizedBox(height: 4),
+                      if (contact.emailOrPhone != null)
                         Text(
-                          '${contact.totalPackages} paquetes',
-                          style: TextStyle(fontSize: 13, color: mutedColor),
+                          contact.emailOrPhone!,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colors.textMuted,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        if (contact.lastPackageAt != null) ...[
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.schedule,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          PackageBoxIcon(
                             size: 14,
-                            color: mutedColor,
+                            color: colors.textMuted,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            _formatLastActivity(contact.lastPackageAt!),
-                            style: TextStyle(fontSize: 13, color: mutedColor),
+                            context.l10n.packages_count(contact.totalPackages),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colors.textMuted,
+                            ),
                           ),
+                          if (contact.lastPackageAt != null) ...[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 6),
+                              child: Text(
+                                '·',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: colors.textMuted,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.schedule,
+                              size: 14,
+                              color: colors.textMuted,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              timeago.format(
+                                contact.lastPackageAt!,
+                                locale: context.l10n.localeName == 'uk' ? 'uk' : 'es',
+                              ),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colors.textMuted,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right,
-                size: 24,
-                color: Colors.grey,
-              ),
-            ],
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.chevron_right,
+                  size: 24,
+                  color: colors.textMuted,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  String _formatLastActivity(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inDays == 0) {
-      if (diff.inHours == 0) {
-        return 'Hace ${diff.inMinutes}m';
-      }
-      return 'Hace ${diff.inHours}h';
-    } else if (diff.inDays < 7) {
-      return 'Hace ${diff.inDays}d';
-    } else if (diff.inDays < 30) {
-      final weeks = (diff.inDays / 7).floor();
-      return 'Hace ${weeks}sem';
-    } else {
-      final months = (diff.inDays / 30).floor();
-      return 'Hace ${months}mes';
-    }
-  }
 }

@@ -15,6 +15,7 @@ import 'features/auth/presentation/screens/register_screen.dart';
 import 'features/auth/presentation/screens/user_type_selection_screen.dart';
 import 'features/auth/presentation/screens/driver_pending_screen.dart';
 import 'features/auth/presentation/screens/driver_rejected_screen.dart';
+import 'features/admin/presentation/screens/user_detail_screen.dart';
 import 'features/admin/presentation/shells/admin_shell.dart';
 import 'features/client_dashboard/presentation/screens/client_dashboard_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
@@ -28,6 +29,7 @@ import 'features/routes/presentation/screens/create_route_screen.dart';
 import 'features/routes/presentation/screens/edit_route_screen.dart';
 import 'features/trips/presentation/screens/trips_routes_screen.dart';
 import 'features/trips/presentation/screens/create_trip_screen.dart';
+import 'features/plans/presentation/screens/plans_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/shell/presentation/main_shell.dart';
 import 'shared/widgets/splash_screen.dart';
@@ -44,17 +46,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final user = authState.user;
       final location = state.matchedLocation;
 
-      // 1. Loading → splash
       if (isLoading) return '/';
 
       final isAuthRoute = location == '/login' || location == '/register';
       final isProfileRoute = location.startsWith('/profile');
 
-      // 2. No autenticado → login (excepto rutas públicas)
       if (!isAuthenticated && !isAuthRoute) return '/login';
 
       if (isAuthenticated) {
-        // 3. Necesita seleccionar rol → bloquear TODA navegación excepto selección
         if (user?.needsRoleSelection == true) {
           if (location != '/select-user-type') {
             return '/select-user-type';
@@ -62,7 +61,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         }
 
-        // 4. Driver pendiente → SOLO puede ver pending screen y perfil
         if (user?.isPendingDriver == true) {
           if (location != '/driver-pending' && !isProfileRoute) {
             return '/driver-pending';
@@ -70,7 +68,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         }
 
-        // 4.5. Driver rechazado → SOLO puede ver rejected screen y perfil
         if (user?.isRejectedDriver == true) {
           if (location != '/driver-rejected' && !isProfileRoute) {
             return '/driver-rejected';
@@ -78,7 +75,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           return null;
         }
 
-        // 5. Super admin intentando acceder a rutas de driver/client
         if (user?.isSuperAdmin == true) {
           final forbiddenForAdmin = [
             '/home',
@@ -95,7 +91,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
         }
 
-        // 6. Cliente intentando acceder a rutas PROHIBIDAS
         if (user?.isClient == true) {
           final forbiddenForClients = [
             '/routes',
@@ -112,14 +107,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
         }
 
-        // 7. Driver intentando acceder a rutas de admin
         if (user?.isDriver == true) {
           if (location.startsWith('/admin')) {
             return '/home';
           }
         }
 
-        // 8. Ya autenticado en ruta de auth → redirigir según tipo
         if (isAuthRoute) {
           if (user?.isSuperAdmin == true) {
             return '/admin';
@@ -130,7 +123,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
         }
 
-        // 9. Autenticado en splash → redirigir según tipo
         if (location == '/') {
           if (user?.isSuperAdmin == true) {
             return '/admin';
@@ -212,13 +204,24 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/trips/:id/edit',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return fadeSlideTransitionPage(
+            state: state,
+            child: CreateTripScreen(tripId: id),
+          );
+        },
+      ),
+
+      GoRoute(
         path: '/packages/new',
         pageBuilder: (context, state) => fadeSlideTransitionPage(
           state: state,
           child: const CreatePackageScreen(),
         ),
       ),
-      // Package detail and edit routes outside ShellRoute (no navbar)
+
       GoRoute(
         path: '/packages/:id',
         pageBuilder: (context, state) {
@@ -239,7 +242,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      // My orders (for contact-users)
       GoRoute(
         path: '/my-orders',
         pageBuilder: (context, state) => fadeSlideTransitionPage(
@@ -255,21 +257,38 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/plans',
+        pageBuilder: (context, state) => fadeSlideTransitionPage(
+          state: state,
+          child: const PlansScreen(),
+        ),
+      ),
+      GoRoute(
         path: '/client-dashboard',
         pageBuilder: (context, state) => fadeSlideTransitionPage(
           state: state,
           child: const ClientDashboardScreen(),
         ),
       ),
-      // Admin Panel (sin ShellRoute - usa TabBarView interno)
       GoRoute(
         path: '/admin',
         pageBuilder: (context, state) => fadeSlideTransitionPage(
           state: state,
           child: const AdminShell(),
         ),
+        routes: [
+          GoRoute(
+            path: 'users/:id',
+            pageBuilder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return fadeSlideTransitionPage(
+                state: state,
+                child: UserDetailScreen(userId: id),
+              );
+            },
+          ),
+        ],
       ),
-      // Driver Shell
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [

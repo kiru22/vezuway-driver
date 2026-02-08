@@ -2,20 +2,15 @@
 
 use App\Modules\Admin\Controllers\UserManagementController;
 use App\Modules\Auth\Controllers\AuthController;
+use App\Modules\Cities\Controllers\CityController;
 use App\Modules\Contacts\Controllers\ContactController;
 use App\Modules\Ocr\Controllers\OcrController;
 use App\Modules\Packages\Controllers\PackageController;
+use App\Modules\Plans\Controllers\PlanRequestController;
 use App\Modules\Routes\Controllers\RouteController;
 use App\Modules\Trips\Controllers\TripController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
-// Health check endpoint for Docker
 Route::get('health', function () {
     return response()->json([
         'status' => 'healthy',
@@ -24,16 +19,15 @@ Route::get('health', function () {
 });
 
 Route::prefix('v1')->group(function () {
-    // Auth routes (public) - rate limited to prevent brute force
     Route::prefix('auth')->middleware('throttle:5,1')->group(function () {
         Route::post('register', [AuthController::class, 'register']);
         Route::post('login', [AuthController::class, 'login']);
         Route::post('google', [AuthController::class, 'googleLogin']);
     });
 
-    // Protected routes - Solo autenticación (sin verificar driver status)
     Route::middleware('auth:sanctum')->group(function () {
-        // Auth
+        Route::get('cities/search', [CityController::class, 'search']);
+
         Route::prefix('auth')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
@@ -42,7 +36,6 @@ Route::prefix('v1')->group(function () {
             Route::post('appeal-rejection', [AuthController::class, 'appealRejection']);
         });
 
-        // Profile
         Route::prefix('profile')->group(function () {
             Route::put('/', [AuthController::class, 'updateProfile']);
             Route::put('password', [AuthController::class, 'updatePassword']);
@@ -51,9 +44,7 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    // Protected routes - Requiere driver aprobado O ser client/super_admin
     Route::middleware(['auth:sanctum', 'user.driver_approved'])->group(function () {
-        // Packages - Todos pueden acceder (filtrado en controller y policy)
         Route::prefix('packages')->group(function () {
             Route::get('/', [PackageController::class, 'index']);
             Route::get('my-orders', [PackageController::class, 'myOrders']);
@@ -70,7 +61,6 @@ Route::prefix('v1')->group(function () {
             Route::delete('{package}/images/{media}', [PackageController::class, 'deleteImage']);
         });
 
-        // Routes - Solo drivers y super_admin (policy valida)
         Route::prefix('routes')->group(function () {
             Route::get('/', [RouteController::class, 'index']);
             Route::post('/', [RouteController::class, 'store']);
@@ -81,7 +71,6 @@ Route::prefix('v1')->group(function () {
             Route::post('{route}/trips', [RouteController::class, 'createTrip']);
         });
 
-        // Trips - Solo drivers y super_admin (policy valida)
         Route::prefix('trips')->group(function () {
             Route::get('/', [TripController::class, 'index']);
             Route::post('/', [TripController::class, 'store']);
@@ -93,7 +82,6 @@ Route::prefix('v1')->group(function () {
             Route::post('{trip}/packages', [TripController::class, 'assignPackages']);
         });
 
-        // Contacts - Solo drivers y super_admin (policy valida)
         Route::prefix('contacts')->group(function () {
             Route::get('/', [ContactController::class, 'index']);
             Route::get('search', [ContactController::class, 'search']);
@@ -104,15 +92,19 @@ Route::prefix('v1')->group(function () {
             Route::get('{contact}/packages', [ContactController::class, 'packages']);
         });
 
-        // OCR - Solo drivers y super_admin
         Route::post('ocr/scan', [OcrController::class, 'scan']);
+
+        Route::post('plan-requests', [PlanRequestController::class, 'store']);
+        Route::get('plan-requests/mine', [PlanRequestController::class, 'myRequest']);
     });
 
-    // Admin routes - Solo super_admin
     Route::middleware(['auth:sanctum', 'role:super_admin'])->prefix('admin')->group(function () {
         Route::get('users', [UserManagementController::class, 'allUsers']);
         Route::get('drivers/pending', [UserManagementController::class, 'pendingDrivers']);
         Route::post('drivers/{user}/approve', [UserManagementController::class, 'approveDriver']);
         Route::post('drivers/{user}/reject', [UserManagementController::class, 'rejectDriver']);
+        Route::get('plan-requests', [PlanRequestController::class, 'index']);
+        Route::post('plan-requests/{planRequest}/approve', [PlanRequestController::class, 'approve']);
+        Route::post('plan-requests/{planRequest}/reject', [PlanRequestController::class, 'reject']);
     });
 });

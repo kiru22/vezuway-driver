@@ -20,6 +20,12 @@ class TripController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        // Auto-transition planned trips with past departure date to in_progress
+        Trip::forTransporter($request->user()->id)
+            ->where('status', TripStatus::PLANNED->value)
+            ->where('departure_date', '<=', now()->toDateString())
+            ->update(['status' => TripStatus::IN_PROGRESS->value]);
+
         $query = Trip::forTransporter($request->user()->id)
             ->with(['stops', 'route'])
             ->withCount('packages');

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/empty_state.dart';
@@ -38,7 +39,6 @@ class _AllUsersScreenState extends ConsumerState<AllUsersScreen>
 
     return Column(
       children: [
-        // Filter tabs (sin contadores)
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: PillTabBar(
@@ -47,24 +47,20 @@ class _AllUsersScreenState extends ConsumerState<AllUsersScreen>
           ),
         ),
 
-        // Tab content
         Expanded(
           child: TabBarView(
             controller: _tabController,
             children: [
-              // Tab: Todos
               _UsersList(
                 usersAsync: ref.watch(allUsersProvider),
                 onRefresh: () => ref.invalidate(allUsersProvider),
                 l10n: l10n,
               ),
-              // Tab: Clientes
               _UsersList(
                 usersAsync: ref.watch(clientUsersProvider),
                 onRefresh: () => ref.invalidate(allUsersProvider),
                 l10n: l10n,
               ),
-              // Tab: Transportistas
               _UsersList(
                 usersAsync: ref.watch(driverUsersProvider),
                 onRefresh: () => ref.invalidate(allUsersProvider),
@@ -106,7 +102,10 @@ class _UsersList extends StatelessWidget {
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: users.length,
-            itemBuilder: (context, index) => UserCard(user: users[index]),
+            itemBuilder: (context, index) => UserCard(
+              user: users[index],
+              onTap: () => context.push('/admin/users/${users[index].id}'),
+            ),
           ),
         );
       },

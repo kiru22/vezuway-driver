@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/widgets/package_box_icon.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../data/models/client_stats_model.dart';
 
@@ -26,6 +27,7 @@ class ClientStatsGrid extends ConsumerWidget {
         Expanded(
           child: StatCard(
             icon: Icons.inventory_2_rounded,
+            iconWidget: const PackageBoxIcon(size: 20, color: Colors.white, filled: true),
             label: l10n.clientDashboard_totalShipments,
             value: '${stats.total}',
             gradient: [AppColors.primary, AppColors.primaryDark],

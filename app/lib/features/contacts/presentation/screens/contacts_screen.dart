@@ -26,12 +26,10 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   @override
   void initState() {
     super.initState();
-    // Cargar contactos al iniciar
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(contactsProvider.notifier).loadContacts(refresh: true);
     });
 
-    // Scroll infinito
     _scrollController.addListener(_onScroll);
   }
 
@@ -77,19 +75,18 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(contactsProvider);
     final colors = context.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     return Scaffold(
       backgroundColor: isDark ? colors.background : const Color(0xFFF4F5F6),
       body: Column(
         children: [
-          // Header
           AppHeader(
+            icon: Icons.contacts_rounded,
             title: context.l10n.contacts_title,
             showMenu: false,
           ),
 
-          // Barra de búsqueda
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: TextField(
@@ -140,7 +137,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Filtros con chips
           SizedBox(
             height: 40,
             child: ListView(
@@ -163,7 +159,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Lista de contactos
           Expanded(
             child: RefreshIndicator(
               onRefresh: _onRefresh,
@@ -192,7 +187,13 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
             color: isSelected ? Colors.white : AppColors.primary,
           ),
           const SizedBox(width: 6),
-          Text(label),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : context.colors.textPrimary,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
         ],
       ),
       selected: isSelected,
@@ -200,7 +201,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
       selectedColor: AppColors.primary,
       backgroundColor: Theme.of(context).cardColor,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : null,
+        color: isSelected ? Colors.white : context.colors.textPrimary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
       ),
       shape: RoundedRectangleBorder(
@@ -349,7 +350,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Título
                 Text(
                   l10n.contacts_newContact,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -358,7 +358,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Campo Nombre
                 StyledFormField(
                   controller: nameController,
                   label: l10n.contacts_nameLabel,
@@ -373,7 +372,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Campo Email
                 StyledFormField(
                   controller: emailController,
                   label: l10n.contacts_emailLabel,
@@ -393,7 +391,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Campo Teléfono
                 StyledFormField(
                   controller: phoneController,
                   label: l10n.contacts_phoneLabel,
@@ -403,9 +400,10 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Botones de acción
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                OverflowBar(
+                  alignment: MainAxisAlignment.end,
+                  spacing: 12,
+                  overflowSpacing: 8,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext),
@@ -417,7 +415,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                       ),
                       child: Text(l10n.common_cancel),
                     ),
-                    const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: () async {
                         if (!formKey.currentState!.validate()) {

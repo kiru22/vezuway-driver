@@ -39,7 +39,6 @@ class CityModel {
           return country;
       }
     }
-    // Spanish / default
     switch (country) {
       case 'ES':
         return 'Espana';
@@ -77,6 +76,16 @@ class CityModel {
     return CityModel(
       name: json['city'] as String,
       country: json['country'] as String,
+    );
+  }
+
+  factory CityModel.fromApiJson(Map<String, dynamic> json) {
+    return CityModel(
+      name: json['name'] as String,
+      nameEs: json['name_es'] as String?,
+      nameUk: json['name_uk'] as String?,
+      country: json['country_code'] as String,
+      region: json['admin1_name'] as String?,
     );
   }
 

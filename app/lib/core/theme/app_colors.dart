@@ -22,6 +22,7 @@ class AppColors {
   static const Color surfaceElevated = Color(0xFF1F2937); // slate-800
   static const Color cardBackground = Color(0xFF1F2937); // slate-800
   static const Color cardBackgroundElevated = Color(0xFF374151); // slate-700
+  static const Color dropdownBg = Color(0xFF283444); // between surface & surfaceLight
 
   // ═══════════════════════════════════════════════════════════════════════════
   // TEXT
@@ -74,9 +75,9 @@ class AppColors {
   static const Color chipOrangeText = Color(0xFFFF8A5C);
   static const Color chipOrangeBorder = Color(0xFF4D3326);
 
-  static const Color chipBlue = Color(0xFF14261A); // emerald dark bg
-  static const Color chipBlueText = Color(0xFF34D399); // emerald-400
-  static const Color chipBlueBorder = Color(0xFF1A3D26); // emerald dark border
+  static const Color chipBlue = Color(0xFF172554); // blue-950
+  static const Color chipBlueText = Color(0xFF60A5FA); // blue-400
+  static const Color chipBlueBorder = Color(0xFF1E3A5F); // blue dark border
 
   static const Color chipGreen = Color(0xFF14261A);
   static const Color chipGreenText = Color(0xFF4ADE80);
@@ -152,6 +153,12 @@ class AppColors {
   // Glassmorphism (light - for auth screens)
   static const Color glassBackgroundLight = Color(0x80FFFFFF); // 50% white
   static const Color glassBorderLight = Color(0x80FFFFFF);
+
+  // Plans Glass (premium glassmorphism for plan cards)
+  static const Color plansGlassDark = Color(0x14FFFFFF); // ~8% white
+  static const Color plansGlassDarkBorder = Color(0x1AFFFFFF); // ~10% white
+  static const Color plansGlassLight = Color(0x66FFFFFF); // ~40% white
+  static const Color plansGlassLightBorder = Color(0x4DFFFFFF); // ~30% white
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LOGIN SCREEN COLORS
@@ -270,4 +277,21 @@ class AppColors {
   // Light Shimmer
   static const Color lightShimmerBase = Color(0xFFF3F4F6);
   static const Color lightShimmerHighlight = Color(0xFFFFFFFF);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PLAN ACCENT COLORS
+  // ═══════════════════════════════════════════════════════════════════════════
+  static const Color planBasic = Color(0xFFF59E0B); // amber-500
+  static const Color planPro = primary; // emerald-500
+  static const Color planPremium = Color(0xFF3B82F6); // blue-500
+
+  /// Returns the accent color for a given plan key.
+  static Color planColor(String planKey) {
+    return switch (planKey) {
+      'basic' => planBasic,
+      'pro' => planPro,
+      'premium' => planPremium,
+      _ => primary,
+    };
+  }
 }

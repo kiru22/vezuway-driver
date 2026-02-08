@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_colors_extension.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
+import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/utils/country_utils.dart';
 import '../../../../shared/widgets/submit_bottom_bar.dart';
 import '../../../../shared/widgets/themed_card.dart';
@@ -17,8 +18,9 @@ import '../../domain/providers/trip_provider.dart';
 
 class CreateTripScreen extends ConsumerStatefulWidget {
   final String? routeId;
+  final String? tripId;
 
-  const CreateTripScreen({super.key, this.routeId});
+  const CreateTripScreen({super.key, this.routeId, this.tripId});
 
   @override
   ConsumerState<CreateTripScreen> createState() => _CreateTripScreenState();
@@ -27,7 +29,6 @@ class CreateTripScreen extends ConsumerStatefulWidget {
 class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // Selected dates (multiselect)
   Set<DateTime> _selectedDates = {};
   TimeOfDay? _departureTime;
 
@@ -40,13 +41,46 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   RouteModel? _selectedRoute;
   bool _isLoading = false;
   bool _useTemplate = false;
+  bool get _isEditing => widget.tripId != null;
 
   @override
   void initState() {
     super.initState();
-    if (widget.routeId != null) {
+    if (_isEditing) {
+      _loadTrip();
+    } else if (widget.routeId != null) {
       _useTemplate = true;
       _loadRoute();
+    }
+  }
+
+  Future<void> _loadTrip() async {
+    setState(() => _isLoading = true);
+    try {
+      final trip =
+          await ref.read(tripRepositoryProvider).getTrip(widget.tripId!);
+      setState(() {
+        _originCity = trip.originCity;
+        _originCountry = trip.originCountry;
+        _destinationCity = trip.destinationCity;
+        _destinationCountry = trip.destinationCountry;
+        _selectedDates = {
+          DateTime(trip.departureDate.year, trip.departureDate.month, trip.departureDate.day),
+        };
+        _departureTime = trip.departureTime;
+        _notes = trip.notes ?? '';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).common_error),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -69,8 +103,8 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al cargar la plantilla'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).trips_errorLoadingTemplate),
             backgroundColor: AppColors.error,
           ),
         );
@@ -83,18 +117,19 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     final colors = context.colors;
     final isDark = context.isDarkMode;
     final routesState = ref.watch(routesProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
+      backgroundColor: isDark ? colors.background : AppColors.lightInputBg,
       appBar: AppBar(
-        backgroundColor: isDark ? colors.surface : AppColors.lightInputBg,
+        backgroundColor: isDark ? colors.background : AppColors.lightInputBg,
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
           icon: Icon(Icons.close, color: colors.textPrimary),
         ),
         title: Text(
-          'Створити рейс',
+          _isEditing ? l10n.trips_editTrip : l10n.tripsRoutes_createTrip,
           style: TextStyle(
             color: colors.textPrimary,
             fontWeight: FontWeight.w600,
@@ -112,10 +147,10 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(20),
                       children: [
-                        // 1. Route selector FIRST
-                        if (routesState.routes.isNotEmpty &&
+                        if (!_isEditing &&
+                            routesState.routes.isNotEmpty &&
                             widget.routeId == null) ...[
-                          _SectionTitle(title: 'ШАБЛОН МАРШРУТУ'),
+                          _SectionTitle(title: l10n.trips_routeTemplate),
                           const SizedBox(height: 8),
                           _RouteSelector(
                             routes: routesState.routes,
@@ -138,16 +173,14 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
                           const SizedBox(height: 24),
                         ],
 
-                        // Route details preview (if template selected)
-                        if (_selectedRoute != null) ...[
+                        if (!_isEditing && _selectedRoute != null) ...[
                           _RoutePreview(route: _selectedRoute!),
                           const SizedBox(height: 24),
-                        ] else if (!_useTemplate && widget.routeId == null) ...[
-                          // Manual entry for origin/destination
-                          _SectionTitle(title: 'ПУНКТ ВІДПРАВЛЕННЯ'),
+                        ] else if (_isEditing || (!_useTemplate && widget.routeId == null)) ...[
+                          _SectionTitle(title: l10n.trips_originPoint),
                           const SizedBox(height: 8),
                           _CityCountryInput(
-                            cityHint: 'Місто',
+                            cityHint: l10n.trips_cityHint,
                             initialCity: _originCity,
                             initialCountry: _originCountry,
                             onCityChanged: (v) => _originCity = v,
@@ -155,10 +188,10 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
                                 setState(() => _originCountry = v),
                           ),
                           const SizedBox(height: 16),
-                          _SectionTitle(title: 'ПУНКТ ПРИЗНАЧЕННЯ'),
+                          _SectionTitle(title: l10n.trips_destinationPoint),
                           const SizedBox(height: 8),
                           _CityCountryInput(
-                            cityHint: 'Місто',
+                            cityHint: l10n.trips_cityHint,
                             initialCity: _destinationCity,
                             initialCountry: _destinationCountry,
                             onCityChanged: (v) => _destinationCity = v,
@@ -168,36 +201,53 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
                           const SizedBox(height: 24),
                         ],
 
-                        // 2. Calendar with multiselect
-                        _SectionTitle(title: 'ДАТИ ВИЇЗДУ'),
-                        const SizedBox(height: 8),
-                        _MultiSelectCalendar(
-                          selectedDates: _selectedDates,
-                          onDatesChanged: (dates) {
-                            setState(() => _selectedDates = dates);
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        // Selected dates chips
-                        if (_selectedDates.isNotEmpty) ...[
-                          _SelectedDatesChips(
-                            dates: _selectedDates,
-                            onRemove: (date) {
-                              setState(() {
-                                _selectedDates.remove(date);
-                              });
-                            },
-                            onClear: () {
-                              setState(() {
-                                _selectedDates.clear();
-                              });
+                        if (_isEditing) ...[
+                          _SectionTitle(title: l10n.trips_departureDate),
+                          const SizedBox(height: 8),
+                          ThemedCard(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            child: Row(
+                              children: [
+                                Icon(Icons.calendar_today, size: 20, color: colors.textMuted),
+                                const SizedBox(width: 12),
+                                Text(
+                                  _selectedDates.isNotEmpty
+                                      ? DateFormat('dd MMMM yyyy', Localizations.localeOf(context).languageCode).format(_selectedDates.first)
+                                      : '',
+                                  style: TextStyle(fontSize: 16, color: colors.textPrimary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ] else ...[
+                          _SectionTitle(title: l10n.trips_departureDates),
+                          const SizedBox(height: 8),
+                          _MultiSelectCalendar(
+                            selectedDates: _selectedDates,
+                            onDatesChanged: (dates) {
+                              setState(() => _selectedDates = dates);
                             },
                           ),
+                          const SizedBox(height: 8),
+                          if (_selectedDates.isNotEmpty) ...[
+                            _SelectedDatesChips(
+                              dates: _selectedDates,
+                              onRemove: (date) {
+                                setState(() {
+                                  _selectedDates.remove(date);
+                                });
+                              },
+                              onClear: () {
+                                setState(() {
+                                  _selectedDates = {};
+                                });
+                              },
+                            ),
+                          ],
                         ],
                         const SizedBox(height: 24),
 
-                        // 3. Time picker (optional)
-                        _SectionTitle(title: 'ЧАС ВИЇЗДУ (необов\'язково)'),
+                        _SectionTitle(title: l10n.trips_departureTimeOptional),
                         const SizedBox(height: 8),
                         _TimePickerField(
                           value: _departureTime,
@@ -206,15 +256,14 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        // 4. Notes
-                        _SectionTitle(title: 'НОТАТКИ (необов\'язково)'),
+                        _SectionTitle(title: l10n.trips_notesOptional),
                         const SizedBox(height: 8),
                         ThemedCard(
                           child: TextFormField(
                             initialValue: _notes,
                             maxLines: 3,
                             decoration: InputDecoration(
-                              hintText: 'Додаткова інформація...',
+                              hintText: l10n.trips_additionalInfo,
                               hintStyle: TextStyle(
                                 color: isDark
                                     ? colors.textMuted
@@ -255,16 +304,20 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
   }
 
   String _getSubmitButtonLabel() {
-    if (_selectedDates.isEmpty) return 'Виберіть дати';
-    if (_selectedDates.length == 1) return 'Створити рейс';
-    return 'Створити ${_selectedDates.length} рейсів';
+    final l10n = AppLocalizations.of(context);
+    if (_isEditing) return l10n.common_save;
+    if (_selectedDates.isEmpty) return l10n.trips_selectDates;
+    if (_selectedDates.length == 1) return l10n.tripsRoutes_createTrip;
+    return l10n.trips_createTripCount(_selectedDates.length);
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
+
     if (_selectedDates.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Виберіть хоча б одну дату'),
+        SnackBar(
+          content: Text(l10n.trips_selectAtLeastOneDate),
           backgroundColor: AppColors.error,
         ),
       );
@@ -274,8 +327,8 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     if (_selectedRoute == null &&
         (_originCity.isEmpty || _destinationCity.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Виберіть шаблон або вкажіть міста'),
+        SnackBar(
+          content: Text(l10n.trips_selectTemplateOrCities),
           backgroundColor: AppColors.error,
         ),
       );
@@ -285,6 +338,45 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     setState(() => _isLoading = true);
 
     try {
+      if (_isEditing) {
+        final date = _selectedDates.first;
+        final data = <String, dynamic>{
+          'origin_city': _originCity,
+          'origin_country': _originCountry,
+          'destination_city': _destinationCity,
+          'destination_country': _destinationCountry,
+          'departure_date': date.toIso8601String().split('T')[0],
+          if (_departureTime != null)
+            'departure_time':
+                '${_departureTime!.hour.toString().padLeft(2, '0')}:${_departureTime!.minute.toString().padLeft(2, '0')}',
+          if (_notes.isNotEmpty) 'notes': _notes,
+        };
+
+        final success = await ref
+            .read(tripsProvider.notifier)
+            .updateTrip(widget.tripId!, data);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.trips_tripUpdated),
+                backgroundColor: AppColors.success,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.trips_errorCreating),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        }
+        return;
+      }
+
       int successCount = 0;
       final sortedDates = _selectedDates.toList()..sort();
 
@@ -317,8 +409,8 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(successCount == 1
-                  ? 'Рейс створено!'
-                  : 'Створено $successCount рейсів!'),
+                  ? l10n.trips_tripCreated
+                  : l10n.trips_tripsCreated(successCount)),
               backgroundColor: AppColors.success,
             ),
           );
@@ -326,15 +418,15 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
           context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  'Створено $successCount з ${_selectedDates.length} рейсів'),
+              content: Text(l10n.trips_tripsPartiallyCreated(
+                  successCount, _selectedDates.length)),
               backgroundColor: AppColors.warning,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Помилка при створенні рейсів'),
+            SnackBar(
+              content: Text(l10n.trips_errorCreating),
               backgroundColor: AppColors.error,
             ),
           );
@@ -345,10 +437,6 @@ class _CreateTripScreenState extends ConsumerState<CreateTripScreen> {
     }
   }
 }
-
-// ============================================================================
-// SECTION TITLE
-// ============================================================================
 
 class _SectionTitle extends StatelessWidget {
   final String title;
@@ -369,10 +457,6 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
-
-// ============================================================================
-// MULTI-SELECT CALENDAR
-// ============================================================================
 
 class _MultiSelectCalendar extends StatefulWidget {
   final Set<DateTime> selectedDates;
@@ -399,14 +483,15 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final monthFormat = DateFormat('MMMM yyyy', 'uk');
+    final locale = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context);
+    final monthFormat = DateFormat('MMMM yyyy', locale);
 
     return ThemedCard(
       padding: const EdgeInsets.all(16),
       borderRadius: AppTheme.radiusMd,
       child: Column(
         children: [
-          // Month navigation
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -429,10 +514,17 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
             ],
           ),
           const SizedBox(height: 8),
-          // Weekday headers
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'НД']
+            children: [
+              l10n.trips_weekdayMon,
+              l10n.trips_weekdayTue,
+              l10n.trips_weekdayWed,
+              l10n.trips_weekdayThu,
+              l10n.trips_weekdayFri,
+              l10n.trips_weekdaySat,
+              l10n.trips_weekdaySun,
+            ]
                 .map((day) => SizedBox(
                       width: 40,
                       child: Center(
@@ -449,7 +541,6 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
                 .toList(),
           ),
           const SizedBox(height: 8),
-          // Calendar grid
           _buildCalendarGrid(colors),
         ],
       ),
@@ -465,12 +556,10 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
 
     final days = <Widget>[];
 
-    // Empty cells for days before the first of the month
     for (var i = 1; i < firstWeekday; i++) {
       days.add(const SizedBox(width: 40, height: 40));
     }
 
-    // Days of the month
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
@@ -480,15 +569,15 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
       final isSelected = widget.selectedDates.contains(normalizedDate);
       final isToday = normalizedDate == today;
       final isPast = normalizedDate.isBefore(today);
+      final canTap = !(isPast && !isSelected);
 
       days.add(_CalendarDayMultiSelect(
         day: day,
         isSelected: isSelected,
         isToday: isToday,
-        isPast: isPast,
-        onTap: isPast
-            ? null
-            : () {
+        isPast: isPast && !isSelected,
+        onTap: canTap
+            ? () {
                 HapticFeedback.selectionClick();
                 final newDates = Set<DateTime>.from(widget.selectedDates);
                 if (isSelected) {
@@ -497,7 +586,8 @@ class _MultiSelectCalendarState extends State<_MultiSelectCalendar> {
                   newDates.add(normalizedDate);
                 }
                 widget.onDatesChanged(newDates);
-              },
+              }
+            : null,
       ));
     }
 
@@ -590,10 +680,6 @@ class _CalendarDayMultiSelect extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// SELECTED DATES CHIPS
-// ============================================================================
-
 class _SelectedDatesChips extends StatelessWidget {
   final Set<DateTime> dates;
   final Function(DateTime) onRemove;
@@ -608,8 +694,9 @@ class _SelectedDatesChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
     final sortedDates = dates.toList()..sort();
-    final dateFormat = DateFormat('dd.MM', 'uk');
+    final dateFormat = DateFormat('dd.MM', Localizations.localeOf(context).languageCode);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,7 +744,7 @@ class _SelectedDatesChips extends StatelessWidget {
           GestureDetector(
             onTap: onClear,
             child: Text(
-              'Скинути вибір',
+              l10n.trips_resetSelection,
               style: TextStyle(
                 fontSize: 13,
                 color: colors.textMuted,
@@ -671,10 +758,6 @@ class _SelectedDatesChips extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// TIME PICKER
-// ============================================================================
-
 class _TimePickerField extends StatelessWidget {
   final TimeOfDay? value;
   final Function(TimeOfDay?) onChanged;
@@ -687,6 +770,7 @@ class _TimePickerField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context);
 
     return GestureDetector(
       onTap: () async {
@@ -705,7 +789,7 @@ class _TimePickerField extends StatelessWidget {
             Text(
               value != null
                   ? '${value!.hour.toString().padLeft(2, '0')}:${value!.minute.toString().padLeft(2, '0')}'
-                  : 'Не вказано',
+                  : l10n.trips_notSpecified,
               style: TextStyle(
                 fontSize: 16,
                 color: value != null ? colors.textPrimary : colors.textMuted,
@@ -725,10 +809,6 @@ class _TimePickerField extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// ROUTE SELECTOR
-// ============================================================================
-
 class _RouteSelector extends StatelessWidget {
   final List<RouteModel> routes;
   final RouteModel? selectedRoute;
@@ -744,6 +824,7 @@ class _RouteSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = context.isDarkMode;
+    final l10n = AppLocalizations.of(context);
 
     return ThemedCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -752,7 +833,7 @@ class _RouteSelector extends StatelessWidget {
           value: selectedRoute,
           isExpanded: true,
           hint: Text(
-            'Виберіть шаблон',
+            l10n.trips_selectTemplate,
             style: TextStyle(
               color: isDark ? colors.textMuted : AppColors.lightTextSecondary,
             ),
@@ -767,7 +848,7 @@ class _RouteSelector extends StatelessWidget {
             DropdownMenuItem<RouteModel?>(
               value: null,
               child: Text(
-                'Без шаблону (ввести вручну)',
+                l10n.trips_noTemplate,
                 style: TextStyle(color: colors.textSecondary),
               ),
             ),
@@ -785,10 +866,6 @@ class _RouteSelector extends StatelessWidget {
     );
   }
 }
-
-// ============================================================================
-// ROUTE PREVIEW
-// ============================================================================
 
 class _RoutePreview extends StatelessWidget {
   final RouteModel route;
@@ -885,10 +962,6 @@ class _RouteStopItem extends StatelessWidget {
     );
   }
 }
-
-// ============================================================================
-// CITY/COUNTRY INPUT
-// ============================================================================
 
 class _CityCountryInput extends StatelessWidget {
   final String cityHint;

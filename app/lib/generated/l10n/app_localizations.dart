@@ -803,19 +803,19 @@ abstract class AppLocalizations {
   /// No description provided for @packages_widthLabel.
   ///
   /// In es, this message translates to:
-  /// **'An'**
+  /// **'Ancho'**
   String get packages_widthLabel;
 
   /// No description provided for @packages_heightLabel.
   ///
   /// In es, this message translates to:
-  /// **'Al'**
+  /// **'Alto'**
   String get packages_heightLabel;
 
   /// No description provided for @packages_lengthLabel.
   ///
   /// In es, this message translates to:
-  /// **'La'**
+  /// **'Largo'**
   String get packages_lengthLabel;
 
   /// No description provided for @packages_quantityLabel.
@@ -923,7 +923,7 @@ abstract class AppLocalizations {
   /// No description provided for @packages_googleMapsLink.
   ///
   /// In es, this message translates to:
-  /// **'Enlace a Google Maps'**
+  /// **'Google Maps'**
   String get packages_googleMapsLink;
 
   /// No description provided for @packages_weightKg.
@@ -991,6 +991,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Fecha de salida'**
   String get packages_departureDate;
+
+  /// No description provided for @packageDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripcion'**
+  String get packageDescription;
 
   /// No description provided for @packages_imagesSection.
   ///
@@ -1081,6 +1087,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count} paquetes actualizados'**
   String packages_bulkUpdateSuccess(int count);
+
+  /// No description provided for @packages_filterStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'Estado'**
+  String get packages_filterStatus;
+
+  /// No description provided for @packages_filterTrip.
+  ///
+  /// In es, this message translates to:
+  /// **'Viaje'**
+  String get packages_filterTrip;
+
+  /// No description provided for @packages_filterCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Ciudad'**
+  String get packages_filterCity;
+
+  /// No description provided for @packages_filterAllTrips.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los viajes'**
+  String get packages_filterAllTrips;
+
+  /// No description provided for @packages_filterSearchCity.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar ciudad...'**
+  String get packages_filterSearchCity;
+
+  /// No description provided for @packages_filterClearCities.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar'**
+  String get packages_filterClearCities;
+
+  /// No description provided for @packages_filterActiveTrips.
+  ///
+  /// In es, this message translates to:
+  /// **'ACTIVOS'**
+  String get packages_filterActiveTrips;
+
+  /// No description provided for @packages_filterUpcomingTrips.
+  ///
+  /// In es, this message translates to:
+  /// **'PRÓXIMOS'**
+  String get packages_filterUpcomingTrips;
+
+  /// No description provided for @packages_filterPastTrips.
+  ///
+  /// In es, this message translates to:
+  /// **'PASADOS'**
+  String get packages_filterPastTrips;
+
+  /// No description provided for @packages_countShort.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} paq.'**
+  String packages_countShort(int count);
+
+  /// No description provided for @packages_novaPostNumber.
+  ///
+  /// In es, this message translates to:
+  /// **'Nova Post'**
+  String get packages_novaPostNumber;
 
   /// No description provided for @routes_title.
   ///
@@ -1387,6 +1459,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Agregar Ciudad'**
   String get routes_addCity;
+
+  /// No description provided for @routes_addStop.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar parada'**
+  String get routes_addStop;
+
+  /// No description provided for @routes_noIntermediateStops.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin paradas intermedias'**
+  String get routes_noIntermediateStops;
 
   /// No description provided for @routes_deleteStop.
   ///
@@ -2246,6 +2330,18 @@ abstract class AppLocalizations {
   /// **'Crear viaje'**
   String get tripsRoutes_createTrip;
 
+  /// No description provided for @tripsRoutes_noRouteTemplates.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay plantillas de rutas'**
+  String get tripsRoutes_noRouteTemplates;
+
+  /// No description provided for @tripsRoutes_noRouteTemplatesSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea una plantilla para crear viajes rápidamente'**
+  String get tripsRoutes_noRouteTemplatesSubtitle;
+
   /// No description provided for @trips_sectionActive.
   ///
   /// In es, this message translates to:
@@ -2287,6 +2383,252 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Borrar filtro'**
   String get trips_clearFilter;
+
+  /// No description provided for @trips_routeTemplate.
+  ///
+  /// In es, this message translates to:
+  /// **'PLANTILLA DE RUTA'**
+  String get trips_routeTemplate;
+
+  /// No description provided for @trips_originPoint.
+  ///
+  /// In es, this message translates to:
+  /// **'PUNTO DE ORIGEN'**
+  String get trips_originPoint;
+
+  /// No description provided for @trips_destinationPoint.
+  ///
+  /// In es, this message translates to:
+  /// **'PUNTO DE DESTINO'**
+  String get trips_destinationPoint;
+
+  /// No description provided for @trips_departureDates.
+  ///
+  /// In es, this message translates to:
+  /// **'FECHAS DE SALIDA'**
+  String get trips_departureDates;
+
+  /// No description provided for @trips_departureDate.
+  ///
+  /// In es, this message translates to:
+  /// **'FECHA DE SALIDA'**
+  String get trips_departureDate;
+
+  /// No description provided for @trips_departureTimeOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'HORA DE SALIDA (opcional)'**
+  String get trips_departureTimeOptional;
+
+  /// No description provided for @trips_notesOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'NOTAS (opcional)'**
+  String get trips_notesOptional;
+
+  /// No description provided for @trips_additionalInfo.
+  ///
+  /// In es, this message translates to:
+  /// **'Información adicional...'**
+  String get trips_additionalInfo;
+
+  /// No description provided for @trips_selectDates.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona fechas'**
+  String get trips_selectDates;
+
+  /// No description provided for @trips_createTripCount.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear {count} viajes'**
+  String trips_createTripCount(int count);
+
+  /// No description provided for @trips_selectAtLeastOneDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona al menos una fecha'**
+  String get trips_selectAtLeastOneDate;
+
+  /// No description provided for @trips_selectTemplateOrCities.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona una plantilla o indica las ciudades'**
+  String get trips_selectTemplateOrCities;
+
+  /// No description provided for @trips_tripCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Viaje creado!'**
+  String get trips_tripCreated;
+
+  /// No description provided for @trips_tripsCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'¡{count} viajes creados!'**
+  String trips_tripsCreated(int count);
+
+  /// No description provided for @trips_tripsPartiallyCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Creados {success} de {total} viajes'**
+  String trips_tripsPartiallyCreated(int success, int total);
+
+  /// No description provided for @trips_errorCreating.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al crear viajes'**
+  String get trips_errorCreating;
+
+  /// No description provided for @trips_resetSelection.
+  ///
+  /// In es, this message translates to:
+  /// **'Resetear selección'**
+  String get trips_resetSelection;
+
+  /// No description provided for @trips_notSpecified.
+  ///
+  /// In es, this message translates to:
+  /// **'No especificado'**
+  String get trips_notSpecified;
+
+  /// No description provided for @trips_selectTemplate.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona una plantilla'**
+  String get trips_selectTemplate;
+
+  /// No description provided for @trips_noTemplate.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin plantilla (introducir manualmente)'**
+  String get trips_noTemplate;
+
+  /// No description provided for @trips_errorLoadingTemplate.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar la plantilla'**
+  String get trips_errorLoadingTemplate;
+
+  /// No description provided for @trips_cityHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ciudad'**
+  String get trips_cityHint;
+
+  /// No description provided for @trips_weekdayMon.
+  ///
+  /// In es, this message translates to:
+  /// **'Lu'**
+  String get trips_weekdayMon;
+
+  /// No description provided for @trips_weekdayTue.
+  ///
+  /// In es, this message translates to:
+  /// **'Ma'**
+  String get trips_weekdayTue;
+
+  /// No description provided for @trips_weekdayWed.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi'**
+  String get trips_weekdayWed;
+
+  /// No description provided for @trips_weekdayThu.
+  ///
+  /// In es, this message translates to:
+  /// **'Ju'**
+  String get trips_weekdayThu;
+
+  /// No description provided for @trips_weekdayFri.
+  ///
+  /// In es, this message translates to:
+  /// **'Vi'**
+  String get trips_weekdayFri;
+
+  /// No description provided for @trips_weekdaySat.
+  ///
+  /// In es, this message translates to:
+  /// **'Sá'**
+  String get trips_weekdaySat;
+
+  /// No description provided for @trips_weekdaySun.
+  ///
+  /// In es, this message translates to:
+  /// **'Do'**
+  String get trips_weekdaySun;
+
+  /// No description provided for @trips_editTrip.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar viaje'**
+  String get trips_editTrip;
+
+  /// No description provided for @trips_editTripSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Modificar detalles del viaje'**
+  String get trips_editTripSubtitle;
+
+  /// No description provided for @trips_deleteTripSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar este viaje'**
+  String get trips_deleteTripSubtitle;
+
+  /// No description provided for @trips_tripUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Viaje actualizado'**
+  String get trips_tripUpdated;
+
+  /// No description provided for @trips_cannotDeletePast.
+  ///
+  /// In es, this message translates to:
+  /// **'No se puede eliminar un viaje con fecha pasada'**
+  String get trips_cannotDeletePast;
+
+  /// No description provided for @trips_cannotDeleteWithPackages.
+  ///
+  /// In es, this message translates to:
+  /// **'No se puede eliminar un viaje con paquetes asignados'**
+  String get trips_cannotDeleteWithPackages;
+
+  /// No description provided for @trips_itemTypeTrip.
+  ///
+  /// In es, this message translates to:
+  /// **'viaje'**
+  String get trips_itemTypeTrip;
+
+  /// No description provided for @trips_itemTypeRouteTemplate.
+  ///
+  /// In es, this message translates to:
+  /// **'plantilla de ruta'**
+  String get trips_itemTypeRouteTemplate;
+
+  /// No description provided for @trips_tripDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Viaje eliminado'**
+  String get trips_tripDeleted;
+
+  /// No description provided for @trips_tripDeleteError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al eliminar viaje'**
+  String get trips_tripDeleteError;
+
+  /// No description provided for @trips_routeTemplateDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Plantilla eliminada'**
+  String get trips_routeTemplateDeleted;
+
+  /// No description provided for @trips_routeTemplateDeleteError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al eliminar plantilla'**
+  String get trips_routeTemplateDeleteError;
 
   /// No description provided for @myOrders_title.
   ///
@@ -2467,6 +2809,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Panel de Admin'**
   String get admin_panelTitle;
+
+  /// No description provided for @admin_userManagement.
+  ///
+  /// In es, this message translates to:
+  /// **'Gestión de Usuarios'**
+  String get admin_userManagement;
 
   /// No description provided for @admin_users.
   ///
@@ -2690,6 +3038,60 @@ abstract class AppLocalizations {
   /// **'Apelación del conductor:'**
   String get admin_driverAppeal;
 
+  /// No description provided for @admin_planRequests.
+  ///
+  /// In es, this message translates to:
+  /// **'Planes'**
+  String get admin_planRequests;
+
+  /// No description provided for @admin_noPlanRequests.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin solicitudes de plan'**
+  String get admin_noPlanRequests;
+
+  /// No description provided for @admin_noPlanRequestsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando los conductores soliciten un plan, aparecerán aquí'**
+  String get admin_noPlanRequestsSubtitle;
+
+  /// No description provided for @admin_approvePlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Aprobar plan'**
+  String get admin_approvePlan;
+
+  /// No description provided for @admin_rejectPlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Rechazar plan'**
+  String get admin_rejectPlan;
+
+  /// No description provided for @admin_approvePlanConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Aprobar el plan {plan} para {name}?'**
+  String admin_approvePlanConfirm(String plan, String name);
+
+  /// No description provided for @admin_rejectPlanConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Rechazar el plan {plan} para {name}?'**
+  String admin_rejectPlanConfirm(String plan, String name);
+
+  /// No description provided for @admin_planApproved.
+  ///
+  /// In es, this message translates to:
+  /// **'Plan aprobado para {name}'**
+  String admin_planApproved(String name);
+
+  /// No description provided for @admin_planRejected.
+  ///
+  /// In es, this message translates to:
+  /// **'Plan rechazado para {name}'**
+  String admin_planRejected(String name);
+
   /// No description provided for @driverRejected_title.
   ///
   /// In es, this message translates to:
@@ -2767,6 +3169,277 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cerrar sesión'**
   String get driverRejected_logout;
+
+  /// No description provided for @plans_menuTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Planes y precios'**
+  String get plans_menuTitle;
+
+  /// No description provided for @plans_title.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige tu plan ideal'**
+  String get plans_title;
+
+  /// No description provided for @plans_subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Herramientas premium para tu negocio'**
+  String get plans_subtitle;
+
+  /// No description provided for @plans_basic.
+  ///
+  /// In es, this message translates to:
+  /// **'Básico'**
+  String get plans_basic;
+
+  /// No description provided for @plans_pro.
+  ///
+  /// In es, this message translates to:
+  /// **'Pro'**
+  String get plans_pro;
+
+  /// No description provided for @plans_premium.
+  ///
+  /// In es, this message translates to:
+  /// **'Premium'**
+  String get plans_premium;
+
+  /// No description provided for @plans_perMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'/mes'**
+  String get plans_perMonth;
+
+  /// No description provided for @plans_priceLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{name} — {price}€/mes'**
+  String plans_priceLabel(String name, int price);
+
+  /// No description provided for @plans_scanner.
+  ///
+  /// In es, this message translates to:
+  /// **'Escáner'**
+  String get plans_scanner;
+
+  /// No description provided for @plans_sms.
+  ///
+  /// In es, this message translates to:
+  /// **'SMS'**
+  String get plans_sms;
+
+  /// No description provided for @plans_shipmentHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial de envíos'**
+  String get plans_shipmentHistory;
+
+  /// No description provided for @plans_contactBook.
+  ///
+  /// In es, this message translates to:
+  /// **'Libro de contactos'**
+  String get plans_contactBook;
+
+  /// No description provided for @plans_contactList.
+  ///
+  /// In es, this message translates to:
+  /// **'Lista de contactos'**
+  String get plans_contactList;
+
+  /// No description provided for @plans_selectPlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitar plan'**
+  String plans_selectPlan(String plan);
+
+  /// No description provided for @plans_popular.
+  ///
+  /// In es, this message translates to:
+  /// **'Popular'**
+  String get plans_popular;
+
+  /// No description provided for @plans_featureScanner.
+  ///
+  /// In es, this message translates to:
+  /// **'Escáner'**
+  String get plans_featureScanner;
+
+  /// No description provided for @plans_featureSms.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensajes SMS'**
+  String get plans_featureSms;
+
+  /// No description provided for @plans_featureHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial'**
+  String get plans_featureHistory;
+
+  /// No description provided for @plans_requestSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitud enviada correctamente'**
+  String get plans_requestSuccess;
+
+  /// No description provided for @plans_requestError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al enviar la solicitud'**
+  String get plans_requestError;
+
+  /// No description provided for @plans_currentPlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Plan actual'**
+  String get plans_currentPlan;
+
+  /// No description provided for @plans_requested.
+  ///
+  /// In es, this message translates to:
+  /// **'Solicitado'**
+  String get plans_requested;
+
+  /// No description provided for @marketing_trackingTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar seguimiento'**
+  String get marketing_trackingTitle;
+
+  /// No description provided for @marketing_trackingDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Informa al cliente del estado de su paquete. Genera confianza y profesionalidad'**
+  String get marketing_trackingDesc;
+
+  /// No description provided for @marketing_trackingMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola {name}, tu paquete {tracking} está registrado y será recogido pronto. ¡Te mantendremos informado!'**
+  String marketing_trackingMessage(String name, String tracking);
+
+  /// No description provided for @marketing_loyaltyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar fidelización'**
+  String get marketing_loyaltyTitle;
+
+  /// No description provided for @marketing_loyaltyDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Ofrece un descuento y fideliza al cliente. Los clientes recurrentes son los más rentables'**
+  String get marketing_loyaltyDesc;
+
+  /// No description provided for @marketing_loyaltyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola {name}, gracias por confiar en nosotros. En tu próximo envío tienes un 10% de descuento. ¡Contáctanos cuando lo necesites!'**
+  String marketing_loyaltyMessage(String name);
+
+  /// No description provided for @marketing_tripTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Avisar próximo viaje'**
+  String get marketing_tripTitle;
+
+  /// No description provided for @marketing_tripDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Notifica tu próximo viaje y capta envíos. Cada mensaje puede ser un nuevo paquete'**
+  String get marketing_tripDesc;
+
+  /// No description provided for @marketing_tripMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola {name}, tengo viaje {origin} → {destination} el {date}. ¿Tienes algo para enviar? ¡Contáctame!'**
+  String marketing_tripMessage(
+      String name, String origin, String destination, String date);
+
+  /// No description provided for @marketing_upgradeCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Desbloquear con Plan Pro'**
+  String get marketing_upgradeCta;
+
+  /// No description provided for @marketing_premiumFeature.
+  ///
+  /// In es, this message translates to:
+  /// **'Función Premium'**
+  String get marketing_premiumFeature;
+
+  /// No description provided for @marketing_noPhone.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin teléfono'**
+  String get marketing_noPhone;
+
+  /// No description provided for @marketing_noPackage.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin paquetes pendientes'**
+  String get marketing_noPackage;
+
+  /// No description provided for @marketing_noTrip.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin viajes programados'**
+  String get marketing_noTrip;
+
+  /// No description provided for @admin_userDetail.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle de usuario'**
+  String get admin_userDetail;
+
+  /// No description provided for @admin_personalInfo.
+  ///
+  /// In es, this message translates to:
+  /// **'Información personal'**
+  String get admin_personalInfo;
+
+  /// No description provided for @admin_userPlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Plan activo'**
+  String get admin_userPlan;
+
+  /// No description provided for @admin_userNoPlan.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin plan'**
+  String get admin_userNoPlan;
+
+  /// No description provided for @admin_dates.
+  ///
+  /// In es, this message translates to:
+  /// **'Fechas'**
+  String get admin_dates;
+
+  /// No description provided for @admin_lastUpdate.
+  ///
+  /// In es, this message translates to:
+  /// **'Última actualización'**
+  String get admin_lastUpdate;
+
+  /// No description provided for @admin_userLanguage.
+  ///
+  /// In es, this message translates to:
+  /// **'Idioma'**
+  String get admin_userLanguage;
+
+  /// No description provided for @admin_userTheme.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema'**
+  String get admin_userTheme;
+
+  /// No description provided for @admin_superAdmin.
+  ///
+  /// In es, this message translates to:
+  /// **'Administrador'**
+  String get admin_superAdmin;
 }
 
 class _AppLocalizationsDelegate

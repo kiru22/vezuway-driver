@@ -118,7 +118,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ),
                       TextButton(
-                        onPressed: () => context.go('/trips'),
+                        onPressed: () => context.go('/routes'),
                         child: Text(
                           context.l10n.common_viewAll,
                           style: TextStyle(

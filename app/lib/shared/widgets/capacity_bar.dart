@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_extensions.dart';
+import 'package_box_icon.dart';
 
 class CapacityBar extends StatelessWidget {
   final double currentWeight;
@@ -51,8 +52,7 @@ class CapacityBar extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.inventory_2_outlined,
+                  PackageBoxIcon(
                     size: 14,
                     color: colors.textMuted,
                   ),
@@ -102,7 +102,6 @@ class CapacityBar extends StatelessWidget {
           ),
           const SizedBox(height: 10),
         ],
-        // Progress bar with glow effect
         Container(
           height: barHeight,
           width: double.infinity,
@@ -112,7 +111,6 @@ class CapacityBar extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              // Animated fill
               AnimatedContainer(
                 duration: AppTheme.durationNormal,
                 curve: Curves.easeOutCubic,
@@ -139,13 +137,12 @@ class CapacityBar extends StatelessWidget {
                   ),
                 ),
               ),
-              // Shine effect
               if (percentage > 0.1)
                 FractionallySizedBox(
                   alignment: Alignment.centerLeft,
                   widthFactor: percentage,
                   child: Container(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                       top: 1,
                       left: 4,
                       right: 4,
@@ -205,7 +202,6 @@ class CircularCapacityIndicator extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Background circle
           SizedBox(
             width: size,
             height: size,
@@ -216,7 +212,6 @@ class CircularCapacityIndicator extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation(AppColors.capacityBackground),
             ),
           ),
-          // Progress circle
           SizedBox(
             width: size,
             height: size,
@@ -235,7 +230,6 @@ class CircularCapacityIndicator extends StatelessWidget {
               },
             ),
           ),
-          // Percentage text
           Text(
             '${(percentage * 100).toStringAsFixed(0)}%',
             style: TextStyle(

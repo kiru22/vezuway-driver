@@ -2,21 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/data/models/user_model.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
+import '../../../plans/data/models/plan_request_model.dart';
 import '../../data/models/pending_driver_model.dart';
 import '../../data/repositories/admin_repository.dart';
 
-// Admin Repository Provider
 final adminRepositoryProvider = Provider<AdminRepository>((ref) {
   return AdminRepository(ref.read(apiServiceProvider));
 });
 
-// All Users Provider (fetches all, filtering done locally)
 final allUsersProvider = FutureProvider<List<UserModel>>((ref) async {
   final repository = ref.read(adminRepositoryProvider);
   return repository.getAllUsers();
 });
 
-// Filtered Users Providers (derived, for TabBarView)
 final clientUsersProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
   return ref.watch(allUsersProvider).whenData(
         (users) => users.where((u) => u.isClient).toList(),
@@ -29,7 +27,6 @@ final driverUsersProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
       );
 });
 
-// User Count Providers (derived)
 final allUsersCountProvider = Provider<int>((ref) {
   return ref.watch(allUsersProvider).valueOrNull?.length ?? 0;
 });
@@ -42,18 +39,25 @@ final driverUsersCountProvider = Provider<int>((ref) {
   return ref.watch(driverUsersProvider).valueOrNull?.length ?? 0;
 });
 
-// Pending Drivers Provider
 final pendingDriversProvider = FutureProvider<List<PendingDriverModel>>((ref) async {
   final repository = ref.read(adminRepositoryProvider);
   return repository.getPendingDrivers();
 });
 
-// Pending Drivers Count Provider (derived)
 final pendingDriversCountProvider = Provider<int>((ref) {
   return ref.watch(pendingDriversProvider).valueOrNull?.length ?? 0;
 });
 
-// Admin Actions State
+final adminPlanRequestsProvider =
+    FutureProvider<List<PlanRequestModel>>((ref) async {
+  final repository = ref.read(adminRepositoryProvider);
+  return repository.getPlanRequests();
+});
+
+final adminPlanRequestsCountProvider = Provider<int>((ref) {
+  return ref.watch(adminPlanRequestsProvider).valueOrNull?.length ?? 0;
+});
+
 enum AdminActionStatus { idle, loading, success, error }
 
 class AdminActionState {
@@ -80,7 +84,6 @@ class AdminActionState {
   }
 }
 
-// Admin Actions Notifier
 class AdminActionsNotifier extends StateNotifier<AdminActionState> {
   final AdminRepository _repository;
   final Ref _ref;
@@ -91,33 +94,51 @@ class AdminActionsNotifier extends StateNotifier<AdminActionState> {
   Future<bool> approveDriver(String userId) async {
     return _executeAction(
       action: () => _repository.approveDriver(userId),
-      errorPrefix: 'Error al aprobar conductor',
+      invalidateProviders: [pendingDriversProvider],
     );
   }
 
   Future<bool> rejectDriver(String userId, {String? reason}) async {
     return _executeAction(
       action: () => _repository.rejectDriver(userId, reason: reason),
-      errorPrefix: 'Error al rechazar conductor',
+      invalidateProviders: [pendingDriversProvider],
+    );
+  }
+
+  Future<bool> approvePlanRequest(String id) async {
+    return _executeAction(
+      action: () => _repository.approvePlanRequest(id),
+      invalidateProviders: [adminPlanRequestsProvider],
+    );
+  }
+
+  Future<bool> rejectPlanRequest(String id) async {
+    return _executeAction(
+      action: () => _repository.rejectPlanRequest(id),
+      invalidateProviders: [adminPlanRequestsProvider],
     );
   }
 
   Future<bool> _executeAction({
     required Future<void> Function() action,
-    required String errorPrefix,
+    List<ProviderOrFamily>? invalidateProviders,
   }) async {
     state = state.copyWith(status: AdminActionStatus.loading);
 
     try {
       await action();
-      _ref.invalidate(pendingDriversProvider);
+      if (invalidateProviders != null) {
+        for (final provider in invalidateProviders) {
+          _ref.invalidate(provider);
+        }
+      }
       state = state.copyWith(status: AdminActionStatus.success);
       _scheduleStateReset();
       return true;
     } catch (e) {
       state = state.copyWith(
         status: AdminActionStatus.error,
-        error: '$errorPrefix: $e',
+        error: e.toString(),
       );
       return false;
     }
@@ -136,7 +157,6 @@ class AdminActionsNotifier extends StateNotifier<AdminActionState> {
   }
 }
 
-// Admin Actions Provider
 final adminActionsProvider =
     StateNotifierProvider<AdminActionsNotifier, AdminActionState>((ref) {
   return AdminActionsNotifier(

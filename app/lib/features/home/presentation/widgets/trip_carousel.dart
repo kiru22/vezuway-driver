@@ -10,6 +10,8 @@ import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/date_formatters.dart';
 import '../../../../l10n/status_localizations.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/package_box_icon.dart';
+import '../../../packages/domain/providers/package_provider.dart';
 import '../../../trips/data/models/trip_model.dart';
 import '../../../trips/data/models/trip_status.dart';
 
@@ -31,7 +33,6 @@ class UpcomingTripsList extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Trips list
           if (trips.isEmpty)
             EmptyState(
               icon: Icons.route_rounded,
@@ -43,17 +44,17 @@ class UpcomingTripsList extends ConsumerWidget {
                   trip: trip,
                   dateFormatter: formatters.shortDateNoYear,
                   packagesLabel: l10n.packages_count(trip.packagesCount),
-                  onTap: () => _onTripTap(context, trip),
+                  onTap: () => _onTripTap(context, ref, trip),
                 )),
         ],
       ),
     );
   }
 
-  void _onTripTap(BuildContext context, TripModel trip) {
+  void _onTripTap(BuildContext context, WidgetRef ref, TripModel trip) {
     HapticFeedback.lightImpact();
-    // Navegar a la pantalla de trips (el trip detail aún no existe)
-    context.go('/trips');
+    ref.read(packagesProvider.notifier).filterByTrip(trip.id);
+    context.go('/packages');
   }
 }
 
@@ -78,8 +79,8 @@ class _SimpleTripCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(18),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: colors.cardBackground,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
@@ -94,13 +95,12 @@ class _SimpleTripCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Trip icon with gradient
             Container(
-              width: 52,
-              height: 52,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 gradient: _getStatusGradient(),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: _getStatusColor().withValues(alpha: 0.3),
@@ -112,11 +112,10 @@ class _SimpleTripCard extends StatelessWidget {
               child: const Icon(
                 Icons.route_rounded,
                 color: Colors.white,
-                size: 24,
+                size: 20,
               ),
             ),
             const SizedBox(width: 16),
-            // Trip info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +131,7 @@ class _SimpleTripCard extends StatelessWidget {
                       letterSpacing: -0.2,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       Icon(
@@ -141,33 +140,30 @@ class _SimpleTripCard extends StatelessWidget {
                         color: colors.textMuted,
                       ),
                       const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          dateFormatter.format(trip.departureDate),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: colors.textMuted,
-                          ),
+                      Text(
+                        dateFormatter.format(trip.departureDate),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colors.textMuted,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Icon(
-                        Icons.inventory_2_outlined,
+                      const Spacer(),
+                      _StatusChip(status: trip.status),
+                    ],
+                  ),
+                  const SizedBox(height: 1),
+                  Row(
+                    children: [
+                      PackageBoxIcon(
                         size: 12,
                         color: colors.textMuted,
                       ),
                       const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          packagesLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: colors.textMuted,
-                          ),
+                      Text(
+                        packagesLabel,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colors.textMuted,
                         ),
                       ),
                     ],
@@ -175,9 +171,6 @@ class _SimpleTripCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            // Status chip
-            _StatusChip(status: trip.status),
           ],
         ),
       ),

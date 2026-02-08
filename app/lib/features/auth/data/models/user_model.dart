@@ -12,6 +12,7 @@ class UserModel {
   final String? googleId;
   final String? role; // 'client', 'driver', o 'super_admin'
   final DriverStatus? driverStatus;
+  final String? activePlanKey;
   final DateTime? emailVerifiedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -28,6 +29,7 @@ class UserModel {
     this.googleId,
     this.role,
     this.driverStatus,
+    this.activePlanKey,
     this.emailVerifiedAt,
     required this.createdAt,
     required this.updatedAt,
@@ -46,6 +48,7 @@ class UserModel {
       googleId: json['google_id'],
       role: json['role'],
       driverStatus: DriverStatus.fromString(json['driver_status']),
+      activePlanKey: json['active_plan_key'] as String?,
       emailVerifiedAt: json['email_verified_at'] != null
           ? DateTime.parse(json['email_verified_at'])
           : null,
@@ -64,6 +67,7 @@ class UserModel {
       'theme_preference': themePreference,
       'avatar_url': avatarUrl,
       'fcm_token': fcmToken,
+      'active_plan_key': activePlanKey,
     };
   }
 
@@ -79,6 +83,7 @@ class UserModel {
     String? googleId,
     String? role,
     DriverStatus? driverStatus,
+    String? activePlanKey,
     DateTime? emailVerifiedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -95,13 +100,13 @@ class UserModel {
       googleId: googleId ?? this.googleId,
       role: role ?? this.role,
       driverStatus: driverStatus ?? this.driverStatus,
+      activePlanKey: activePlanKey ?? this.activePlanKey,
       emailVerifiedAt: emailVerifiedAt ?? this.emailVerifiedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
-  // User Type Helper Getters
   bool get isClient => role == 'client';
   bool get isDriver => role == 'driver';
   bool get isSuperAdmin => role == 'super_admin';
@@ -111,4 +116,5 @@ class UserModel {
   bool get isRejectedDriver =>
       isDriver && driverStatus == DriverStatus.rejected;
   bool get needsRoleSelection => role == null;
+  bool get hasActivePlan => activePlanKey != null;
 }

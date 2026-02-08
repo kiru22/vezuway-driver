@@ -122,9 +122,9 @@
   "packages_unassigned": "Не призначено",
   "packages_tabSender": "Вiдправник",
   "packages_tabReceiver": "Отримувач",
-  "packages_widthLabel": "Ш",
-  "packages_heightLabel": "В",
-  "packages_lengthLabel": "Д",
+  "packages_widthLabel": "Шир.",
+  "packages_heightLabel": "Вис.",
+  "packages_lengthLabel": "Довж.",
   "packages_quantityLabel": "Кiлькiсть",
   "packages_tariffLabel": "ТАРИФ",
   "packages_totalPrice": "ВСЬОГО",
@@ -142,7 +142,7 @@
   "packages_deliverySection": "ДОСТАВКА",
   "packages_hide": "Приховати",
   "packages_exactAddress": "Точна адреса",
-  "packages_googleMapsLink": "Посилання на Google Maps",
+  "packages_googleMapsLink": "Google Maps",
   "packages_weightKg": "ВАГА (КГ)",
   "packages_quantityPcs": "КІЛЬКІСТЬ (ШТ)",
   "packages_dimensionsCm": "ГАБАРИТИ (СМ)",
@@ -154,6 +154,7 @@
   "packages_origin": "Вiдправлення",
   "packages_destination": "Призначення",
   "packages_departureDate": "Дата вiдправлення",
+  "packageDescription": "Опис",
   "packages_imagesSection": "Фото посилки",
   "packages_addImage": "Додати фото",
   "packages_noImages": "Немає фото",
@@ -179,6 +180,22 @@
       "count": { "type": "int" }
     }
   },
+  "packages_filterStatus": "Статус",
+  "packages_filterTrip": "Рейс",
+  "packages_filterCity": "Місто",
+  "packages_filterAllTrips": "Усі рейси",
+  "packages_filterSearchCity": "Шукати місто...",
+  "packages_filterClearCities": "Очистити",
+  "packages_filterActiveTrips": "АКТИВНІ",
+  "packages_filterUpcomingTrips": "НАСТУПНІ",
+  "packages_filterPastTrips": "МИНУЛІ",
+  "packages_countShort": "{count} пос.",
+  "@packages_countShort": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "packages_novaPostNumber": "Нова Пошта",
 
   "routes_title": "Маршрути",
   "routes_activeTab": "Активнi ({count})",
@@ -231,6 +248,8 @@
   "routes_stopN": "Зупинка {n}",
   "routes_finalDestination": "Кiнцеве Призначення",
   "routes_addCity": "Додати Мiсто",
+  "routes_addStop": "Додати зупинку",
+  "routes_noIntermediateStops": "Без промiжних зупинок",
   "routes_deleteStop": "видалити",
   "routes_pricingSection": "ЦIНОУТВОРЕННЯ",
   "routes_amount": "Сума",
@@ -389,6 +408,8 @@
   "tripsRoutes_noTrips": "Немає рейсів",
   "tripsRoutes_noTripsSubtitle": "Створіть перший рейс",
   "tripsRoutes_createTrip": "Створити рейс",
+  "tripsRoutes_noRouteTemplates": "Немає шаблонів маршрутів",
+  "tripsRoutes_noRouteTemplatesSubtitle": "Створіть шаблон для швидкого створення рейсів",
   "trips_sectionActive": "АКТИВНІ",
   "trips_sectionUpcoming": "НАСТУПНІ",
   "trips_sectionHistory": "ІСТОРІЯ",
@@ -401,6 +422,63 @@
   "trips_changeStatus": "Змінити статус",
   "trips_retry": "Повторити",
   "trips_clearFilter": "Скинути фільтр",
+  "trips_routeTemplate": "ШАБЛОН МАРШРУТУ",
+  "trips_originPoint": "ПУНКТ ВІДПРАВЛЕННЯ",
+  "trips_destinationPoint": "ПУНКТ ПРИЗНАЧЕННЯ",
+  "trips_departureDates": "ДАТИ ВИЇЗДУ",
+  "trips_departureDate": "ДАТА ВИЇЗДУ",
+  "trips_departureTimeOptional": "ЧАС ВИЇЗДУ (необов''язково)",
+  "trips_notesOptional": "НОТАТКИ (необов''язково)",
+  "trips_additionalInfo": "Додаткова інформація...",
+  "trips_selectDates": "Виберіть дати",
+  "trips_createTripCount": "Створити {count} рейсів",
+  "@trips_createTripCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "trips_selectAtLeastOneDate": "Виберіть хоча б одну дату",
+  "trips_selectTemplateOrCities": "Виберіть шаблон або вкажіть міста",
+  "trips_tripCreated": "Рейс створено!",
+  "trips_tripsCreated": "Створено {count} рейсів!",
+  "@trips_tripsCreated": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "trips_tripsPartiallyCreated": "Створено {success} з {total} рейсів",
+  "@trips_tripsPartiallyCreated": {
+    "placeholders": {
+      "success": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "trips_errorCreating": "Помилка при створенні рейсів",
+  "trips_resetSelection": "Скинути вибір",
+  "trips_notSpecified": "Не вказано",
+  "trips_selectTemplate": "Виберіть шаблон",
+  "trips_noTemplate": "Без шаблону (ввести вручну)",
+  "trips_errorLoadingTemplate": "Помилка завантаження шаблону",
+  "trips_cityHint": "Місто",
+  "trips_weekdayMon": "Пн",
+  "trips_weekdayTue": "Вт",
+  "trips_weekdayWed": "Ср",
+  "trips_weekdayThu": "Чт",
+  "trips_weekdayFri": "Пт",
+  "trips_weekdaySat": "Сб",
+  "trips_weekdaySun": "Нд",
+  "trips_editTrip": "Редагувати поїздку",
+  "trips_editTripSubtitle": "Змінити деталі поїздки",
+  "trips_deleteTripSubtitle": "Видалити цю поїздку",
+  "trips_tripUpdated": "Поїздку оновлено",
+  "trips_cannotDeletePast": "Не можна видалити рейс з минулою датою",
+  "trips_cannotDeleteWithPackages": "Не можна видалити рейс з призначеними посилками",
+  "trips_itemTypeTrip": "рейс",
+  "trips_itemTypeRouteTemplate": "шаблон маршруту",
+  "trips_tripDeleted": "Рейс видалено",
+  "trips_tripDeleteError": "Помилка видалення рейсу",
+  "trips_routeTemplateDeleted": "Шаблон видалено",
+  "trips_routeTemplateDeleteError": "Помилка видалення шаблону",
 
   "@@_MY_ORDERS": "============ MY ORDERS ============",
   "myOrders_title": "Мої Замовлення",
@@ -439,6 +517,7 @@
 
   "@@_ADMIN": "============ ADMIN PANEL ============",
   "admin_panelTitle": "Панель Адміна",
+  "admin_userManagement": "Керування Користувачами",
   "admin_users": "Користувачі",
   "admin_requests": "Заявки",
   "admin_allUsers": "Всі",
@@ -501,6 +580,37 @@
   "admin_reapplication": "Повторна заявка",
   "admin_previousRejectionReason": "Причина попередньої відмови:",
   "admin_driverAppeal": "Апеляція водія:",
+  "admin_planRequests": "Плани",
+  "admin_noPlanRequests": "Немає запитів на план",
+  "admin_noPlanRequestsSubtitle": "Коли водії запитають план, вони з''являться тут",
+  "admin_approvePlan": "Схвалити план",
+  "admin_rejectPlan": "Відхилити план",
+  "admin_approvePlanConfirm": "Схвалити план {plan} для {name}?",
+  "@admin_approvePlanConfirm": {
+    "placeholders": {
+      "plan": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "admin_rejectPlanConfirm": "Відхилити план {plan} для {name}?",
+  "@admin_rejectPlanConfirm": {
+    "placeholders": {
+      "plan": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "admin_planApproved": "План схвалено для {name}",
+  "@admin_planApproved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "admin_planRejected": "План відхилено для {name}",
+  "@admin_planRejected": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
 
   "@@_DRIVER_REJECTED": "============ DRIVER REJECTED SCREEN ============",
   "driverRejected_title": "Заявку відхилено",
@@ -515,5 +625,86 @@
   "driverRejected_appealSent": "Апеляцію успішно надіслано. Вашу заявку переглядають повторно.",
   "driverRejected_appealError": "Помилка надсилання апеляції. Спробуйте ще раз.",
   "driverRejected_appealAlreadySent": "Ви вже надіслали апеляцію. Вашу заявку переглядають повторно.",
-  "driverRejected_logout": "Вийти"
+  "driverRejected_logout": "Вийти",
+
+  "@@_PLANS": "============ PLANS & PRICING ============",
+  "plans_menuTitle": "Плани та ціни",
+  "plans_title": "Обери свій ідеальний план",
+  "plans_subtitle": "Преміум інструменти для твого бізнесу",
+  "plans_basic": "Базовий",
+  "plans_pro": "Pro",
+  "plans_premium": "Преміум",
+  "plans_perMonth": "/міс",
+  "plans_priceLabel": "{name} — {price}\u20AC/міс",
+  "@plans_priceLabel": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "price": { "type": "int" }
+    }
+  },
+  "plans_scanner": "Сканер",
+  "plans_sms": "SMS",
+  "plans_shipmentHistory": "Історія відправлень",
+  "plans_contactBook": "Книга контактів",
+  "plans_contactList": "Список контактів",
+  "plans_selectPlan": "Замовити план",
+  "@plans_selectPlan": {
+    "placeholders": {
+      "plan": {"type": "String"}
+    }
+  },
+  "plans_popular": "Популярний",
+  "plans_featureScanner": "Сканер",
+  "plans_featureSms": "SMS повідомлення",
+  "plans_featureHistory": "Історія",
+  "plans_requestSuccess": "Запит успішно надіслано",
+  "plans_requestError": "Помилка при відправці запиту",
+  "plans_currentPlan": "Поточний план",
+  "plans_requested": "Запитано",
+
+  "@@_MARKETING": "============ MARKETING ACTIONS ============",
+  "marketing_trackingTitle": "Надіслати відстеження",
+  "marketing_trackingDesc": "Повідом клієнту про стан його посилки. Формує довіру та професійність",
+  "marketing_trackingMessage": "Привіт {name}, твоя посилка {tracking} зареєстрована і скоро буде забрана. Будемо тримати в курсі!",
+  "@marketing_trackingMessage": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "tracking": {"type": "String"}
+    }
+  },
+  "marketing_loyaltyTitle": "Надіслати лояльність",
+  "marketing_loyaltyDesc": "Запропонуй знижку і зроби клієнта постійним. Постійні клієнти — найприбутковіші",
+  "marketing_loyaltyMessage": "Привіт {name}, дякуємо за довіру. На наступне відправлення маєш знижку 10%. Пиши, коли потрібно!",
+  "@marketing_loyaltyMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "marketing_tripTitle": "Повідомити про рейс",
+  "marketing_tripDesc": "Повідом про наступний рейс і збери посилки. Кожне повідомлення — це потенційна посилка",
+  "marketing_tripMessage": "Привіт {name}, маю рейс {origin} → {destination} {date}. Маєш щось для відправки? Пиши!",
+  "@marketing_tripMessage": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "origin": {"type": "String"},
+      "destination": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "marketing_upgradeCta": "Розблокувати з Планом Pro",
+  "marketing_premiumFeature": "Преміум функція",
+  "marketing_noPhone": "Без телефону",
+  "marketing_noPackage": "Немає очікуючих посилок",
+  "marketing_noTrip": "Немає запланованих рейсів",
+
+  "@@_ADMIN_USER_DETAIL": "============ ADMIN USER DETAIL ============",
+  "admin_userDetail": "Деталі користувача",
+  "admin_personalInfo": "Особиста інформація",
+  "admin_userPlan": "Активний план",
+  "admin_userNoPlan": "Без плану",
+  "admin_dates": "Дати",
+  "admin_lastUpdate": "Останнє оновлення",
+  "admin_userLanguage": "Мова",
+  "admin_userTheme": "Тема",
+  "admin_superAdmin": "Адміністратор"
 }

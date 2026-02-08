@@ -6,11 +6,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/widgets/options_bottom_sheet.dart';
 import '../../../../shared/widgets/pill_tab_bar.dart';
 import '../../../packages/presentation/widgets/package_card_v2.dart';
 import '../../data/models/contact_model.dart';
 import '../../domain/providers/contact_provider.dart';
 import '../widgets/contact_stats_card.dart';
+import '../widgets/marketing_actions_card.dart';
 
 class ContactDetailScreen extends ConsumerStatefulWidget {
   final String contactId;
@@ -73,13 +75,11 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
       body: Column(
         children: [
           const SizedBox(height: 8),
-          // Tab bar
           PillTabBar(
             controller: _tabController,
             labels: [l10n.contacts_tabHistory, l10n.contacts_tabDetails],
           ),
           const SizedBox(height: 16),
-          // Content
           Expanded(
             child: contactAsync.when(
               data: (contact) => TabBarView(
@@ -118,43 +118,24 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
 
   void _showActionsBottomSheet(BuildContext context, ContactModel contact) {
     final l10n = context.l10n;
-    final colors = context.colors;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(l10n.contacts_edit),
-              onTap: () {
-                Navigator.pop(context);
-                _showEditDialog(contact);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: AppColors.error),
-              title: Text(
-                l10n.common_delete,
-                style: const TextStyle(color: AppColors.error),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _showDeleteConfirmation();
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
+    showOptionsBottomSheet(context, sections: [
+      BottomSheetSection(options: [
+        BottomSheetOption(
+          icon: Icons.edit_outlined,
+          label: l10n.contacts_edit,
+          subtitle: 'Змінити дані контакту',
+          onTap: () => _showEditDialog(contact),
         ),
-      ),
-    );
+        BottomSheetOption(
+          icon: Icons.delete_outline,
+          label: l10n.common_delete,
+          subtitle: 'Видалити контакт назавжди',
+          isDestructive: true,
+          onTap: _showDeleteConfirmation,
+        ),
+      ]),
+    ]);
   }
 
   Widget _buildHistoryTab() {
@@ -217,9 +198,10 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
       child: Column(
         children: [
           ContactStatsCard(contact: contact),
+          const SizedBox(height: 16),
+          MarketingActionsCard(contact: contact),
           const SizedBox(height: 24),
 
-          // Notas del contacto
           if (contact.notes != null && contact.notes!.isNotEmpty)
             _buildInfoSection(
               title: context.l10n.contacts_notes,
@@ -285,13 +267,12 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
         ),
         child: Container(
           constraints: const BoxConstraints(maxWidth: 600),
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(24),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Título
                 Text(
                   l10n.contacts_edit,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -300,7 +281,6 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
                 ),
                 const SizedBox(height: 24),
 
-                // Campos del formulario
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
@@ -337,22 +317,16 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
                 ),
                 const SizedBox(height: 32),
 
-                // Botones de acción
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 14,
-                        ),
-                      ),
                       child: Text(l10n.common_cancel),
                     ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: ElevatedButton(
                       onPressed: () async {
                         if (nameController.text.trim().isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -377,7 +351,6 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
                             },
                           );
 
-                          // Invalidar el provider para recargar datos
                           ref.invalidate(
                               contactDetailProvider(widget.contactId));
 
@@ -397,19 +370,20 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
                           }
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 14,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppTheme.radiusMd),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.radiusMd),
-                        ),
+                        child: Text(l10n.common_save),
                       ),
-                      child: Text(l10n.common_save),
                     ),
                   ],
                 ),
@@ -442,8 +416,8 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
                     .deleteContact(widget.contactId);
 
                 if (mounted) {
-                  Navigator.pop(context); // Cerrar diálogo
-                  context.pop(); // Volver a lista de contactos
+                  Navigator.pop(context);
+                  context.pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(l10n.contacts_deleted)),
                   );

@@ -11,6 +11,7 @@ import '../../../../shared/utils/address_utils.dart';
 import '../../../../shared/utils/contact_launcher.dart';
 import '../../../../shared/widgets/communication_button_row.dart';
 import '../../../../shared/widgets/map_button.dart';
+import '../../../../shared/widgets/options_bottom_sheet.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../l10n/status_localizations.dart';
@@ -43,7 +44,6 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
       duration: const Duration(milliseconds: 800),
     );
 
-    // Create staggered animations for 4 cards using helper
     _animations = StaggeredAnimations(
       controller: _animationController,
       itemCount: 4,
@@ -58,7 +58,7 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
     super.dispose();
   }
 
-  void _handleStatusChange(PackageModel package) async {
+  Future<void> _handleStatusChange(PackageModel package) async {
     final nextStatus = package.status.nextStatus;
     if (nextStatus == null) return;
 
@@ -138,21 +138,22 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Tracking Status Card (with header)
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[0],
                 slideAnimation: _animations.slideAnimations[0],
                 child: _TrackingStatusCard(package: package),
               ),
               const SizedBox(height: 12),
-              // 2. Package Specs (Weight, Dimensions, etc.)
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[1],
                 slideAnimation: _animations.slideAnimations[1],
                 child: _PackageSpecsCard(package: package),
               ),
+              if (package.description != null || package.notes != null) ...[
+                const SizedBox(height: 12),
+                _DetailsCard(package: package),
+              ],
               const SizedBox(height: 12),
-              // 3. Destinatario
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[2],
                 slideAnimation: _animations.slideAnimations[2],
@@ -166,7 +167,6 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              // 4. Remitente
               AnimatedStaggeredItem(
                 fadeAnimation: _animations.fadeAnimations[3],
                 slideAnimation: _animations.slideAnimations[3],
@@ -179,20 +179,11 @@ class _PackageDetailScreenState extends ConsumerState<PackageDetailScreen>
                       package.senderAddress, package.senderCity),
                 ),
               ),
-              if (package.description != null || package.notes != null) ...[
-                const SizedBox(height: 12),
-                _DetailsCard(package: package),
-              ],
-              // 5. Sección de imágenes
               const SizedBox(height: 12),
               _ImagesSection(
                 package: package,
-                onImageAdded: () {
-                  ref.invalidate(packageDetailProvider(widget.packageId));
-                },
-                onImageDeleted: () {
-                  ref.invalidate(packageDetailProvider(widget.packageId));
-                },
+                onChanged: () =>
+                    ref.invalidate(packageDetailProvider(widget.packageId)),
               ),
             ],
           ),
@@ -216,7 +207,7 @@ class _PackageSpecsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowSoft,
+        boxShadow: context.adaptiveShadow,
       ),
       child: Column(
         children: [
@@ -363,6 +354,9 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
   // Ángulo de rotación en radianes (~15 grados)
   static const double _tiltAngle = 0.26;
 
+  // Posición actual del coche (valor final de la última animación)
+  double _currentProgress = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -372,46 +366,57 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
     );
 
     final targetProgress = _getProgress(widget.package.status);
+    _setupAnimations(fromProgress: 0.0, toProgress: targetProgress);
+    _controller.forward();
+  }
 
-    // Animación de posición (termina antes del rebote)
+  @override
+  void didUpdateWidget(covariant _TrackingStatusCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.package.status != widget.package.status) {
+      _currentProgress = _getProgress(oldWidget.package.status);
+      final targetProgress = _getProgress(widget.package.status);
+
+      _setupAnimations(
+          fromProgress: _currentProgress, toProgress: targetProgress);
+      _controller.reset();
+      _controller.forward();
+    }
+  }
+
+  void _setupAnimations(
+      {required double fromProgress, required double toProgress}) {
     _positionAnimation = Tween<double>(
-      begin: 0.0,
-      end: targetProgress,
+      begin: fromProgress,
+      end: toProgress,
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.76, curve: Curves.easeIn), // 1.3s de 1.7s
+      curve: const Interval(0.0, 0.76, curve: Curves.easeIn),
     ));
 
-    // Animación de rotación: caballito → normal → frenado → rebote
-    // Pesos: 2 + 9 + 2 + 4 = 17 (equivale a 1.7 segundos)
     _rotationAnimation = TweenSequence<double>([
-      // Caballito: inclinación hacia atrás (0.2 seg)
       TweenSequenceItem(
         tween: Tween(begin: 0.0, end: -_tiltAngle)
             .chain(CurveTween(curve: Curves.easeOut)),
         weight: 2,
       ),
-      // Viaje normal: vuelve a horizontal (0.9 seg)
       TweenSequenceItem(
         tween: Tween(begin: -_tiltAngle, end: 0.0)
             .chain(CurveTween(curve: Curves.easeInOut)),
         weight: 9,
       ),
-      // Frenado de morro: inclinación hacia adelante (0.2 seg)
       TweenSequenceItem(
         tween: Tween(begin: 0.0, end: _tiltAngle)
             .chain(CurveTween(curve: Curves.easeIn)),
         weight: 2,
       ),
-      // Rebote: vuelve a horizontal con bounce (0.4 seg)
       TweenSequenceItem(
         tween: Tween(begin: _tiltAngle, end: 0.0)
             .chain(CurveTween(curve: Curves.bounceOut)),
         weight: 4,
       ),
     ]).animate(_controller);
-
-    _controller.forward();
   }
 
   @override
@@ -470,15 +475,13 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowSoft,
+        boxShadow: context.adaptiveShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: status badge + date + copy button
           Row(
             children: [
-              // Status badge (white semi-transparent background)
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -496,7 +499,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
                 ),
               ),
               const SizedBox(width: 12),
-              // Date (white text with opacity)
               Text(
                 _formatCreatedDate(context, widget.package.createdAt),
                 style: TextStyle(
@@ -505,7 +507,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
                 ),
               ),
               const Spacer(),
-              // Copy button (semi-transparent white background)
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -528,7 +529,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
             ],
           ),
           const SizedBox(height: 12),
-          // Tracking code (large white text)
           Text(
             '#${widget.package.trackingCode}',
             style: const TextStyle(
@@ -539,7 +539,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
             ),
           ),
           const SizedBox(height: 16),
-          // Route Visualizer with Animation
           LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
@@ -549,7 +548,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
                 child: Stack(
                   alignment: Alignment.centerLeft,
                   children: [
-                    // Dotted Line (Background)
                     Row(
                       children: List.generate(
                         15,
@@ -563,7 +561,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
                         ),
                       ),
                     ),
-                    // Progress Line (Solid) - Animated
                     AnimatedBuilder(
                       animation: _positionAnimation,
                       builder: (context, child) {
@@ -574,7 +571,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
                         );
                       },
                     ),
-                    // Start Dot
                     Container(
                       width: 10,
                       height: 10,
@@ -584,7 +580,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
                         shape: BoxShape.circle,
                       ),
                     ),
-                    // End Dot
                     Positioned(
                       right: 0,
                       child: Container(
@@ -597,7 +592,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
                         ),
                       ),
                     ),
-                    // Current Position Icon - Animated with rotation
                     AnimatedBuilder(
                       animation: Listenable.merge(
                           [_positionAnimation, _rotationAnimation]),
@@ -639,7 +633,6 @@ class _TrackingStatusCardState extends State<_TrackingStatusCard>
             },
           ),
           const SizedBox(height: 8),
-          // Cities
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -713,7 +706,7 @@ class _DetailsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowSoft,
+        boxShadow: context.adaptiveShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -735,15 +728,6 @@ class _DetailsCard extends StatelessWidget {
           ),
           if (package.description != null) ...[
             const SizedBox(height: 16),
-            Text(
-              context.l10n.packages_description,
-              style: TextStyle(
-                color: colors.textMuted,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 4),
             Text(
               package.description!,
               style: TextStyle(
@@ -804,12 +788,11 @@ class _ContactCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowSoft,
+        boxShadow: context.adaptiveShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               Container(
@@ -832,7 +815,6 @@ class _ContactCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // Nombre - JERARQUÍA PRIMARIA
           Text(
             name,
             style: TextStyle(
@@ -841,7 +823,6 @@ class _ContactCard extends StatelessWidget {
               color: colors.textPrimary,
             ),
           ),
-          // Ciudad y teléfono en la misma línea
           if (hasAddress || hasPhone) ...[
             const SizedBox(height: 6),
             Row(
@@ -869,12 +850,10 @@ class _ContactCard extends StatelessWidget {
               ],
             ),
           ],
-          // Botones de comunicación
           if (hasPhone) ...[
             const SizedBox(height: 12),
             CommunicationButtonRow(phone: phone!),
           ],
-          // Botón de mapa
           if (hasAddress) ...[
             const SizedBox(height: 10),
             SizedBox(
@@ -893,209 +872,48 @@ class _ContactCard extends StatelessWidget {
 void _showActionsBottomSheet(
     BuildContext context, WidgetRef ref, PackageModel package) {
   HapticFeedback.lightImpact();
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.transparent,
-    builder: (ctx) => _ActionsBottomSheet(
-      package: package,
-      onStatusSelected: (status) async {
-        Navigator.pop(ctx);
-        await ref.read(packagesProvider.notifier).updateStatus(
-              package.id,
-              status,
-            );
-        ref.invalidate(packageDetailProvider(package.id));
-        ref.invalidate(packageHistoryProvider(package.id));
-      },
-      onEditTap: () {
-        Navigator.pop(ctx);
-        context.go('/packages/${package.id}/edit');
-      },
+
+  final availableStatuses =
+      PackageStatus.values.where((s) => s != package.status).toList();
+
+  showOptionsBottomSheet(context, sections: [
+    BottomSheetSection(
+      title: context.l10n.packages_changeStatus,
+      options: availableStatuses
+          .map((status) => BottomSheetOption(
+                icon: status.icon,
+                label: status.localizedName(context),
+                subtitle: status.localizedDescription(context),
+                iconColor: status.color,
+                onTap: () async {
+                  await ref.read(packagesProvider.notifier).updateStatus(
+                        package.id,
+                        status,
+                      );
+                  ref.invalidate(packageDetailProvider(package.id));
+                  ref.invalidate(packageHistoryProvider(package.id));
+                },
+              ))
+          .toList(),
     ),
-  );
-}
-
-class _ActionsBottomSheet extends StatelessWidget {
-  final PackageModel package;
-  final Function(PackageStatus) onStatusSelected;
-  final VoidCallback onEditTap;
-
-  const _ActionsBottomSheet({
-    required this.package,
-    required this.onStatusSelected,
-    required this.onEditTap,
-  });
-
-  List<PackageStatus> _getAvailableStatuses() {
-    return PackageStatus.values.where((s) => s != package.status).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return SafeArea(
-      top: false,
-      child: Container(
-        decoration: BoxDecoration(
-          color: colors.cardBackground,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          border: Border(
-            top: BorderSide(color: colors.border),
-            left: BorderSide(color: colors.border),
-            right: BorderSide(color: colors.border),
-          ),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Change status section
-            Text(
-              context.l10n.packages_changeStatus.toUpperCase(),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: colors.textMuted,
-                letterSpacing: 0.5,
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Status options
-            ..._getAvailableStatuses().map((status) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _ActionOption(
-                    icon: status.icon,
-                    iconColor: status.color,
-                    title: status.localizedName(context),
-                    description: status.localizedDescription(context),
-                    onTap: () => onStatusSelected(status),
-                  ),
-                )),
-            const SizedBox(height: 8),
-            Divider(color: colors.divider),
-            const SizedBox(height: 8),
-            // Edit option
-            _ActionOption(
-              icon: Icons.edit_outlined,
-              iconColor: colors.textSecondary,
-              title: context.l10n.common_edit,
-              onTap: onEditTap,
-            ),
-          ],
-        ),
+    BottomSheetSection(options: [
+      BottomSheetOption(
+        icon: Icons.edit_outlined,
+        label: context.l10n.common_edit,
+        onTap: () => context.go('/packages/${package.id}/edit'),
       ),
-    );
-  }
-}
-
-class _ActionOption extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String? description;
-  final VoidCallback onTap;
-
-  const _ActionOption({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    this.description,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: colors.border),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                  if (description != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      description!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colors.textMuted,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: colors.textMuted,
-              size: 22,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    ]),
+  ]);
 }
 
 /// Sección de imágenes del paquete
 class _ImagesSection extends ConsumerStatefulWidget {
   final PackageModel package;
-  final VoidCallback onImageAdded;
-  final VoidCallback onImageDeleted;
+  final VoidCallback onChanged;
 
   const _ImagesSection({
     required this.package,
-    required this.onImageAdded,
-    required this.onImageDeleted,
+    required this.onChanged,
   });
 
   @override
@@ -1116,7 +934,7 @@ class _ImagesSectionState extends ConsumerState<_ImagesSection> {
       decoration: BoxDecoration(
         color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowSoft,
+        boxShadow: context.adaptiveShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1202,7 +1020,7 @@ class _ImagesSectionState extends ConsumerState<_ImagesSection> {
             backgroundColor: AppColors.success,
           ),
         );
-        widget.onImageAdded();
+        widget.onChanged();
       }
     } catch (e) {
       if (mounted) {
@@ -1223,7 +1041,6 @@ class _ImagesSectionState extends ConsumerState<_ImagesSection> {
   Future<void> _handleDeleteImage(String mediaId) async {
     if (_isDeleting) return;
 
-    // Confirmar eliminación
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1258,7 +1075,7 @@ class _ImagesSectionState extends ConsumerState<_ImagesSection> {
             backgroundColor: AppColors.success,
           ),
         );
-        widget.onImageDeleted();
+        widget.onChanged();
       }
     } catch (e) {
       if (mounted) {
@@ -1305,7 +1122,6 @@ class _BottomActionBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Botón Editar (outline)
           Expanded(
             child: GestureDetector(
               onTap: () {
@@ -1341,7 +1157,6 @@ class _BottomActionBar extends StatelessWidget {
               ),
             ),
           ),
-          // Botón Cambiar estado (solo si hay siguiente estado)
           if (nextStatus != null) ...[
             const SizedBox(width: 12),
             Expanded(

@@ -1,5 +1,6 @@
 import '../../../../core/services/api_service.dart';
 import '../../../auth/data/models/user_model.dart';
+import '../../../plans/data/models/plan_request_model.dart';
 import '../models/pending_driver_model.dart';
 
 class AdminRepository {
@@ -27,6 +28,23 @@ class AdminRepository {
   Future<UserModel> approveDriver(String userId) async {
     final response = await _api.post('/admin/drivers/$userId/approve');
     return UserModel.fromJson(_extractData(response.data));
+  }
+
+  Future<List<PlanRequestModel>> getPlanRequests() async {
+    final response = await _api.get('/admin/plan-requests');
+    return _extractList(response.data)
+        .map((json) => PlanRequestModel.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<PlanRequestModel> approvePlanRequest(String id) async {
+    final response = await _api.post('/admin/plan-requests/$id/approve');
+    return PlanRequestModel.fromJson(_extractData(response.data));
+  }
+
+  Future<PlanRequestModel> rejectPlanRequest(String id) async {
+    final response = await _api.post('/admin/plan-requests/$id/reject');
+    return PlanRequestModel.fromJson(_extractData(response.data));
   }
 
   Future<UserModel> rejectDriver(String userId, {String? reason}) async {

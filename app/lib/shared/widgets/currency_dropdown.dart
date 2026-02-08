@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_colors_extension.dart';
 import '../../core/theme/theme_extensions.dart';
 
@@ -78,6 +79,7 @@ class CurrencyDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = context.isDarkMode;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +98,7 @@ class CurrencyDropdown extends StatelessWidget {
         ],
         Container(
           decoration: BoxDecoration(
-            color: colors.cardBackground,
+            color: isDark ? AppColors.dropdownBg : colors.cardBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: colors.border),
           ),

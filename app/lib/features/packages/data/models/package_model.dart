@@ -130,6 +130,7 @@ class PackageModel {
   final ContactInfo? senderContact;
   final ContactInfo? receiverContact;
   final String trackingCode;
+  final String? publicId;
   final PackageStatus status;
   final String senderName;
   final String? senderPhone;
@@ -141,6 +142,7 @@ class PackageModel {
   final String? receiverAddress;
   final String? receiverCity;
   final String? receiverCountry;
+  final String? novaPostNumber;
   final String? description;
   final double? weight;
   final int? lengthCm;
@@ -165,6 +167,7 @@ class PackageModel {
     this.senderContact,
     this.receiverContact,
     required this.trackingCode,
+    this.publicId,
     required this.status,
     required this.senderName,
     this.senderPhone,
@@ -176,6 +179,7 @@ class PackageModel {
     this.receiverAddress,
     this.receiverCity,
     this.receiverCountry,
+    this.novaPostNumber,
     this.description,
     this.weight,
     this.lengthCm,
@@ -217,6 +221,7 @@ class PackageModel {
           ? ContactInfo.fromJson(receiverContactJson)
           : null,
       trackingCode: json['tracking_code'],
+      publicId: json['public_id']?.toString(),
       status: PackageStatus.fromString(json['status']),
       senderName: sender?['name'] ?? json['sender_name'] ?? '',
       senderPhone: sender?['phone'] ?? json['sender_phone'],
@@ -228,6 +233,7 @@ class PackageModel {
       receiverAddress: receiver?['address'] ?? json['receiver_address'],
       receiverCity: receiver?['city'] ?? json['receiver_city'],
       receiverCountry: receiver?['country'] ?? json['receiver_country'],
+      novaPostNumber: receiver?['nova_post_number'] ?? json['nova_post_number'],
       description: json['description'],
       weight: _parseDouble(json['weight'] ?? dimensions?['weight_kg']),
       lengthCm: _parseInt(json['length_cm'] ?? dimensions?['length_cm']),
@@ -270,6 +276,7 @@ class PackageModel {
       'sender_contact_id': senderContactId,
       'receiver_contact_id': receiverContactId,
       'tracking_code': trackingCode,
+      'public_id': publicId,
       'status': status.apiValue,
       'sender_name': senderName,
       'sender_phone': senderPhone,
@@ -281,6 +288,7 @@ class PackageModel {
       'receiver_address': receiverAddress,
       'receiver_city': receiverCity,
       'receiver_country': receiverCountry,
+      'nova_post_number': novaPostNumber,
       'description': description,
       'weight': weight,
       'length_cm': lengthCm,
@@ -302,6 +310,7 @@ class PackageModel {
     ContactInfo? senderContact,
     ContactInfo? receiverContact,
     String? trackingCode,
+    String? publicId,
     PackageStatus? status,
     String? senderName,
     String? senderPhone,
@@ -313,6 +322,7 @@ class PackageModel {
     String? receiverAddress,
     String? receiverCity,
     String? receiverCountry,
+    String? novaPostNumber,
     String? description,
     double? weight,
     int? lengthCm,
@@ -337,6 +347,7 @@ class PackageModel {
       senderContact: senderContact ?? this.senderContact,
       receiverContact: receiverContact ?? this.receiverContact,
       trackingCode: trackingCode ?? this.trackingCode,
+      publicId: publicId ?? this.publicId,
       status: status ?? this.status,
       senderName: senderName ?? this.senderName,
       senderPhone: senderPhone ?? this.senderPhone,
@@ -348,6 +359,7 @@ class PackageModel {
       receiverAddress: receiverAddress ?? this.receiverAddress,
       receiverCity: receiverCity ?? this.receiverCity,
       receiverCountry: receiverCountry ?? this.receiverCountry,
+      novaPostNumber: novaPostNumber ?? this.novaPostNumber,
       description: description ?? this.description,
       weight: weight ?? this.weight,
       lengthCm: lengthCm ?? this.lengthCm,

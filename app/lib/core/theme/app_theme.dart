@@ -59,9 +59,28 @@ class AppTheme {
   /// Soft shadow for general use
   static List<BoxShadow> get shadowSoft => [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 2,
+          color: Colors.black.withValues(alpha: 0.06),
+          blurRadius: 3,
           offset: const Offset(0, 1),
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.08),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ];
+
+  /// Stronger soft shadow for dark backgrounds
+  static List<BoxShadow> get shadowSoftDark => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.3),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.25),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
         ),
       ];
 
@@ -80,6 +99,9 @@ class AppTheme {
 
   /// Blur intensity for glassmorphism effect
   static const double glassBlurSigma = 20.0;
+
+  /// Blur intensity for plans glass cards
+  static const double plansGlassBlurSigma = 25.0;
 
   /// ImageFilter for glassmorphism backdrop
   static ImageFilter get glassBlurFilter =>

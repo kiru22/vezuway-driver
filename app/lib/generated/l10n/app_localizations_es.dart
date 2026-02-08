@@ -378,13 +378,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_tabReceiver => 'Destinatario';
 
   @override
-  String get packages_widthLabel => 'An';
+  String get packages_widthLabel => 'Ancho';
 
   @override
-  String get packages_heightLabel => 'Al';
+  String get packages_heightLabel => 'Alto';
 
   @override
-  String get packages_lengthLabel => 'La';
+  String get packages_lengthLabel => 'Largo';
 
   @override
   String get packages_quantityLabel => 'Cantidad';
@@ -439,7 +439,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get packages_exactAddress => 'Direccion exacta';
 
   @override
-  String get packages_googleMapsLink => 'Enlace a Google Maps';
+  String get packages_googleMapsLink => 'Google Maps';
 
   @override
   String get packages_weightKg => 'PESO (KG)';
@@ -473,6 +473,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get packages_departureDate => 'Fecha de salida';
+
+  @override
+  String get packageDescription => 'Descripcion';
 
   @override
   String get packages_imagesSection => 'Imagenes del paquete';
@@ -524,6 +527,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String packages_bulkUpdateSuccess(int count) {
     return '$count paquetes actualizados';
   }
+
+  @override
+  String get packages_filterStatus => 'Estado';
+
+  @override
+  String get packages_filterTrip => 'Viaje';
+
+  @override
+  String get packages_filterCity => 'Ciudad';
+
+  @override
+  String get packages_filterAllTrips => 'Todos los viajes';
+
+  @override
+  String get packages_filterSearchCity => 'Buscar ciudad...';
+
+  @override
+  String get packages_filterClearCities => 'Limpiar';
+
+  @override
+  String get packages_filterActiveTrips => 'ACTIVOS';
+
+  @override
+  String get packages_filterUpcomingTrips => 'PRÓXIMOS';
+
+  @override
+  String get packages_filterPastTrips => 'PASADOS';
+
+  @override
+  String packages_countShort(int count) {
+    return '$count paq.';
+  }
+
+  @override
+  String get packages_novaPostNumber => 'Nova Post';
 
   @override
   String get routes_title => 'Rutas';
@@ -705,6 +743,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get routes_addCity => 'Agregar Ciudad';
+
+  @override
+  String get routes_addStop => 'Agregar parada';
+
+  @override
+  String get routes_noIntermediateStops => 'Sin paradas intermedias';
 
   @override
   String get routes_deleteStop => 'eliminar';
@@ -1153,6 +1197,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tripsRoutes_createTrip => 'Crear viaje';
 
   @override
+  String get tripsRoutes_noRouteTemplates => 'No hay plantillas de rutas';
+
+  @override
+  String get tripsRoutes_noRouteTemplatesSubtitle =>
+      'Crea una plantilla para crear viajes rápidamente';
+
+  @override
   String get trips_sectionActive => 'ACTIVOS';
 
   @override
@@ -1174,6 +1225,138 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get trips_clearFilter => 'Borrar filtro';
+
+  @override
+  String get trips_routeTemplate => 'PLANTILLA DE RUTA';
+
+  @override
+  String get trips_originPoint => 'PUNTO DE ORIGEN';
+
+  @override
+  String get trips_destinationPoint => 'PUNTO DE DESTINO';
+
+  @override
+  String get trips_departureDates => 'FECHAS DE SALIDA';
+
+  @override
+  String get trips_departureDate => 'FECHA DE SALIDA';
+
+  @override
+  String get trips_departureTimeOptional => 'HORA DE SALIDA (opcional)';
+
+  @override
+  String get trips_notesOptional => 'NOTAS (opcional)';
+
+  @override
+  String get trips_additionalInfo => 'Información adicional...';
+
+  @override
+  String get trips_selectDates => 'Selecciona fechas';
+
+  @override
+  String trips_createTripCount(int count) {
+    return 'Crear $count viajes';
+  }
+
+  @override
+  String get trips_selectAtLeastOneDate => 'Selecciona al menos una fecha';
+
+  @override
+  String get trips_selectTemplateOrCities =>
+      'Selecciona una plantilla o indica las ciudades';
+
+  @override
+  String get trips_tripCreated => '¡Viaje creado!';
+
+  @override
+  String trips_tripsCreated(int count) {
+    return '¡$count viajes creados!';
+  }
+
+  @override
+  String trips_tripsPartiallyCreated(int success, int total) {
+    return 'Creados $success de $total viajes';
+  }
+
+  @override
+  String get trips_errorCreating => 'Error al crear viajes';
+
+  @override
+  String get trips_resetSelection => 'Resetear selección';
+
+  @override
+  String get trips_notSpecified => 'No especificado';
+
+  @override
+  String get trips_selectTemplate => 'Selecciona una plantilla';
+
+  @override
+  String get trips_noTemplate => 'Sin plantilla (introducir manualmente)';
+
+  @override
+  String get trips_errorLoadingTemplate => 'Error al cargar la plantilla';
+
+  @override
+  String get trips_cityHint => 'Ciudad';
+
+  @override
+  String get trips_weekdayMon => 'Lu';
+
+  @override
+  String get trips_weekdayTue => 'Ma';
+
+  @override
+  String get trips_weekdayWed => 'Mi';
+
+  @override
+  String get trips_weekdayThu => 'Ju';
+
+  @override
+  String get trips_weekdayFri => 'Vi';
+
+  @override
+  String get trips_weekdaySat => 'Sá';
+
+  @override
+  String get trips_weekdaySun => 'Do';
+
+  @override
+  String get trips_editTrip => 'Editar viaje';
+
+  @override
+  String get trips_editTripSubtitle => 'Modificar detalles del viaje';
+
+  @override
+  String get trips_deleteTripSubtitle => 'Eliminar este viaje';
+
+  @override
+  String get trips_tripUpdated => 'Viaje actualizado';
+
+  @override
+  String get trips_cannotDeletePast =>
+      'No se puede eliminar un viaje con fecha pasada';
+
+  @override
+  String get trips_cannotDeleteWithPackages =>
+      'No se puede eliminar un viaje con paquetes asignados';
+
+  @override
+  String get trips_itemTypeTrip => 'viaje';
+
+  @override
+  String get trips_itemTypeRouteTemplate => 'plantilla de ruta';
+
+  @override
+  String get trips_tripDeleted => 'Viaje eliminado';
+
+  @override
+  String get trips_tripDeleteError => 'Error al eliminar viaje';
+
+  @override
+  String get trips_routeTemplateDeleted => 'Plantilla eliminada';
+
+  @override
+  String get trips_routeTemplateDeleteError => 'Error al eliminar plantilla';
 
   @override
   String get myOrders_title => 'Mis Pedidos';
@@ -1267,6 +1450,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get admin_panelTitle => 'Panel de Admin';
+
+  @override
+  String get admin_userManagement => 'Gestión de Usuarios';
 
   @override
   String get admin_users => 'Usuarios';
@@ -1391,6 +1577,42 @@ class AppLocalizationsEs extends AppLocalizations {
   String get admin_driverAppeal => 'Apelación del conductor:';
 
   @override
+  String get admin_planRequests => 'Planes';
+
+  @override
+  String get admin_noPlanRequests => 'Sin solicitudes de plan';
+
+  @override
+  String get admin_noPlanRequestsSubtitle =>
+      'Cuando los conductores soliciten un plan, aparecerán aquí';
+
+  @override
+  String get admin_approvePlan => 'Aprobar plan';
+
+  @override
+  String get admin_rejectPlan => 'Rechazar plan';
+
+  @override
+  String admin_approvePlanConfirm(String plan, String name) {
+    return '¿Aprobar el plan $plan para $name?';
+  }
+
+  @override
+  String admin_rejectPlanConfirm(String plan, String name) {
+    return '¿Rechazar el plan $plan para $name?';
+  }
+
+  @override
+  String admin_planApproved(String name) {
+    return 'Plan aprobado para $name';
+  }
+
+  @override
+  String admin_planRejected(String name) {
+    return 'Plan rechazado para $name';
+  }
+
+  @override
   String get driverRejected_title => 'Solicitud rechazada';
 
   @override
@@ -1435,4 +1657,153 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get driverRejected_logout => 'Cerrar sesión';
+
+  @override
+  String get plans_menuTitle => 'Planes y precios';
+
+  @override
+  String get plans_title => 'Elige tu plan ideal';
+
+  @override
+  String get plans_subtitle => 'Herramientas premium para tu negocio';
+
+  @override
+  String get plans_basic => 'Básico';
+
+  @override
+  String get plans_pro => 'Pro';
+
+  @override
+  String get plans_premium => 'Premium';
+
+  @override
+  String get plans_perMonth => '/mes';
+
+  @override
+  String plans_priceLabel(String name, int price) {
+    return '$name — $price€/mes';
+  }
+
+  @override
+  String get plans_scanner => 'Escáner';
+
+  @override
+  String get plans_sms => 'SMS';
+
+  @override
+  String get plans_shipmentHistory => 'Historial de envíos';
+
+  @override
+  String get plans_contactBook => 'Libro de contactos';
+
+  @override
+  String get plans_contactList => 'Lista de contactos';
+
+  @override
+  String plans_selectPlan(String plan) {
+    return 'Solicitar plan';
+  }
+
+  @override
+  String get plans_popular => 'Popular';
+
+  @override
+  String get plans_featureScanner => 'Escáner';
+
+  @override
+  String get plans_featureSms => 'Mensajes SMS';
+
+  @override
+  String get plans_featureHistory => 'Historial';
+
+  @override
+  String get plans_requestSuccess => 'Solicitud enviada correctamente';
+
+  @override
+  String get plans_requestError => 'Error al enviar la solicitud';
+
+  @override
+  String get plans_currentPlan => 'Plan actual';
+
+  @override
+  String get plans_requested => 'Solicitado';
+
+  @override
+  String get marketing_trackingTitle => 'Enviar seguimiento';
+
+  @override
+  String get marketing_trackingDesc =>
+      'Informa al cliente del estado de su paquete. Genera confianza y profesionalidad';
+
+  @override
+  String marketing_trackingMessage(String name, String tracking) {
+    return 'Hola $name, tu paquete $tracking está registrado y será recogido pronto. ¡Te mantendremos informado!';
+  }
+
+  @override
+  String get marketing_loyaltyTitle => 'Enviar fidelización';
+
+  @override
+  String get marketing_loyaltyDesc =>
+      'Ofrece un descuento y fideliza al cliente. Los clientes recurrentes son los más rentables';
+
+  @override
+  String marketing_loyaltyMessage(String name) {
+    return 'Hola $name, gracias por confiar en nosotros. En tu próximo envío tienes un 10% de descuento. ¡Contáctanos cuando lo necesites!';
+  }
+
+  @override
+  String get marketing_tripTitle => 'Avisar próximo viaje';
+
+  @override
+  String get marketing_tripDesc =>
+      'Notifica tu próximo viaje y capta envíos. Cada mensaje puede ser un nuevo paquete';
+
+  @override
+  String marketing_tripMessage(
+      String name, String origin, String destination, String date) {
+    return 'Hola $name, tengo viaje $origin → $destination el $date. ¿Tienes algo para enviar? ¡Contáctame!';
+  }
+
+  @override
+  String get marketing_upgradeCta => 'Desbloquear con Plan Pro';
+
+  @override
+  String get marketing_premiumFeature => 'Función Premium';
+
+  @override
+  String get marketing_noPhone => 'Sin teléfono';
+
+  @override
+  String get marketing_noPackage => 'Sin paquetes pendientes';
+
+  @override
+  String get marketing_noTrip => 'Sin viajes programados';
+
+  @override
+  String get admin_userDetail => 'Detalle de usuario';
+
+  @override
+  String get admin_personalInfo => 'Información personal';
+
+  @override
+  String get admin_userPlan => 'Plan activo';
+
+  @override
+  String get admin_userNoPlan => 'Sin plan';
+
+  @override
+  String get admin_dates => 'Fechas';
+
+  @override
+  String get admin_lastUpdate => 'Última actualización';
+
+  @override
+  String get admin_userLanguage => 'Idioma';
+
+  @override
+  String get admin_userTheme => 'Tema';
+
+  @override
+  String get admin_superAdmin => 'Administrador';
 }

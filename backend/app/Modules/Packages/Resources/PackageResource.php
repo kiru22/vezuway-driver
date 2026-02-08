@@ -12,6 +12,7 @@ class PackageResource extends JsonResource
         return [
             'id' => $this->id,
             'tracking_code' => $this->tracking_code,
+            'public_id' => $this->public_id,
             'transporter_id' => $this->transporter_id,
             'route_id' => $this->route_id,
             'trip_id' => $this->trip_id,
@@ -36,6 +37,7 @@ class PackageResource extends JsonResource
                 'country' => $this->receiver_country,
                 'latitude' => $this->receiver_latitude,
                 'longitude' => $this->receiver_longitude,
+                'nova_post_number' => $this->nova_post_number,
             ],
 
             'dimensions' => [

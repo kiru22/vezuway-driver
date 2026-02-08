@@ -3,15 +3,28 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/l10n_extension.dart';
 
-class SplashScreen extends StatelessWidget {
+const logoAssetPath = 'assets/images/logo.png';
+
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage(logoAssetPath), context);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // Allow gradient to show
+      backgroundColor: Colors.transparent,
       body: Container(
         decoration: const BoxDecoration(
           gradient: AppColors.primaryGradient,
@@ -20,18 +33,10 @@ class SplashScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
+              Image.asset(
+                logoAssetPath,
                 width: 100,
                 height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(
-                  Icons.local_shipping,
-                  size: 56,
-                  color: Colors.white,
-                ),
               ),
               const SizedBox(height: 24),
               Text(

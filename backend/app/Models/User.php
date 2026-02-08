@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Modules\Admin\Models\DriverRejection;
 use App\Modules\Contacts\Models\Contact;
+use App\Modules\Plans\Models\PlanRequest;
 use App\Shared\Enums\DriverStatus;
 use App\Shared\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,6 +39,7 @@ class User extends Authenticatable implements HasMedia
         'google_id',
         'avatar_url',
         'driver_status',
+        'active_plan_key',
     ];
 
     /**
@@ -140,5 +142,10 @@ class User extends Authenticatable implements HasMedia
     public function isRejectedDriver(): bool
     {
         return $this->hasRole('driver') && $this->driver_status === DriverStatus::REJECTED;
+    }
+
+    public function planRequest(): HasOne
+    {
+        return $this->hasOne(PlanRequest::class)->latestOfMany();
     }
 }

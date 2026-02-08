@@ -36,6 +36,7 @@ class PackageController extends Controller
             ->when($request->filled('search'), fn ($q) => $q->search($request->search))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('route_id'), fn ($q) => $q->where('route_id', $request->route_id))
+            ->when($request->filled('trip_id'), fn ($q) => $q->where('trip_id', $request->trip_id))
             ->orderBy('created_at', 'desc')
             ->paginate(min($request->integer('per_page', 15), 100));
 
@@ -326,6 +327,7 @@ class PackageController extends Controller
             'route_id' => 'nullable|exists:routes,id',
             'trip_id' => 'nullable|exists:trips,id',
             'notes' => 'nullable|string',
+            'nova_post_number' => 'nullable|string|max:50',
         ];
     }
 }

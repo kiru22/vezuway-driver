@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_colors_extension.dart';
@@ -7,6 +10,7 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/data/cities_data.dart';
+import '../../../../shared/domain/providers/city_provider.dart';
 import '../../../../shared/models/city_model.dart';
 import '../../../../shared/widgets/country_dropdown.dart';
 import '../../../../shared/widgets/themed_card.dart';
@@ -125,7 +129,7 @@ class RouteCountrySectionCompact extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, dynamic colors, dynamic l10n) {
+  Widget _buildHeader(BuildContext context, AppColorsExtension colors, AppLocalizations l10n) {
     return Row(
       children: [
         Expanded(
@@ -160,8 +164,8 @@ class RouteCountrySectionCompact extends StatelessWidget {
 
   Widget _buildCitiesSection(
     BuildContext context,
-    dynamic colors,
-    dynamic l10n,
+    AppColorsExtension colors,
+    AppLocalizations l10n,
     String locale,
   ) {
     return Column(
@@ -183,7 +187,7 @@ class RouteCountrySectionCompact extends StatelessWidget {
     );
   }
 
-  Widget _buildCityChip(CityModel city, dynamic colors, String locale) {
+  Widget _buildCityChip(CityModel city, AppColorsExtension colors, String locale) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Container(
@@ -222,7 +226,7 @@ class RouteCountrySectionCompact extends StatelessWidget {
     );
   }
 
-  Widget _buildAddCityButton(BuildContext context, dynamic l10n) {
+  Widget _buildAddCityButton(BuildContext context, AppLocalizations l10n) {
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -256,7 +260,7 @@ class RouteCountrySectionCompact extends StatelessWidget {
   }
 }
 
-class _CitySearchSheet extends StatefulWidget {
+class _CitySearchSheet extends ConsumerStatefulWidget {
   final String countryCode;
   final List<CityModel> excludeCities;
   final String locale;
@@ -270,12 +274,14 @@ class _CitySearchSheet extends StatefulWidget {
   });
 
   @override
-  State<_CitySearchSheet> createState() => _CitySearchSheetState();
+  ConsumerState<_CitySearchSheet> createState() => _CitySearchSheetState();
 }
 
-class _CitySearchSheetState extends State<_CitySearchSheet> {
+class _CitySearchSheetState extends ConsumerState<_CitySearchSheet> {
   final _searchController = TextEditingController();
+  Timer? _debounce;
   List<CityModel> _filteredCities = [];
+  bool _isSearching = false;
 
   @override
   void initState() {
@@ -285,18 +291,59 @@ class _CitySearchSheetState extends State<_CitySearchSheet> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   void _filterCities(String query) {
-    setState(() {
-      _filteredCities = CitiesData.searchCities(
-        query,
-        countries: [widget.countryCode],
-        excludeCities: widget.excludeCities,
-        locale: widget.locale,
-      );
+    _debounce?.cancel();
+
+    if (query.length < 2) {
+      setState(() {
+        _isSearching = false;
+        _filteredCities = CitiesData.searchCities(
+          query,
+          countries: [widget.countryCode],
+          excludeCities: widget.excludeCities,
+          locale: widget.locale,
+        );
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final results = await ref.read(
+          citySearchProvider(CitySearchParams(
+            query: query,
+            countries: [widget.countryCode],
+          )).future,
+        );
+
+        if (mounted) {
+          setState(() {
+            _filteredCities = results
+                .where((city) => !widget.excludeCities.contains(city))
+                .toList();
+            _isSearching = false;
+          });
+        }
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _filteredCities = CitiesData.searchCities(
+              query,
+              countries: [widget.countryCode],
+              excludeCities: widget.excludeCities,
+              locale: widget.locale,
+            );
+            _isSearching = false;
+          });
+        }
+      }
     });
   }
 
@@ -345,6 +392,16 @@ class _CitySearchSheetState extends State<_CitySearchSheet> {
         decoration: InputDecoration(
           hintText: l10n.routes_searchCity,
           prefixIcon: Icon(Icons.search, color: colors.textMuted),
+          suffixIcon: _isSearching
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : null,
           filled: true,
           fillColor: colors.background,
           border: OutlineInputBorder(
@@ -357,6 +414,10 @@ class _CitySearchSheetState extends State<_CitySearchSheet> {
   }
 
   Widget _buildCityList(AppColorsExtension colors, AppLocalizations l10n) {
+    if (_isSearching) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     if (_filteredCities.isEmpty) {
       return Center(
         child: Text(

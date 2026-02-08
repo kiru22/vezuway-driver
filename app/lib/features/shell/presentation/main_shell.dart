@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_extensions.dart';
 import '../../../l10n/l10n_extension.dart';
+import '../../../shared/widgets/package_box_icon.dart';
 import '../../../shared/widgets/styled_form_field.dart';
 import '../../auth/domain/providers/auth_provider.dart';
 import '../../contacts/domain/providers/contact_provider.dart';
@@ -162,7 +163,6 @@ class _MainShellState extends ConsumerState<MainShell>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Título
                 Text(
                   l10n.contacts_newContact,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -171,7 +171,6 @@ class _MainShellState extends ConsumerState<MainShell>
                 ),
                 const SizedBox(height: 24),
 
-                // Campo Nombre
                 StyledFormField(
                   controller: nameController,
                   label: l10n.contacts_nameLabel,
@@ -186,7 +185,6 @@ class _MainShellState extends ConsumerState<MainShell>
                 ),
                 const SizedBox(height: 20),
 
-                // Campo Email
                 StyledFormField(
                   controller: emailController,
                   label: l10n.contacts_emailLabel,
@@ -206,7 +204,6 @@ class _MainShellState extends ConsumerState<MainShell>
                 ),
                 const SizedBox(height: 20),
 
-                // Campo Teléfono
                 StyledFormField(
                   controller: phoneController,
                   label: l10n.contacts_phoneLabel,
@@ -216,7 +213,6 @@ class _MainShellState extends ConsumerState<MainShell>
                 ),
                 const SizedBox(height: 32),
 
-                // Botones de acción
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -315,7 +311,6 @@ class _MainShellState extends ConsumerState<MainShell>
         backgroundColor: context.theme.scaffoldBackgroundColor,
         body: Stack(
           children: [
-            // Main content with slide animation
             Positioned.fill(
               child: Padding(
                 padding:
@@ -338,7 +333,6 @@ class _MainShellState extends ConsumerState<MainShell>
                 ),
               ),
             ),
-            // Bottom navigation
             Positioned(
               left: 0,
               right: 0,
@@ -466,7 +460,6 @@ class _PremiumBottomNav extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
           child: Row(
             children: [
-              // Navigation bar
               Expanded(
                 child: Container(
                   height: 60,
@@ -491,7 +484,6 @@ class _PremiumBottomNav extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      // Modo Cliente: solo mostrar tab Mis pedidos
                       if (isClientMode)
                         Expanded(
                           child: Center(
@@ -505,7 +497,6 @@ class _PremiumBottomNav extends StatelessWidget {
                           ),
                         )
                       else ...[
-                        // Modo Driver/Admin: mostrar todas las tabs
                         Expanded(
                           child: _NavItem(
                             icon: Icons.space_dashboard_outlined,
@@ -519,6 +510,8 @@ class _PremiumBottomNav extends StatelessWidget {
                           child: _NavItem(
                             icon: Icons.view_in_ar_outlined,
                             activeIcon: Icons.view_in_ar_rounded,
+                            iconBuilder: (color, size) =>
+                                PackageBoxIcon(size: size, color: color),
                             label: l10n.nav_packages,
                             isSelected: currentIndex == 1,
                             onTap: () => onTap(1),
@@ -548,7 +541,6 @@ class _PremiumBottomNav extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              // FAB
               SizedBox(
                 width: 60,
                 height: 60,
@@ -565,6 +557,7 @@ class _PremiumBottomNav extends StatelessWidget {
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final IconData activeIcon;
+  final Widget Function(Color color, double size)? iconBuilder;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -572,6 +565,7 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.icon,
     required this.activeIcon,
+    this.iconBuilder,
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -581,6 +575,12 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = context.isDarkMode;
+
+    final color = isSelected
+        ? AppColors.primary
+        : isDark
+            ? colors.textMuted
+            : Colors.black45;
 
     return Semantics(
       label: label,
@@ -593,15 +593,13 @@ class _NavItem extends StatelessWidget {
         },
         behavior: HitTestBehavior.opaque,
         child: Center(
-          child: Icon(
-            isSelected ? activeIcon : icon,
-            color: isSelected
-                ? AppColors.primary
-                : isDark
-                    ? colors.textMuted
-                    : Colors.black45,
-            size: 24,
-          ),
+          child: iconBuilder != null
+              ? iconBuilder!(color, 24)
+              : Icon(
+                  isSelected ? activeIcon : icon,
+                  color: color,
+                  size: 24,
+                ),
         ),
       ),
     );

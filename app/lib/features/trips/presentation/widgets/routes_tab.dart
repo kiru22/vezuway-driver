@@ -7,6 +7,7 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/country_flag.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/options_bottom_sheet.dart';
 import '../../../routes/data/models/route_model.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 
@@ -45,7 +46,7 @@ class RoutesTab extends ConsumerWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => ref.read(routesProvider.notifier).loadRoutes(),
-              child: const Text('Reintentar'),
+              child: Text(context.l10n.common_retry),
             ),
           ],
         ),
@@ -83,8 +84,8 @@ class RoutesTab extends ConsumerWidget {
             child: IntrinsicHeight(
               child: EmptyState(
                 icon: Icons.route_outlined,
-                title: 'Немає шаблонів маршрутів',
-                subtitle: 'Створіть шаблон для швидкого створення рейсів',
+                title: l10n.tripsRoutes_noRouteTemplates,
+                subtitle: l10n.tripsRoutes_noRouteTemplatesSubtitle,
                 buttonText: l10n.quickAction_newRoute,
                 onButtonPressed: onCreateRoute,
               ),
@@ -109,79 +110,23 @@ class RouteTemplateCard extends StatelessWidget {
   });
 
   void _showOptionsMenu(BuildContext context) {
-    final colors = context.colors;
+    final l10n = context.l10n;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    showOptionsBottomSheet(context, sections: [
+      BottomSheetSection(options: [
+        BottomSheetOption(
+          icon: Icons.edit_outlined,
+          label: l10n.common_edit,
+          onTap: onEdit,
         ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: colors.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child:
-                      const Icon(Icons.edit_outlined, color: AppColors.primary),
-                ),
-                title: const Text('Редагувати'),
-                subtitle: Text(
-                  'Змінити шаблон маршруту',
-                  style: TextStyle(color: colors.textMuted, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  onEdit();
-                },
-              ),
-              const Divider(),
-              ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child:
-                      const Icon(Icons.delete_outline, color: AppColors.error),
-                ),
-                title: const Text('Видалити',
-                    style: TextStyle(color: AppColors.error)),
-                subtitle: Text(
-                  'Видалити шаблон маршруту',
-                  style: TextStyle(color: colors.textMuted, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  onDelete();
-                },
-              ),
-            ],
-          ),
+        BottomSheetOption(
+          icon: Icons.delete_outline,
+          label: l10n.common_delete,
+          isDestructive: true,
+          onTap: onDelete,
         ),
-      ),
-    );
+      ]),
+    ]);
   }
 
   @override
@@ -199,7 +144,6 @@ class RouteTemplateCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               Expanded(
@@ -262,7 +206,6 @@ class RouteTemplateCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          // Route visualization with timeline, grouped by country
           _RouteTimeline(route: route),
         ],
       ),
@@ -285,7 +228,6 @@ class _RouteTimeline extends StatelessWidget {
     final colors = context.colors;
     final countryGroups = _groupByCountry();
 
-    // Build flat list with metadata
     final rows = <_CityRowData>[];
     var globalIndex = 0;
     final totalCities =
@@ -325,14 +267,14 @@ class _RouteTimeline extends StatelessWidget {
                 SizedBox(
                   width: 20,
                   child: isOnMainColumn
-                      ? Center(child: _buildIcon(data, colors))
+                      ? Center(child: _buildIcon(data))
                       : null,
                 ),
                 // Indented icon or spacer
                 if (isIndented) ...[
                   SizedBox(
                     width: 16,
-                    child: Center(child: _buildIcon(data, colors)),
+                    child: Center(child: _buildIcon(data)),
                   ),
                   const SizedBox(width: 8),
                 ] else
@@ -364,7 +306,7 @@ class _RouteTimeline extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon(_CityRowData data, dynamic colors) {
+  Widget _buildIcon(_CityRowData data) {
     if (data.isFirstOverall) {
       return Container(
         width: 10,

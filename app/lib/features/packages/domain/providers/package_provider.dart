@@ -6,17 +6,17 @@ import '../../../auth/domain/providers/auth_provider.dart';
 import '../../data/models/package_model.dart';
 import '../../data/repositories/package_repository.dart';
 
-// Package Repository Provider
 final packageRepositoryProvider = Provider<PackageRepository>((ref) {
   return PackageRepository(ref.read(apiServiceProvider));
 });
 
-// Packages List State
 class PackagesState {
   final List<PackageModel> packages;
   final bool isLoading;
   final String? error;
   final PackageStatus? filterStatus;
+  final String? tripId;
+  final Set<String> filterCities;
   final bool isSelectionMode;
   final Set<String> selectedIds;
   final bool isBulkUpdating;
@@ -26,6 +26,8 @@ class PackagesState {
     this.isLoading = false,
     this.error,
     this.filterStatus,
+    this.tripId,
+    this.filterCities = const {},
     this.isSelectionMode = false,
     this.selectedIds = const {},
     this.isBulkUpdating = false,
@@ -37,6 +39,9 @@ class PackagesState {
     String? error,
     PackageStatus? filterStatus,
     bool clearFilter = false,
+    String? tripId,
+    bool clearTripId = false,
+    Set<String>? filterCities,
     bool? isSelectionMode,
     Set<String>? selectedIds,
     bool? isBulkUpdating,
@@ -46,6 +51,8 @@ class PackagesState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       filterStatus: clearFilter ? null : (filterStatus ?? this.filterStatus),
+      tripId: clearTripId ? null : (tripId ?? this.tripId),
+      filterCities: filterCities ?? this.filterCities,
       isSelectionMode: isSelectionMode ?? this.isSelectionMode,
       selectedIds: selectedIds ?? this.selectedIds,
       isBulkUpdating: isBulkUpdating ?? this.isBulkUpdating,
@@ -53,7 +60,6 @@ class PackagesState {
   }
 }
 
-// Packages Notifier
 class PackagesNotifier extends StateNotifier<PackagesState> {
   final PackageRepository _repository;
   bool _isInitialized = false;
@@ -75,8 +81,10 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final packages =
-          await _repository.getPackages(status: state.filterStatus);
+      final packages = await _repository.getPackages(
+        status: state.filterStatus,
+        tripId: state.tripId,
+      );
       state = state.copyWith(packages: packages, isLoading: false);
     } catch (e, stack) {
       debugPrint('PackagesNotifier.loadPackages error: $e\n$stack');
@@ -96,6 +104,29 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     await loadPackages();
   }
 
+  Future<void> filterByTrip(String? tripId) async {
+    if (tripId == null) {
+      state = state.copyWith(clearTripId: true);
+    } else {
+      state = state.copyWith(tripId: tripId);
+    }
+    await loadPackages();
+  }
+
+  void toggleCityFilter(String city) {
+    final newCities = Set<String>.from(state.filterCities);
+    if (newCities.contains(city)) {
+      newCities.remove(city);
+    } else {
+      newCities.add(city);
+    }
+    state = state.copyWith(filterCities: newCities);
+  }
+
+  void clearCityFilter() {
+    state = state.copyWith(filterCities: {});
+  }
+
   Future<bool> createPackage({
     String? tripId,
     String? senderContactId,
@@ -103,10 +134,12 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     String? senderName,
     String? senderPhone,
     String? senderCity,
+    String? senderCountry,
     String? senderAddress,
     required String receiverName,
     String? receiverPhone,
     String? receiverCity,
+    String? receiverCountry,
     String? receiverAddress,
     double? weight,
     int? lengthCm,
@@ -114,6 +147,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     int? heightCm,
     int? quantity,
     double? declaredValue,
+    String? description,
+    String? novaPostNumber,
     List<Uint8List>? images,
   }) async {
     try {
@@ -124,10 +159,12 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         senderName: senderName,
         senderPhone: senderPhone,
         senderCity: senderCity,
+        senderCountry: senderCountry,
         senderAddress: senderAddress,
         receiverName: receiverName,
         receiverPhone: receiverPhone,
         receiverCity: receiverCity,
+        receiverCountry: receiverCountry,
         receiverAddress: receiverAddress,
         weight: weight,
         lengthCm: lengthCm,
@@ -135,6 +172,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         heightCm: heightCm,
         quantity: quantity,
         declaredValue: declaredValue,
+        description: description,
+        novaPostNumber: novaPostNumber,
         images: images,
       );
       state = state.copyWith(
@@ -172,10 +211,12 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     String? senderName,
     String? senderPhone,
     String? senderCity,
+    String? senderCountry,
     String? senderAddress,
     required String receiverName,
     String? receiverPhone,
     String? receiverCity,
+    String? receiverCountry,
     String? receiverAddress,
     double? weight,
     int? lengthCm,
@@ -183,6 +224,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     int? heightCm,
     int? quantity,
     double? declaredValue,
+    String? description,
+    String? novaPostNumber,
   }) async {
     try {
       final data = <String, dynamic>{
@@ -194,10 +237,12 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         if (senderPhone != null && senderPhone.isNotEmpty)
           'sender_phone': senderPhone,
         if (senderCity != null) 'sender_city': senderCity,
+        if (senderCountry != null) 'sender_country': senderCountry,
         if (senderAddress != null) 'sender_address': senderAddress,
         'receiver_name': receiverName,
         if (receiverPhone != null) 'receiver_phone': receiverPhone,
         if (receiverCity != null) 'receiver_city': receiverCity,
+        if (receiverCountry != null) 'receiver_country': receiverCountry,
         if (receiverAddress != null) 'receiver_address': receiverAddress,
         if (weight != null) 'weight_kg': weight,
         if (lengthCm != null) 'length_cm': lengthCm,
@@ -205,6 +250,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         if (heightCm != null) 'height_cm': heightCm,
         if (quantity != null) 'quantity': quantity,
         if (declaredValue != null) 'declared_value': declaredValue,
+        if (description != null) 'description': description,
+        if (novaPostNumber != null) 'nova_post_number': novaPostNumber,
       };
 
       final updated = await _repository.updatePackage(id, data);
@@ -232,10 +279,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
       return false;
     }
   }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // Bulk Selection Methods
-  // ─────────────────────────────────────────────────────────────────────────
 
   /// Entra en modo selección
   void enterSelectionMode([String? initialId]) {
@@ -336,28 +379,39 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
   }
 }
 
-// Packages Provider
 final packagesProvider =
     StateNotifierProvider<PackagesNotifier, PackagesState>((ref) {
   return PackagesNotifier(ref.read(packageRepositoryProvider));
 });
 
-// Single Package Provider
 final packageDetailProvider =
     FutureProvider.family<PackageModel, String>((ref, id) async {
   final repository = ref.read(packageRepositoryProvider);
   return repository.getPackage(id);
 });
 
-// Package Status History Provider
 final packageHistoryProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>((ref, id) async {
   final repository = ref.read(packageRepositoryProvider);
   return repository.getStatusHistory(id);
 });
 
-// Package Counts Provider (conteo de paquetes por estado)
 final packageCountsProvider = FutureProvider<Map<String, int>>((ref) async {
   final repository = ref.read(packageRepositoryProvider);
   return repository.getPackageCounts();
+});
+
+final availableCitiesProvider = Provider<List<String>>((ref) {
+  final packages = ref.watch(packagesProvider).packages;
+  final cities = <String>{};
+  for (final p in packages) {
+    if (p.senderCity != null && p.senderCity!.isNotEmpty) {
+      cities.add(p.senderCity!);
+    }
+    if (p.receiverCity != null && p.receiverCity!.isNotEmpty) {
+      cities.add(p.receiverCity!);
+    }
+  }
+  final sorted = cities.toList()..sort();
+  return sorted;
 });

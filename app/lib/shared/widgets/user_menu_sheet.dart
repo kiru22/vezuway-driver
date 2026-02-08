@@ -201,6 +201,54 @@ class UserMenuSheet extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 6),
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context);
+              context.push('/plans');
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      context.l10n.plans_menuTitle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    size: 22,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
           MenuOption(
             icon: Icons.settings_outlined,
             label: context.l10n.userMenu_settings,
@@ -216,7 +264,7 @@ class UserMenuSheet extends ConsumerWidget {
             const SizedBox(height: 6),
             MenuOption(
               icon: Icons.admin_panel_settings_outlined,
-              label: 'Gestión de Usuarios',
+              label: context.l10n.admin_userManagement,
               onTap: () {
                 Navigator.pop(context);
                 context.push('/admin/users');
@@ -389,10 +437,11 @@ void showUserMenuSheet(BuildContext context, WidgetRef ref) {
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
+    showDragHandle: false,
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (sheetContext) => UserMenuSheet(
-      userName: user?.name ?? 'Usuario',
+      userName: user?.name ?? context.l10n.common_user,
       userEmail: user?.email ?? '',
       avatarUrl: user?.avatarUrl,
       onLogout: () {

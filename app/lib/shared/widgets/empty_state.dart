@@ -3,9 +3,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_extensions.dart';
 
-/// Widget de estado vacío reutilizable con diseño homogéneo
 class EmptyState extends StatelessWidget {
   final IconData icon;
+  final Widget? iconWidget;
   final String title;
   final String subtitle;
   final String? buttonText;
@@ -15,6 +15,7 @@ class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
     required this.icon,
+    this.iconWidget,
     required this.title,
     required this.subtitle,
     this.buttonText,
@@ -41,7 +42,7 @@ class EmptyState extends StatelessWidget {
                 color: effectiveIconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: iconWidget ?? Icon(
                 icon,
                 size: 40,
                 color: effectiveIconColor.withValues(alpha: 0.7),

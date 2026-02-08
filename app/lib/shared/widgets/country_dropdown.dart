@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_colors_extension.dart';
 import '../../core/theme/theme_extensions.dart';
 import '../../l10n/l10n_extension.dart';
@@ -107,6 +108,7 @@ class CountryDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = context.isDarkMode;
     final locale = Localizations.localeOf(context).languageCode;
 
     final availableCountries = CountryData.all
@@ -130,7 +132,7 @@ class CountryDropdown extends StatelessWidget {
         ],
         Container(
           decoration: BoxDecoration(
-            color: colors.cardBackground,
+            color: isDark ? AppColors.dropdownBg : colors.cardBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: colors.border),
           ),

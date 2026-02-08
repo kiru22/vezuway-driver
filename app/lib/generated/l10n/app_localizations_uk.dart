@@ -378,13 +378,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_tabReceiver => 'Отримувач';
 
   @override
-  String get packages_widthLabel => 'Ш';
+  String get packages_widthLabel => 'Шир.';
 
   @override
-  String get packages_heightLabel => 'В';
+  String get packages_heightLabel => 'Вис.';
 
   @override
-  String get packages_lengthLabel => 'Д';
+  String get packages_lengthLabel => 'Довж.';
 
   @override
   String get packages_quantityLabel => 'Кiлькiсть';
@@ -439,7 +439,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get packages_exactAddress => 'Точна адреса';
 
   @override
-  String get packages_googleMapsLink => 'Посилання на Google Maps';
+  String get packages_googleMapsLink => 'Google Maps';
 
   @override
   String get packages_weightKg => 'ВАГА (КГ)';
@@ -473,6 +473,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get packages_departureDate => 'Дата вiдправлення';
+
+  @override
+  String get packageDescription => 'Опис';
 
   @override
   String get packages_imagesSection => 'Фото посилки';
@@ -524,6 +527,41 @@ class AppLocalizationsUk extends AppLocalizations {
   String packages_bulkUpdateSuccess(int count) {
     return '$count посилок оновлено';
   }
+
+  @override
+  String get packages_filterStatus => 'Статус';
+
+  @override
+  String get packages_filterTrip => 'Рейс';
+
+  @override
+  String get packages_filterCity => 'Місто';
+
+  @override
+  String get packages_filterAllTrips => 'Усі рейси';
+
+  @override
+  String get packages_filterSearchCity => 'Шукати місто...';
+
+  @override
+  String get packages_filterClearCities => 'Очистити';
+
+  @override
+  String get packages_filterActiveTrips => 'АКТИВНІ';
+
+  @override
+  String get packages_filterUpcomingTrips => 'НАСТУПНІ';
+
+  @override
+  String get packages_filterPastTrips => 'МИНУЛІ';
+
+  @override
+  String packages_countShort(int count) {
+    return '$count пос.';
+  }
+
+  @override
+  String get packages_novaPostNumber => 'Нова Пошта';
 
   @override
   String get routes_title => 'Маршрути';
@@ -708,6 +746,12 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get routes_addCity => 'Додати Мiсто';
+
+  @override
+  String get routes_addStop => 'Додати зупинку';
+
+  @override
+  String get routes_noIntermediateStops => 'Без промiжних зупинок';
 
   @override
   String get routes_deleteStop => 'видалити';
@@ -1156,6 +1200,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get tripsRoutes_createTrip => 'Створити рейс';
 
   @override
+  String get tripsRoutes_noRouteTemplates => 'Немає шаблонів маршрутів';
+
+  @override
+  String get tripsRoutes_noRouteTemplatesSubtitle =>
+      'Створіть шаблон для швидкого створення рейсів';
+
+  @override
   String get trips_sectionActive => 'АКТИВНІ';
 
   @override
@@ -1177,6 +1228,137 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get trips_clearFilter => 'Скинути фільтр';
+
+  @override
+  String get trips_routeTemplate => 'ШАБЛОН МАРШРУТУ';
+
+  @override
+  String get trips_originPoint => 'ПУНКТ ВІДПРАВЛЕННЯ';
+
+  @override
+  String get trips_destinationPoint => 'ПУНКТ ПРИЗНАЧЕННЯ';
+
+  @override
+  String get trips_departureDates => 'ДАТИ ВИЇЗДУ';
+
+  @override
+  String get trips_departureDate => 'ДАТА ВИЇЗДУ';
+
+  @override
+  String get trips_departureTimeOptional => 'ЧАС ВИЇЗДУ (необов\'язково)';
+
+  @override
+  String get trips_notesOptional => 'НОТАТКИ (необов\'язково)';
+
+  @override
+  String get trips_additionalInfo => 'Додаткова інформація...';
+
+  @override
+  String get trips_selectDates => 'Виберіть дати';
+
+  @override
+  String trips_createTripCount(int count) {
+    return 'Створити $count рейсів';
+  }
+
+  @override
+  String get trips_selectAtLeastOneDate => 'Виберіть хоча б одну дату';
+
+  @override
+  String get trips_selectTemplateOrCities =>
+      'Виберіть шаблон або вкажіть міста';
+
+  @override
+  String get trips_tripCreated => 'Рейс створено!';
+
+  @override
+  String trips_tripsCreated(int count) {
+    return 'Створено $count рейсів!';
+  }
+
+  @override
+  String trips_tripsPartiallyCreated(int success, int total) {
+    return 'Створено $success з $total рейсів';
+  }
+
+  @override
+  String get trips_errorCreating => 'Помилка при створенні рейсів';
+
+  @override
+  String get trips_resetSelection => 'Скинути вибір';
+
+  @override
+  String get trips_notSpecified => 'Не вказано';
+
+  @override
+  String get trips_selectTemplate => 'Виберіть шаблон';
+
+  @override
+  String get trips_noTemplate => 'Без шаблону (ввести вручну)';
+
+  @override
+  String get trips_errorLoadingTemplate => 'Помилка завантаження шаблону';
+
+  @override
+  String get trips_cityHint => 'Місто';
+
+  @override
+  String get trips_weekdayMon => 'Пн';
+
+  @override
+  String get trips_weekdayTue => 'Вт';
+
+  @override
+  String get trips_weekdayWed => 'Ср';
+
+  @override
+  String get trips_weekdayThu => 'Чт';
+
+  @override
+  String get trips_weekdayFri => 'Пт';
+
+  @override
+  String get trips_weekdaySat => 'Сб';
+
+  @override
+  String get trips_weekdaySun => 'Нд';
+
+  @override
+  String get trips_editTrip => 'Редагувати поїздку';
+
+  @override
+  String get trips_editTripSubtitle => 'Змінити деталі поїздки';
+
+  @override
+  String get trips_deleteTripSubtitle => 'Видалити цю поїздку';
+
+  @override
+  String get trips_tripUpdated => 'Поїздку оновлено';
+
+  @override
+  String get trips_cannotDeletePast => 'Не можна видалити рейс з минулою датою';
+
+  @override
+  String get trips_cannotDeleteWithPackages =>
+      'Не можна видалити рейс з призначеними посилками';
+
+  @override
+  String get trips_itemTypeTrip => 'рейс';
+
+  @override
+  String get trips_itemTypeRouteTemplate => 'шаблон маршруту';
+
+  @override
+  String get trips_tripDeleted => 'Рейс видалено';
+
+  @override
+  String get trips_tripDeleteError => 'Помилка видалення рейсу';
+
+  @override
+  String get trips_routeTemplateDeleted => 'Шаблон видалено';
+
+  @override
+  String get trips_routeTemplateDeleteError => 'Помилка видалення шаблону';
 
   @override
   String get myOrders_title => 'Мої Замовлення';
@@ -1271,6 +1453,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get admin_panelTitle => 'Панель Адміна';
+
+  @override
+  String get admin_userManagement => 'Керування Користувачами';
 
   @override
   String get admin_users => 'Користувачі';
@@ -1394,6 +1579,42 @@ class AppLocalizationsUk extends AppLocalizations {
   String get admin_driverAppeal => 'Апеляція водія:';
 
   @override
+  String get admin_planRequests => 'Плани';
+
+  @override
+  String get admin_noPlanRequests => 'Немає запитів на план';
+
+  @override
+  String get admin_noPlanRequestsSubtitle =>
+      'Коли водії запитають план, вони з\'являться тут';
+
+  @override
+  String get admin_approvePlan => 'Схвалити план';
+
+  @override
+  String get admin_rejectPlan => 'Відхилити план';
+
+  @override
+  String admin_approvePlanConfirm(String plan, String name) {
+    return 'Схвалити план $plan для $name?';
+  }
+
+  @override
+  String admin_rejectPlanConfirm(String plan, String name) {
+    return 'Відхилити план $plan для $name?';
+  }
+
+  @override
+  String admin_planApproved(String name) {
+    return 'План схвалено для $name';
+  }
+
+  @override
+  String admin_planRejected(String name) {
+    return 'План відхилено для $name';
+  }
+
+  @override
   String get driverRejected_title => 'Заявку відхилено';
 
   @override
@@ -1437,4 +1658,153 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get driverRejected_logout => 'Вийти';
+
+  @override
+  String get plans_menuTitle => 'Плани та ціни';
+
+  @override
+  String get plans_title => 'Обери свій ідеальний план';
+
+  @override
+  String get plans_subtitle => 'Преміум інструменти для твого бізнесу';
+
+  @override
+  String get plans_basic => 'Базовий';
+
+  @override
+  String get plans_pro => 'Pro';
+
+  @override
+  String get plans_premium => 'Преміум';
+
+  @override
+  String get plans_perMonth => '/міс';
+
+  @override
+  String plans_priceLabel(String name, int price) {
+    return '$name — $price€/міс';
+  }
+
+  @override
+  String get plans_scanner => 'Сканер';
+
+  @override
+  String get plans_sms => 'SMS';
+
+  @override
+  String get plans_shipmentHistory => 'Історія відправлень';
+
+  @override
+  String get plans_contactBook => 'Книга контактів';
+
+  @override
+  String get plans_contactList => 'Список контактів';
+
+  @override
+  String plans_selectPlan(String plan) {
+    return 'Замовити план';
+  }
+
+  @override
+  String get plans_popular => 'Популярний';
+
+  @override
+  String get plans_featureScanner => 'Сканер';
+
+  @override
+  String get plans_featureSms => 'SMS повідомлення';
+
+  @override
+  String get plans_featureHistory => 'Історія';
+
+  @override
+  String get plans_requestSuccess => 'Запит успішно надіслано';
+
+  @override
+  String get plans_requestError => 'Помилка при відправці запиту';
+
+  @override
+  String get plans_currentPlan => 'Поточний план';
+
+  @override
+  String get plans_requested => 'Запитано';
+
+  @override
+  String get marketing_trackingTitle => 'Надіслати відстеження';
+
+  @override
+  String get marketing_trackingDesc =>
+      'Повідом клієнту про стан його посилки. Формує довіру та професійність';
+
+  @override
+  String marketing_trackingMessage(String name, String tracking) {
+    return 'Привіт $name, твоя посилка $tracking зареєстрована і скоро буде забрана. Будемо тримати в курсі!';
+  }
+
+  @override
+  String get marketing_loyaltyTitle => 'Надіслати лояльність';
+
+  @override
+  String get marketing_loyaltyDesc =>
+      'Запропонуй знижку і зроби клієнта постійним. Постійні клієнти — найприбутковіші';
+
+  @override
+  String marketing_loyaltyMessage(String name) {
+    return 'Привіт $name, дякуємо за довіру. На наступне відправлення маєш знижку 10%. Пиши, коли потрібно!';
+  }
+
+  @override
+  String get marketing_tripTitle => 'Повідомити про рейс';
+
+  @override
+  String get marketing_tripDesc =>
+      'Повідом про наступний рейс і збери посилки. Кожне повідомлення — це потенційна посилка';
+
+  @override
+  String marketing_tripMessage(
+      String name, String origin, String destination, String date) {
+    return 'Привіт $name, маю рейс $origin → $destination $date. Маєш щось для відправки? Пиши!';
+  }
+
+  @override
+  String get marketing_upgradeCta => 'Розблокувати з Планом Pro';
+
+  @override
+  String get marketing_premiumFeature => 'Преміум функція';
+
+  @override
+  String get marketing_noPhone => 'Без телефону';
+
+  @override
+  String get marketing_noPackage => 'Немає очікуючих посилок';
+
+  @override
+  String get marketing_noTrip => 'Немає запланованих рейсів';
+
+  @override
+  String get admin_userDetail => 'Деталі користувача';
+
+  @override
+  String get admin_personalInfo => 'Особиста інформація';
+
+  @override
+  String get admin_userPlan => 'Активний план';
+
+  @override
+  String get admin_userNoPlan => 'Без плану';
+
+  @override
+  String get admin_dates => 'Дати';
+
+  @override
+  String get admin_lastUpdate => 'Останнє оновлення';
+
+  @override
+  String get admin_userLanguage => 'Мова';
+
+  @override
+  String get admin_userTheme => 'Тема';
+
+  @override
+  String get admin_superAdmin => 'Адміністратор';
 }

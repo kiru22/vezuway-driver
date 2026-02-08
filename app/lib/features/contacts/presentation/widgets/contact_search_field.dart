@@ -17,6 +17,7 @@ class ContactSearchField extends ConsumerStatefulWidget {
   final String? Function(String?)? validator;
   final String? hintText;
   final IconData? icon;
+  final bool dense;
 
   const ContactSearchField({
     super.key,
@@ -27,6 +28,7 @@ class ContactSearchField extends ConsumerStatefulWidget {
     this.validator,
     this.hintText,
     this.icon,
+    this.dense = false,
   });
 
   @override
@@ -179,7 +181,6 @@ class _ContactSearchFieldState extends ConsumerState<ContactSearchField> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            // Avatar
             CircleAvatar(
               radius: 20,
               backgroundColor: AppColors.primary.withValues(alpha: 0.1),
@@ -194,7 +195,6 @@ class _ContactSearchFieldState extends ConsumerState<ContactSearchField> {
             ),
             const SizedBox(width: 12),
 
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,7 +244,6 @@ class _ContactSearchFieldState extends ConsumerState<ContactSearchField> {
 
             const SizedBox(width: 8),
 
-            // Badge de paquetes
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -335,7 +334,7 @@ class _ContactSearchFieldState extends ConsumerState<ContactSearchField> {
             filled: true,
             fillColor: isDark ? colors.surface : Colors.white,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                EdgeInsets.symmetric(horizontal: 16, vertical: widget.dense ? 12 : 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(

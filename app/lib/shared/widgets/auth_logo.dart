@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import 'splash_screen.dart';
 
-/// Logo de la app "vezuway." con ícono de camión gradiente.
 class AuthLogo extends StatelessWidget {
   const AuthLogo({super.key});
 
@@ -11,18 +11,11 @@ class AuthLogo extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Ícono de camión con gradiente
-        ShaderMask(
-          shaderCallback: (bounds) =>
-              AppColors.loginButtonGradient.createShader(bounds),
-          child: const Icon(
-            Icons.local_shipping,
-            size: 36,
-            color: Colors.white,
-          ),
+        Image.asset(
+          logoAssetPath,
+          height: 40,
         ),
         const SizedBox(width: 8),
-        // Texto "vezuway."
         RichText(
           text: TextSpan(
             style: const TextStyle(

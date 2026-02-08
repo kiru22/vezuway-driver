@@ -49,7 +49,8 @@ class _TripsCalendarState extends State<TripsCalendar> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
-    final monthFormat = DateFormat('MMMM yyyy', 'uk');
+    final locale = Localizations.localeOf(context).languageCode;
+    final monthFormat = DateFormat('MMMM yyyy', locale);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -60,7 +61,6 @@ class _TripsCalendarState extends State<TripsCalendar> {
       ),
       child: Column(
         children: [
-          // Month navigation
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -83,10 +83,17 @@ class _TripsCalendarState extends State<TripsCalendar> {
             ],
           ),
           const SizedBox(height: 8),
-          // Weekday headers
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+            children: [
+              l10n.trips_weekdayMon,
+              l10n.trips_weekdayTue,
+              l10n.trips_weekdayWed,
+              l10n.trips_weekdayThu,
+              l10n.trips_weekdayFri,
+              l10n.trips_weekdaySat,
+              l10n.trips_weekdaySun,
+            ]
                 .map((day) => SizedBox(
                       width: 36,
                       child: Center(
@@ -103,10 +110,8 @@ class _TripsCalendarState extends State<TripsCalendar> {
                 .toList(),
           ),
           const SizedBox(height: 8),
-          // Calendar grid
           _buildCalendarGrid(),
 
-          // Clear filter button
           if (widget.showClearFilter) ...[
             const SizedBox(height: 12),
             SizedBox(
@@ -145,12 +150,10 @@ class _TripsCalendarState extends State<TripsCalendar> {
 
     final days = <Widget>[];
 
-    // Empty cells for days before the first of the month
     for (var i = 1; i < firstWeekday; i++) {
       days.add(const SizedBox.shrink());
     }
 
-    // Days of the month
     for (var day = 1; day <= lastDayOfMonth.day; day++) {
       final date = DateTime(_currentMonth.year, _currentMonth.month, day);
       final hasTrip = widget.departureDates.contains(date);
@@ -235,7 +238,7 @@ class _CalendarDay extends StatelessWidget {
       textColor = AppColors.success;
     } else {
       gradient = null;
-      bgColor = Colors.transparent;
+      bgColor = null;
       textColor = colors.textSecondary;
     }
 

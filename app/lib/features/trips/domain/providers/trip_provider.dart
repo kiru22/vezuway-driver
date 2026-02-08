@@ -8,12 +8,10 @@ import '../../data/models/trip_model.dart';
 import '../../data/models/trip_status.dart';
 import '../../data/repositories/trip_repository.dart';
 
-// Trip Repository Provider
 final tripRepositoryProvider = Provider<TripRepository>((ref) {
   return TripRepository(ref.read(apiServiceProvider));
 });
 
-// Trips List State
 class TripsState {
   final List<TripModel> trips;
   final bool isLoading;
@@ -42,7 +40,6 @@ class TripsState {
     );
   }
 
-  // Helper getters for filtered trips
   List<TripModel> get activeTrips {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -76,7 +73,6 @@ class TripsState {
       ..sort((a, b) => b.departureDate.compareTo(a.departureDate));
   }
 
-  // Filtered versions (when filterDate is set)
   List<TripModel> get filteredActiveTrips {
     if (filterDate == null) return activeTrips;
     return activeTrips
@@ -98,7 +94,6 @@ class TripsState {
         .toList();
   }
 
-  // Get all unique departure dates for calendar
   Set<DateTime> get departureDates {
     return trips
         .map((t) => DateTime(
@@ -109,7 +104,6 @@ class TripsState {
         .toSet();
   }
 
-  // Get dates that have trips with packages
   Set<DateTime> get datesWithPackages {
     return trips
         .where((t) => t.packagesCount > 0)
@@ -121,7 +115,6 @@ class TripsState {
         .toSet();
   }
 
-  // Get the next upcoming departure date (for highlighting in calendar)
   DateTime? get nextDepartureDate {
     final upcoming = upcomingTrips;
     if (upcoming.isEmpty) return null;
@@ -133,7 +126,6 @@ class TripsState {
   }
 }
 
-// Trips Notifier
 class TripsNotifier extends StateNotifier<TripsState> {
   final TripRepository _repository;
   bool _isInitialized = false;
@@ -236,6 +228,19 @@ class TripsNotifier extends StateNotifier<TripsState> {
     }
   }
 
+  Future<bool> updateTrip(String id, Map<String, dynamic> data) async {
+    try {
+      final updated = await _repository.updateTrip(id, data);
+      final trips = state.trips.map((t) {
+        return t.id == id ? updated : t;
+      }).toList();
+      state = state.copyWith(trips: trips);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> updateStatus(String id, TripStatus status) async {
     try {
       final updated = await _repository.updateStatus(id, status);
@@ -272,12 +277,10 @@ class TripsNotifier extends StateNotifier<TripsState> {
   }
 }
 
-// Trips Provider
 final tripsProvider = StateNotifierProvider<TripsNotifier, TripsState>((ref) {
   return TripsNotifier(ref.read(tripRepositoryProvider));
 });
 
-// Single Trip Provider
 final tripDetailProvider =
     FutureProvider.family<TripModel, String>((ref, id) async {
   final repository = ref.read(tripRepositoryProvider);

@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_extensions.dart';
 import '../../l10n/l10n_extension.dart';
 import '../data/cities_data.dart';
+import '../domain/providers/city_provider.dart';
 import '../models/city_model.dart';
 
 class MultiSelectCityChips extends StatelessWidget {
@@ -103,7 +107,6 @@ class MultiSelectCityChips extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search field / Add button
               InkWell(
                 onTap: () => _showAddCityModal(context),
                 borderRadius: BorderRadius.circular(8),
@@ -150,7 +153,6 @@ class MultiSelectCityChips extends StatelessWidget {
                   ),
                 ),
               ),
-              // Selected cities chips
               if (selectedCities.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Wrap(
@@ -169,9 +171,7 @@ class MultiSelectCityChips extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    context.l10n.localeName.startsWith('uk')
-                        ? 'Без промiжних зупинок'
-                        : 'Sin paradas intermedias',
+                    context.l10n.routes_noIntermediateStops,
                     style: TextStyle(
                       fontSize: 12,
                       color: colors.textMuted,
@@ -200,7 +200,7 @@ class _CityChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
 
     // Use explicit colors based on theme mode
     final chipBg = isDark ? const Color(0xFF172033) : const Color(0xFFEFF6FF);
@@ -242,7 +242,7 @@ class _CityChip extends StatelessWidget {
   }
 }
 
-class _AddCityBottomSheet extends StatefulWidget {
+class _AddCityBottomSheet extends ConsumerStatefulWidget {
   final List<CityModel> existingCities;
   final List<CityModel>? excludeCities;
   final List<String>? filterCountries;
@@ -256,12 +256,15 @@ class _AddCityBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_AddCityBottomSheet> createState() => _AddCityBottomSheetState();
+  ConsumerState<_AddCityBottomSheet> createState() =>
+      _AddCityBottomSheetState();
 }
 
-class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
+class _AddCityBottomSheetState extends ConsumerState<_AddCityBottomSheet> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
   List<CityModel> _filteredCities = [];
+  bool _isSearching = false;
   String _locale = 'es';
 
   @override
@@ -278,22 +281,95 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   void _filterCities(String query) {
+    _debounce?.cancel();
+
     final allExcluded = [
       ...widget.existingCities,
       ...?widget.excludeCities,
     ];
-    setState(() {
-      _filteredCities = CitiesData.searchCities(
-        query,
-        countries: widget.filterCountries,
-        excludeCities: allExcluded,
-      );
+
+    if (query.length < 2) {
+      setState(() {
+        _isSearching = false;
+        _filteredCities = CitiesData.searchCities(
+          query,
+          countries: widget.filterCountries,
+          excludeCities: allExcluded,
+        );
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final results = await ref.read(
+          citySearchProvider(CitySearchParams(
+            query: query,
+            countries: widget.filterCountries,
+          )).future,
+        );
+
+        if (mounted) {
+          setState(() {
+            _filteredCities = results
+                .where((city) => !allExcluded.contains(city))
+                .toList();
+            _isSearching = false;
+          });
+        }
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            _filteredCities = CitiesData.searchCities(
+              query,
+              countries: widget.filterCountries,
+              excludeCities: allExcluded,
+            );
+            _isSearching = false;
+          });
+        }
+      }
     });
+  }
+
+  Widget _buildCitiesList(String noResultsText, double bottomPadding) {
+    if (_isSearching) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_filteredCities.isEmpty) {
+      return Center(
+        child: Text(
+          noResultsText,
+          style: TextStyle(color: context.colors.textMuted),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.only(bottom: bottomPadding + 16),
+      itemCount: _filteredCities.length,
+      itemBuilder: (context, index) {
+        final city = _filteredCities[index];
+        return ListTile(
+          title: Text(city.getLocalizedName(_locale)),
+          subtitle: Text(
+            city.region != null
+                ? '${city.getLocalizedCountry(_locale)} · ${city.region}'
+                : city.getLocalizedCountry(_locale),
+          ),
+          onTap: () => widget.onCitySelected(city),
+        );
+      },
+    );
   }
 
   @override
@@ -310,7 +386,6 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
       ),
       child: Column(
         children: [
-          // Handle
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: 40,
@@ -320,7 +395,6 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Title
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -339,9 +413,7 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  _locale.startsWith('uk')
-                      ? 'Додати зупинку'
-                      : 'Agregar parada',
+                  context.l10n.routes_addStop,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -350,7 +422,6 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
               ],
             ),
           ),
-          // Search field
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
@@ -360,6 +431,16 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
               decoration: InputDecoration(
                 hintText: l10n.routes_searchCity,
                 prefixIcon: const Icon(Icons.search),
+                suffixIcon: _isSearching
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
                 filled: true,
                 fillColor: colors.background,
                 border: OutlineInputBorder(
@@ -370,27 +451,8 @@ class _AddCityBottomSheetState extends State<_AddCityBottomSheet> {
             ),
           ),
           const SizedBox(height: 8),
-          // Cities list
           Expanded(
-            child: _filteredCities.isEmpty
-                ? Center(
-                    child: Text(
-                      l10n.common_noResults,
-                      style: TextStyle(color: colors.textMuted),
-                    ),
-                  )
-                : ListView.builder(
-                    padding: EdgeInsets.only(bottom: bottomPadding + 16),
-                    itemCount: _filteredCities.length,
-                    itemBuilder: (context, index) {
-                      final city = _filteredCities[index];
-                      return ListTile(
-                        title: Text(city.getLocalizedName(_locale)),
-                        subtitle: Text(city.getLocalizedCountry(_locale)),
-                        onTap: () => widget.onCitySelected(city),
-                      );
-                    },
-                  ),
+            child: _buildCitiesList(l10n.common_noResults, bottomPadding),
           ),
         ],
       ),

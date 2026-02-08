@@ -3,7 +3,10 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
+import '../../../../shared/widgets/communication_button_row.dart';
+import '../../../../shared/widgets/package_box_icon.dart';
 import '../../data/models/contact_model.dart';
 
 class ContactStatsCard extends StatelessWidget {
@@ -16,156 +19,137 @@ class ContactStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: colors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: colors.shadow.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
-          // Avatar grande
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-            child: Text(
-              contact.initials,
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                child: Text(
+                  contact.initials,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            contact.name,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: colors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        if (contact.isVerified) ...[
+                          const SizedBox(width: 6),
+                          const Icon(Icons.verified,
+                              size: 20, color: AppColors.primary),
+                        ],
+                      ],
+                    ),
+                    if (contact.email != null || contact.phone != null)
+                      const SizedBox(height: 2),
+                    if (contact.phone != null)
+                      _buildInfoChip(
+                          context, Icons.phone_outlined, contact.phone!),
+                    if (contact.email != null)
+                      _buildInfoChip(
+                          context, Icons.email_outlined, contact.email!),
+                    if (contact.fullAddress.isNotEmpty)
+                      _buildInfoChip(context, Icons.location_on_outlined,
+                          contact.fullAddress),
+                  ],
+                ),
+              ),
+            ],
           ),
+
+          if (contact.phone != null) ...[
+            const SizedBox(height: 14),
+            CommunicationButtonRow(phone: contact.phone!),
+          ],
+
+          const SizedBox(height: 16),
+          Divider(height: 1, color: colors.border),
           const SizedBox(height: 16),
 
-          // Nombre
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: Text(
-                  contact.name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    context.l10n.contacts_statsSent,
+                    contact.totalPackagesSent.toString(),
+                    Icons.north_east,
+                    Colors.blue,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
-              if (contact.isVerified) ...[
-                const SizedBox(width: 8),
-                const Icon(
-                  Icons.verified,
-                  size: 24,
-                  color: AppColors.primary,
+                VerticalDivider(width: 1, color: colors.border),
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    context.l10n.contacts_statsReceived,
+                    contact.totalPackagesReceived.toString(),
+                    Icons.south_west,
+                    Colors.green,
+                  ),
+                ),
+                VerticalDivider(width: 1, color: colors.border),
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    context.l10n.contacts_statsTotal,
+                    contact.totalPackages.toString(),
+                    Icons.inventory_2_outlined,
+                    AppColors.primary,
+                    iconWidget: PackageBoxIcon(size: 20, color: AppColors.primary),
+                  ),
                 ),
               ],
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Email y teléfono
-          if (contact.email != null)
-            _buildInfoRow(
-              context,
-              Icons.email_outlined,
-              contact.email!,
             ),
-          if (contact.phone != null)
-            _buildInfoRow(
-              context,
-              Icons.phone_outlined,
-              contact.phone!,
-            ),
-          if (contact.fullAddress.isNotEmpty)
-            _buildInfoRow(
-              context,
-              Icons.location_on_outlined,
-              contact.fullAddress,
-            ),
-
-          const SizedBox(height: 20),
-          const Divider(height: 1),
-          const SizedBox(height: 20),
-
-          // Estadísticas
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  context,
-                  context.l10n.contacts_statsSent,
-                  contact.totalPackagesSent.toString(),
-                  Icons.north_east,
-                  Colors.blue,
-                ),
-              ),
-              Container(
-                width: 1,
-                height: 50,
-                color: Theme.of(context).dividerColor,
-              ),
-              Expanded(
-                child: _buildStatItem(
-                  context,
-                  context.l10n.contacts_statsReceived,
-                  contact.totalPackagesReceived.toString(),
-                  Icons.south_west,
-                  Colors.green,
-                ),
-              ),
-              Container(
-                width: 1,
-                height: 50,
-                color: Theme.of(context).dividerColor,
-              ),
-              Expanded(
-                child: _buildStatItem(
-                  context,
-                  context.l10n.contacts_statsTotal,
-                  contact.totalPackages.toString(),
-                  Icons.inventory_2_outlined,
-                  AppColors.primary,
-                ),
-              ),
-            ],
           ),
 
           if (contact.lastPackageAt != null) ...[
-            const SizedBox(height: 20),
-            const Divider(height: 1),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
+            Divider(height: 1, color: colors.border),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.schedule,
-                  size: 16,
-                  color: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.color
-                      ?.withValues(alpha: 0.6),
-                ),
-                const SizedBox(width: 8),
+                Icon(Icons.schedule, size: 14, color: colors.textMuted),
+                const SizedBox(width: 6),
                 Text(
                   '${context.l10n.contacts_lastActivity}: ${_formatDate(contact.lastPackageAt!)}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.color
-                        ?.withValues(alpha: 0.6),
-                  ),
+                  style: TextStyle(fontSize: 13, color: colors.textMuted),
                 ),
               ],
             ),
@@ -175,31 +159,21 @@ class ContactStatsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
+  Widget _buildInfoChip(BuildContext context, IconData icon, String text) {
+    final colors = context.colors;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.only(top: 2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color:
-                Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-          ),
-          const SizedBox(width: 8),
+          Icon(icon, size: 13, color: colors.textMuted),
+          const SizedBox(width: 4),
           Flexible(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.color
-                    ?.withValues(alpha: 0.7),
-              ),
-              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: colors.textMuted),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -212,27 +186,28 @@ class ContactStatsCard extends StatelessWidget {
     String label,
     String value,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    Widget? iconWidget,
+  }) {
+    final colors = context.colors;
+
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 24, color: color),
-        const SizedBox(height: 8),
+        iconWidget ?? Icon(icon, size: 20, color: color),
+        const SizedBox(height: 6),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 24,
+          style: TextStyle(
+            fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: colors.textPrimary,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color:
-                Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
-          ),
+          style: TextStyle(fontSize: 12, color: colors.textMuted),
         ),
       ],
     );

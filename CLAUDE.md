@@ -8,6 +8,26 @@ Logistics UA-ES is a shipment management system for Ukraine-Spain logistics. It 
 - **Backend**: Laravel 12 API with PHP 8.3
 - **Frontend**: Flutter 3.27 web/mobile app
 
+## Protección de Base de Datos (CRÍTICO — NUNCA VIOLAR)
+
+**NUNCA ejecutar comandos que puedan borrar o modificar datos de la base de datos sin preguntar al usuario DOS VECES antes.** Esto incluye pero no se limita a:
+- `migrate:fresh`, `migrate:rollback`, `migrate:reset`
+- `db:seed`, `db:wipe`
+- Cualquier query `DELETE`, `TRUNCATE`, `DROP`, `ALTER` directo
+- Cualquier comando artisan que modifique estructura o datos existentes
+
+**Procedimiento obligatorio:**
+1. Explicar qué comando se va a ejecutar y qué efecto tendrá sobre los datos
+2. Esperar confirmación explícita del usuario
+3. Preguntar una SEGUNDA vez: "¿Estás seguro? Esto puede causar pérdida de datos."
+4. Solo ejecutar después de la segunda confirmación
+
+**Migraciones nuevas**: Solo `php artisan migrate` (hacia adelante) es aceptable sin doble confirmación, ya que no borra datos existentes.
+
+## Entorno de desarrollo
+
+**IMPORTANTE**: Siempre ejecutar comandos backend (tests, artisan, pint) dentro del contenedor Docker con `docker exec logistics-backend <comando>`. El entorno local no tiene todas las dependencias (ej: Laravel Boost).
+
 ## Development Commands
 
 ### Docker (recommended)
@@ -246,6 +266,7 @@ app/lib/core/theme/
 - Primary: `#10B981` (emerald-500) → `#0D9488` (teal-600)
 - Titanium: `#111827` (dark background)
 - Surface: `#F0F1F3` (light background)
+- DropdownBg: `#283444` (dark mode dropdowns, entre surface y surfaceLight)
 
 **Status Badges:**
 - Info: bg `#DBEAFE`, text `#1D4ED8`
@@ -271,6 +292,14 @@ app/lib/core/theme/
 2. Documentar el uso en este archivo (CLAUDE.md)
 3. Implementar usando el token, NO valores hardcodeados
 4. Verificar con `flutter analyze`
+
+## Estilo de Código (CRÍTICO)
+
+**No añadir comentarios innecesarios.** El código debe ser autoexplicativo mediante:
+- Nombres de funciones descriptivos que expresen su intención
+- Variables con nombres que se autodefinan
+- Código bien estructurado y claro
+- Solo añadir comentarios cuando la lógica sea genuinamente compleja o no obvia (ej: workarounds, decisiones de negocio no evidentes)
 
 ## Regla de Consistencia UI (CRÍTICO)
 

@@ -6,6 +6,7 @@ import '../../core/theme/theme_extensions.dart';
 /// Used in StatsGrid and ClientStatsGrid.
 class StatCard extends StatelessWidget {
   final IconData icon;
+  final Widget? iconWidget;
   final String label;
   final String value;
   final List<Color> gradient;
@@ -13,6 +14,7 @@ class StatCard extends StatelessWidget {
   const StatCard({
     super.key,
     required this.icon,
+    this.iconWidget,
     required this.label,
     required this.value,
     required this.gradient,
@@ -33,7 +35,6 @@ class StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon with gradient background
           Container(
             width: 40,
             height: 40,
@@ -48,14 +49,13 @@ class StatCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
+            child: iconWidget ?? Icon(
               icon,
               size: 20,
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 14),
-          // Value with animation
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: 1),
             duration: AppTheme.durationSlow,
@@ -69,13 +69,18 @@ class StatCard extends StatelessWidget {
                 ),
               );
             },
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.onSurface,
-                letterSpacing: -0.5,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: colorScheme.onSurface,
+                  letterSpacing: -0.5,
+                ),
+                maxLines: 1,
               ),
             ),
           ),
@@ -87,6 +92,8 @@ class StatCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
               color: colors.textMuted,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

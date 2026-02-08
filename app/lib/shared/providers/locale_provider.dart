@@ -10,7 +10,7 @@ enum AppLocale {
   String get displayName {
     switch (this) {
       case AppLocale.es:
-        return 'Espanol';
+        return 'Español';
       case AppLocale.uk:
         return 'Українська';
     }

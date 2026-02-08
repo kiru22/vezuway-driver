@@ -8,11 +8,12 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../../shared/widgets/empty_state.dart';
+import '../../../../shared/widgets/package_box_icon.dart';
 import '../../domain/providers/package_provider.dart';
 import '../../data/models/package_model.dart';
 import '../widgets/bulk_action_bar.dart';
+import '../widgets/expandable_filter_bar.dart';
 import '../widgets/package_card_v2.dart';
-import '../widgets/status_filter_chips.dart';
 
 class PackagesScreen extends ConsumerStatefulWidget {
   const PackagesScreen({super.key});
@@ -27,10 +28,8 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
   String _searchQuery = '';
   String? _expandedPackageId;
 
-  final _scrollController = ScrollController(initialScrollOffset: 76.0);
-  final double _hiddenHeaderHeight = 76.0;
+  final _scrollController = ScrollController();
 
-  // Animation controller for list transitions (slide lateral)
   late AnimationController _listAnimationController;
   late Animation<double> _slideAnimation;
   int _previousFilterIndex = -1; // -1 = "Todos", 0-3 = status index
@@ -70,7 +69,6 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
   }
 
   void _animateListRefresh(int newFilterIndex) {
-    // Determine slide direction based on filter position
     _slideFromRight = newFilterIndex > _previousFilterIndex;
     _previousFilterIndex = newFilterIndex;
     _listAnimationController.reset();
@@ -78,17 +76,33 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
   }
 
   List<PackageModel> _filterPackages(List<PackageModel> packages) {
-    if (_searchQuery.isEmpty) return packages;
-    final query = _searchQuery.toLowerCase();
-    return packages.where((p) {
-      return p.trackingCode.toLowerCase().contains(query) ||
-          p.senderName.toLowerCase().contains(query) ||
-          p.receiverName.toLowerCase().contains(query) ||
-          (p.description?.toLowerCase().contains(query) ?? false);
-    }).toList();
+    var result = packages;
+
+    final filterCities = ref.read(packagesProvider).filterCities;
+    if (filterCities.isNotEmpty) {
+      result = result.where((p) {
+        final senderMatch =
+            p.senderCity != null && filterCities.contains(p.senderCity);
+        final receiverMatch =
+            p.receiverCity != null && filterCities.contains(p.receiverCity);
+        return senderMatch || receiverMatch;
+      }).toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      result = result.where((p) {
+        return p.trackingCode.toLowerCase().contains(query) ||
+            p.senderName.toLowerCase().contains(query) ||
+            p.receiverName.toLowerCase().contains(query) ||
+            (p.description?.toLowerCase().contains(query) ?? false);
+      }).toList();
+    }
+
+    return result;
   }
 
-  void _handleBulkAdvance() async {
+  Future<void> _handleBulkAdvance() async {
     final result =
         await ref.read(packagesProvider.notifier).bulkAdvanceToNextStatus();
 
@@ -117,7 +131,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDarkMode;
     final packagesState = ref.watch(packagesProvider);
     final countsAsync = ref.watch(packageCountsProvider);
     final filteredPackages = _filterPackages(packagesState.packages);
@@ -128,8 +142,9 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
         children: [
           Column(
             children: [
-              // Header (fixed) con botón de selección
               AppHeader(
+                icon: Icons.inventory_2_rounded,
+                iconWidget: const PackageBoxIcon(size: 22, color: Colors.white, filled: true),
                 title: context.l10n.packages_title,
                 showMenu: false,
                 trailing: _SelectionModeButton(
@@ -144,7 +159,25 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
                   },
                 ),
               ),
-              // Scrollable content
+              ExpandableFilterBar(
+                searchController: _searchController,
+                searchQuery: _searchQuery,
+                onSearchChanged: (value) =>
+                    setState(() => _searchQuery = value),
+                selectedStatus: packagesState.filterStatus,
+                onStatusSelected: (status) {
+                  final newIndex = status == null
+                      ? -1
+                      : PackageStatus.values.indexOf(status);
+                  _animateListRefresh(newIndex);
+                  ref.read(packagesProvider.notifier).filterByStatus(status);
+                },
+                counts: countsAsync.valueOrNull,
+                onFilterChanged: () {
+                  _listAnimationController.reset();
+                  _listAnimationController.forward();
+                },
+              ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
@@ -159,85 +192,17 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
                       controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
-                        // Search bar (Hidden by default via initialScrollOffset)
-                        SliverToBoxAdapter(
-                          child: SizedBox(
-                            height: _hiddenHeaderHeight,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                              child: TextField(
-                                controller: _searchController,
-                                onChanged: (value) =>
-                                    setState(() => _searchQuery = value),
-                                decoration: InputDecoration(
-                                  hintText:
-                                      context.l10n.packages_searchPlaceholder,
-                                  prefixIcon: Icon(Icons.search,
-                                      color: colors.textMuted),
-                                  suffixIcon: _searchQuery.isNotEmpty
-                                      ? IconButton(
-                                          icon: Icon(Icons.clear,
-                                              color: colors.textMuted),
-                                          onPressed: () {
-                                            _searchController.clear();
-                                            setState(() => _searchQuery = '');
-                                          },
-                                        )
-                                      : null,
-                                  filled: true,
-                                  fillColor: colors.background,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Filter chips
-                        SliverToBoxAdapter(
-                          child: StatusFilterChips(
-                            selectedStatus: packagesState.filterStatus,
-                            onStatusSelected: (status) {
-                              // Calculate filter index: null = -1, otherwise status index
-                              final newIndex = status == null
-                                  ? -1
-                                  : PackageStatus.values.indexOf(status);
-                              _animateListRefresh(newIndex);
-                              ref
-                                  .read(packagesProvider.notifier)
-                                  .filterByStatus(status);
-                            },
-                            counts: countsAsync.valueOrNull,
-                          ),
-                        ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 8)),
-
-                        // Package list
+                        const SliverToBoxAdapter(
+                            child: SizedBox(height: 8)),
                         _buildSliverBody(packagesState, filteredPackages),
-
-                        // Ensure content is always taller than viewport to allow hiding the search bar
                         const SliverFillRemaining(
                           hasScrollBody: false,
                           child: SizedBox.shrink(),
                         ),
-                        // Extra padding when bulk action bar is visible
                         SliverToBoxAdapter(
                           child: SizedBox(
-                            height: _hiddenHeaderHeight +
-                                (packagesState.isSelectionMode ? 80 : 0),
+                            height:
+                                packagesState.isSelectionMode ? 80 : 16,
                           ),
                         ),
                       ],
@@ -247,7 +212,6 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
               ),
             ],
           ),
-          // Bulk action bar (aparece desde abajo)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
@@ -287,21 +251,29 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
       );
     }
 
+    final hasAnyFilter = state.filterStatus != null ||
+        state.tripId != null ||
+        state.filterCities.isNotEmpty ||
+        _searchQuery.isNotEmpty;
+
     if (packages.isEmpty) {
       return SliverFillRemaining(
         child: EmptyState(
           icon: Icons.inventory_2_outlined,
-          title: (state.filterStatus != null || _searchQuery.isNotEmpty)
+          iconWidget: PackageBoxIcon(
+            size: 40,
+            color: AppColors.primary.withValues(alpha: 0.7),
+          ),
+          title: hasAnyFilter
               ? context.l10n.packages_emptyFilterTitle
               : context.l10n.packages_emptyTitle,
-          subtitle: (state.filterStatus != null || _searchQuery.isNotEmpty)
+          subtitle: hasAnyFilter
               ? context.l10n.packages_emptyFilterMessage
               : context.l10n.packages_emptyMessage,
         ),
       );
     }
 
-    // Slide lateral animation applied to the entire container
     return SliverToBoxAdapter(
       child: SlideTransition(
         position: Tween<Offset>(
@@ -432,4 +404,3 @@ class _ErrorState extends StatelessWidget {
     );
   }
 }
-

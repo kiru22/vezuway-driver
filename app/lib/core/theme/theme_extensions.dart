@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors_extension.dart';
+import 'app_theme.dart';
 
 /// Convenient BuildContext extension for accessing theme colors.
 /// Usage: context.colors.cardBackground
@@ -17,4 +18,8 @@ extension ThemeExtensions on BuildContext {
 
   /// Check if current theme is dark
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
+
+  /// Adaptive soft shadow: stronger on dark backgrounds, lighter on light.
+  List<BoxShadow> get adaptiveShadow =>
+      isDarkMode ? AppTheme.shadowSoftDark : AppTheme.shadowSoft;
 }

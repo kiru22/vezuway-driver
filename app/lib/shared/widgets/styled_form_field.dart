@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_colors_extension.dart';
 import '../../core/theme/theme_extensions.dart';
 
 /// A styled text form field with consistent theming for dark/light modes.
@@ -11,6 +12,7 @@ class StyledFormField extends StatelessWidget {
   final String label;
   final String? hint;
   final IconData? prefixIcon;
+  final Widget? prefixWidget;
   final Widget? suffix;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
@@ -20,6 +22,7 @@ class StyledFormField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final TextInputAction? textInputAction;
   final VoidCallback? onEditingComplete;
+  final bool dense;
 
   const StyledFormField({
     super.key,
@@ -27,6 +30,7 @@ class StyledFormField extends StatelessWidget {
     required this.label,
     this.hint,
     this.prefixIcon,
+    this.prefixWidget,
     this.suffix,
     this.keyboardType,
     this.validator,
@@ -36,16 +40,36 @@ class StyledFormField extends StatelessWidget {
     this.onChanged,
     this.textInputAction,
     this.onEditingComplete,
+    this.dense = false,
   });
+
+  Widget? _buildPrefixIcon(bool isDark, AppColorsExtension colors) {
+    if (prefixWidget != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: prefixWidget,
+      );
+    }
+    if (prefixIcon != null) {
+      return Icon(
+        prefixIcon,
+        size: 20,
+        color: isDark ? colors.textSecondary : AppColors.lightTextSecondary,
+      );
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = context.isDarkMode;
+    final radius = BorderRadius.circular(12);
+    final borderColor = isDark ? colors.border : AppColors.lightBorder;
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: radius,
         boxShadow: isDark
             ? null
             : [
@@ -85,50 +109,39 @@ class StyledFormField extends StatelessWidget {
           hintStyle: TextStyle(
             color: isDark ? colors.textMuted : AppColors.lightTextMuted,
           ),
-          prefixIcon: prefixIcon != null
-              ? Icon(
-                  prefixIcon,
-                  size: 20,
-                  color: isDark
-                      ? colors.textSecondary
-                      : AppColors.lightTextSecondary,
-                )
+          prefixIcon: _buildPrefixIcon(isDark, colors),
+          prefixIconConstraints: prefixWidget != null
+              ? const BoxConstraints(minWidth: 44, minHeight: 44)
               : null,
           suffix: suffix,
           filled: true,
           fillColor: isDark ? colors.surface : Colors.white,
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              EdgeInsets.symmetric(horizontal: 16, vertical: dense ? 12 : 16),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: isDark ? colors.border : AppColors.lightBorder,
-            ),
+            borderRadius: radius,
+            borderSide: BorderSide(color: borderColor),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: isDark ? colors.border : AppColors.lightBorder,
-            ),
+            borderRadius: radius,
+            borderSide: BorderSide(color: borderColor),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: radius,
             borderSide: const BorderSide(color: AppColors.primary, width: 2),
           ),
           errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: radius,
             borderSide: const BorderSide(color: AppColors.error, width: 1.5),
           ),
           focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: radius,
             borderSide: const BorderSide(color: AppColors.error, width: 2),
           ),
           disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: radius,
             borderSide: BorderSide(
-              color: isDark
-                  ? colors.border.withValues(alpha: 0.5)
-                  : AppColors.lightBorder.withValues(alpha: 0.5),
+              color: borderColor.withValues(alpha: 0.5),
             ),
           ),
         ),
