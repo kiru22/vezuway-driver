@@ -675,6 +675,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get routes_updateError => 'Помилка оновлення маршруту';
 
   @override
+  String get routes_editSubtitle => 'Змінити міста та ціни';
+
+  @override
+  String get routes_deleteSubtitle => 'Видалити цей маршрут';
+
+  @override
   String get routes_selectDatesPrompt =>
       'Торкнiться днiв у календарi для вибору';
 
@@ -849,6 +855,12 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get contacts_edit => 'Редагувати Контакт';
+
+  @override
+  String get contacts_editSubtitle => 'Змінити дані контакту';
+
+  @override
+  String get contacts_deleteSubtitle => 'Видалити контакт назавжди';
 
   @override
   String get contacts_updated => 'Контакт оновлено';

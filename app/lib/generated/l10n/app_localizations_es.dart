@@ -673,6 +673,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get routes_updateError => 'Error al actualizar la ruta';
 
   @override
+  String get routes_editSubtitle => 'Modificar ciudades y precios';
+
+  @override
+  String get routes_deleteSubtitle => 'Eliminar esta ruta';
+
+  @override
   String get routes_selectDatesPrompt =>
       'Toca los dias en el calendario para seleccionar';
 
@@ -846,6 +852,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get contacts_edit => 'Editar Contacto';
+
+  @override
+  String get contacts_editSubtitle => 'Modificar datos del contacto';
+
+  @override
+  String get contacts_deleteSubtitle => 'Eliminar este contacto';
 
   @override
   String get contacts_updated => 'Contacto actualizado';

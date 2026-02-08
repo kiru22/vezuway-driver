@@ -259,6 +259,8 @@
   "routes_editTitle": "Editar Ruta",
   "routes_updateSuccess": "Ruta actualizada correctamente",
   "routes_updateError": "Error al actualizar la ruta",
+  "routes_editSubtitle": "Modificar ciudades y precios",
+  "routes_deleteSubtitle": "Eliminar esta ruta",
   "routes_selectDatesPrompt": "Toca los dias en el calendario para seleccionar",
   "routes_selectedDatesCount": "{count, plural, =1{fecha seleccionada} other{fechas seleccionadas}}",
   "@routes_selectedDatesCount": {
@@ -324,6 +326,8 @@
   "contacts_createError": "Error al crear contacto",
   "contacts_detail": "Detalle de Contacto",
   "contacts_edit": "Editar Contacto",
+  "contacts_editSubtitle": "Modificar datos del contacto",
+  "contacts_deleteSubtitle": "Eliminar este contacto",
   "contacts_updated": "Contacto actualizado",
   "contacts_deleteTitle": "Eliminar Contacto",
   "contacts_deleteConfirm": "¿Estás seguro de eliminar este contacto?",

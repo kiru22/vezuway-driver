@@ -10,6 +10,7 @@ import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/models/city_model.dart';
 import '../../../../shared/widgets/currency_dropdown.dart';
+import '../../../../shared/widgets/submit_bottom_bar.dart';
 import '../../data/models/route_model.dart';
 import '../../domain/providers/route_provider.dart';
 import '../widgets/route_country_section.dart';
@@ -258,7 +259,11 @@ class _EditRouteScreenState extends ConsumerState<EditRouteScreen> {
                 ],
               ),
             ),
-            _buildBottomButton(colors, l10n),
+            SubmitBottomBar(
+              onPressed: _isLoading ? null : _handleSubmit,
+              label: l10n.common_save,
+              isLoading: _isLoading,
+            ),
           ],
         ),
       ),
@@ -390,51 +395,4 @@ class _EditRouteScreenState extends ConsumerState<EditRouteScreen> {
     );
   }
 
-  Widget _buildBottomButton(AppColorsExtension colors, AppLocalizations l10n) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-          20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(top: BorderSide(color: colors.border)),
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: _isLoading ? null : _handleSubmit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      l10n.common_save,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.check, size: 20),
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
 }

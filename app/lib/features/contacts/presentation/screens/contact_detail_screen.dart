@@ -77,7 +77,7 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
           const SizedBox(height: 8),
           PillTabBar(
             controller: _tabController,
-            labels: [l10n.contacts_tabHistory, l10n.contacts_tabDetails],
+            labels: [l10n.contacts_tabDetails, l10n.contacts_tabHistory],
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -85,8 +85,8 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
               data: (contact) => TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildHistoryTab(),
                   _buildDetailsTab(contact),
+                  _buildHistoryTab(),
                 ],
               ),
               loading: () => const Center(
@@ -124,13 +124,13 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
         BottomSheetOption(
           icon: Icons.edit_outlined,
           label: l10n.contacts_edit,
-          subtitle: 'Змінити дані контакту',
+          subtitle: l10n.contacts_editSubtitle,
           onTap: () => _showEditDialog(contact),
         ),
         BottomSheetOption(
           icon: Icons.delete_outline,
           label: l10n.common_delete,
-          subtitle: 'Видалити контакт назавжди',
+          subtitle: l10n.contacts_deleteSubtitle,
           isDestructive: true,
           onTap: _showDeleteConfirmation,
         ),

@@ -117,11 +117,13 @@ class RouteTemplateCard extends StatelessWidget {
         BottomSheetOption(
           icon: Icons.edit_outlined,
           label: l10n.common_edit,
+          subtitle: l10n.routes_editSubtitle,
           onTap: onEdit,
         ),
         BottomSheetOption(
           icon: Icons.delete_outline,
           label: l10n.common_delete,
+          subtitle: l10n.routes_deleteSubtitle,
           isDestructive: true,
           onTap: onDelete,
         ),
@@ -205,7 +207,41 @@ class RouteTemplateCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          if (route.pricePerKg != null || route.minimumPrice != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (route.pricePerKg != null)
+                  Text(
+                    '${route.pricePerKg!.toStringAsFixed(2)} €/kg',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                if (route.pricePerKg != null && route.minimumPrice != null)
+                  Text(
+                    '  ·  ',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colors.textMuted,
+                    ),
+                  ),
+                if (route.minimumPrice != null)
+                  Text(
+                    'mín. ${route.minimumPrice!.toStringAsFixed(2)} €',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: colors.textSecondary,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+          SizedBox(height: route.pricePerKg != null || route.minimumPrice != null ? 0 : 16),
           _RouteTimeline(route: route),
         ],
       ),

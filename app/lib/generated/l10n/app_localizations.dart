@@ -1340,6 +1340,18 @@ abstract class AppLocalizations {
   /// **'Error al actualizar la ruta'**
   String get routes_updateError;
 
+  /// No description provided for @routes_editSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Modificar ciudades y precios'**
+  String get routes_editSubtitle;
+
+  /// No description provided for @routes_deleteSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar esta ruta'**
+  String get routes_deleteSubtitle;
+
   /// No description provided for @routes_selectDatesPrompt.
   ///
   /// In es, this message translates to:
@@ -1663,6 +1675,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Editar Contacto'**
   String get contacts_edit;
+
+  /// No description provided for @contacts_editSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Modificar datos del contacto'**
+  String get contacts_editSubtitle;
+
+  /// No description provided for @contacts_deleteSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar este contacto'**
+  String get contacts_deleteSubtitle;
 
   /// No description provided for @contacts_updated.
   ///
