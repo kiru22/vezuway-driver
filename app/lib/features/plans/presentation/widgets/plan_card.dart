@@ -85,131 +85,128 @@ class PlanCard extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    // Popular badge (top-right positioned via Stack)
-                    if (plan.isPopular)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
-                            borderRadius:
-                                BorderRadius.circular(AppTheme.radiusFull),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      if (plan.isPopular)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusFull),
+                            ),
+                            child: Text(
+                              l10n.plans_popular,
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
                           ),
-                          child: Text(
-                            l10n.plans_popular,
+                        ),
+                      if (!plan.isPopular) const SizedBox(height: 28),
+
+                      const SizedBox(height: 8),
+
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: plan.accent.withValues(alpha: 0.12),
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.radiusSm),
+                          border: Border.all(
+                            color: plan.accent.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Icon(
+                          plan.icon,
+                          color: plan.accent,
+                          size: 20,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        planName,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: colors.textSecondary,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          PriceRadialGlow(
+                            accent: plan.accent,
+                          ),
+                          Text(
+                            '${plan.price}\u20AC',
                             style: GoogleFonts.spaceGrotesk(
-                              fontSize: 12,
+                              fontSize: 52,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: -0.2,
+                              color: plan.accent,
+                              letterSpacing: -3,
+                              height: 1,
                             ),
+                          ),
+                        ],
+                      ),
+
+                      Text(
+                        l10n.plans_perMonth,
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: colors.textMuted,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Container(
+                        height: 1,
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: Alignment.center,
+                            radius: 0.6,
+                            colors: [
+                              plan.accent
+                                  .withValues(alpha: isDark ? 0.35 : 0.25),
+                              Colors.transparent,
+                            ],
                           ),
                         ),
                       ),
-                    if (!plan.isPopular) const SizedBox(height: 28),
 
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 20),
 
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: plan.accent.withValues(alpha: 0.12),
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.radiusSm),
-                        border: Border.all(
-                          color: plan.accent.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Icon(
-                        plan.icon,
-                        color: plan.accent,
-                        size: 20,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Text(
-                      planName,
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: colors.textSecondary,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        PriceRadialGlow(
-                          accent: plan.accent,
-                        ),
-                        Text(
-                          '${plan.price}\u20AC',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 52,
-                            fontWeight: FontWeight.w700,
-                            color: plan.accent,
-                            letterSpacing: -3,
-                            height: 1,
+                      ...features.map((feature) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: _FeatureRow(
+                            feature: feature,
+                            accent: plan.accent,
                           ),
-                        ),
-                      ],
-                    ),
+                        );
+                      }),
 
-                    Text(
-                      l10n.plans_perMonth,
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: colors.textMuted,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Container(
-                      height: 1,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: Alignment.center,
-                          radius: 0.6,
-                          colors: [
-                            plan.accent
-                                .withValues(alpha: isDark ? 0.35 : 0.25),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Expanded(
-                      child: Column(
-                        children: features.map((feature) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: _FeatureRow(
-                              feature: feature,
-                              accent: plan.accent,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                    _CtaButton(plan: plan, planName: planName),
-                  ],
+                      _CtaButton(plan: plan, planName: planName),
+                    ],
+                  ),
                 ),
               ),
             ],
