@@ -32,6 +32,13 @@ import 'features/trips/presentation/screens/create_trip_screen.dart';
 import 'features/plans/presentation/screens/plans_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/shell/presentation/main_shell.dart';
+import 'shared/widgets/demo_hub_screen.dart';
+import 'shared/widgets/gooey_switch_demo_screen.dart';
+import 'shared/widgets/icon_proposals_demo_screen.dart';
+import 'shared/widgets/stat_card_demo_screen.dart';
+import 'shared/widgets/stats_bar_demo_screen.dart';
+import 'shared/widgets/grainy_gradient_demo_screen.dart';
+import 'shared/widgets/staggered_text_demo_screen.dart';
 import 'shared/widgets/splash_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -288,6 +295,34 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
           ),
         ],
+      ),
+      GoRoute(
+        path: '/demo',
+        builder: (context, state) => const DemoHubScreen(),
+      ),
+      GoRoute(
+        path: '/demo/gooey-switch',
+        builder: (context, state) => const GooeySwitchDemoScreen(),
+      ),
+      GoRoute(
+        path: '/demo/stats-bar',
+        builder: (context, state) => const StatsBarDemoScreen(),
+      ),
+      GoRoute(
+        path: '/demo/stat-card',
+        builder: (context, state) => const StatCardDemoScreen(),
+      ),
+      GoRoute(
+        path: '/demo/icons',
+        builder: (context, state) => const IconProposalsDemoScreen(),
+      ),
+      GoRoute(
+        path: '/demo/grainy-gradient',
+        builder: (context, state) => const GrainyGradientDemoScreen(),
+      ),
+      GoRoute(
+        path: '/demo/staggered-text',
+        builder: (context, state) => const StaggeredTextDemoScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../generated/l10n/app_localizations.dart';
-import '../../../../shared/widgets/pill_tab_bar.dart';
+import '../../../../shared/widgets/gooey_tab_bar.dart';
 import '../../../../shared/widgets/user_menu_sheet.dart';
 import '../../domain/providers/admin_provider.dart';
 import '../screens/all_users_screen.dart';
@@ -69,11 +69,14 @@ class _AdminShellState extends ConsumerState<AdminShell>
 
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: PillTabBar(
-                controller: _tabController,
-                labels: [l10n.admin_requests, l10n.admin_planRequests, l10n.admin_users],
-                badges: [pendingCount, planRequestsCount, null],
-                badgeStyles: const [BadgeStyle.success, BadgeStyle.neutral, null],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GooeyTabBar(
+                  controller: _tabController,
+                  labels: [l10n.admin_requests, l10n.admin_planRequests, l10n.admin_users],
+                  badges: [pendingCount, planRequestsCount, null],
+                  badgeStyles: const [BadgeStyle.success, BadgeStyle.neutral, null],
+                ),
               ),
             ),
 

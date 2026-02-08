@@ -203,6 +203,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get stats_declaredValue => 'Valor';
 
   @override
+  String get stats_contacts => 'Contactos';
+
+  @override
   String get packages_title => 'Pedidos';
 
   @override

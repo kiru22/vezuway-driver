@@ -7,14 +7,12 @@ import '../../../../core/theme/theme_extensions.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_header.dart';
 import '../../../../shared/widgets/delete_confirmation_dialog.dart';
-import '../../../../shared/widgets/pill_tab_bar.dart';
+import '../../../../shared/widgets/gooey_toggle.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 import '../../domain/providers/trip_provider.dart';
 import '../widgets/trips_tab.dart';
 import '../widgets/routes_tab.dart';
 
-/// Provider para el índice del tab activo en TripsRoutesScreen
-/// 0 = Viajes, 1 = Rutas
 final tripsRoutesTabIndexProvider = StateProvider<int>((ref) => 0);
 
 class TripsRoutesScreen extends ConsumerStatefulWidget {
@@ -34,13 +32,12 @@ class _TripsRoutesScreenState extends ConsumerState<TripsRoutesScreen>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(tripsProvider.notifier).loadTrips();
-      ref.read(routesProvider.notifier).loadRoutes();
+      ref.read(tripsProvider.notifier).loadTrips(refresh: true);
+      ref.read(routesProvider.notifier).loadRoutes(refresh: true);
     });
   }
 
   void _onTabChanged() {
-    // Actualizar siempre que cambie el index
     ref.read(tripsRoutesTabIndexProvider.notifier).state = _tabController.index;
   }
 
@@ -61,16 +58,30 @@ class _TripsRoutesScreenState extends ConsumerState<TripsRoutesScreen>
       body: Column(
         children: [
           AppHeader(
-            icon: Icons.timeline_rounded,
+            icon: Icons.map_rounded,
             title: l10n.tripsRoutes_title,
             showMenu: false,
           ),
-          PillTabBar(
-            controller: _tabController,
-            labels: [l10n.tripsRoutes_trips, l10n.tripsRoutes_routes],
-            onTap: (index) {
-              ref.read(tripsRoutesTabIndexProvider.notifier).state = index;
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: LayoutBuilder(
+              builder: (context, constraints) => AnimatedBuilder(
+                animation: _tabController,
+                builder: (context, _) => GooeyToggle(
+                  value: _tabController.index == 1,
+                  onChanged: (isRoutes) {
+                    final index = isRoutes ? 1 : 0;
+                    _tabController.animateTo(index);
+                    ref.read(tripsRoutesTabIndexProvider.notifier).state =
+                        index;
+                  },
+                  leftLabel: l10n.tripsRoutes_trips,
+                  rightLabel: l10n.tripsRoutes_routes,
+                  width: constraints.maxWidth,
+                  height: 52,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           Expanded(

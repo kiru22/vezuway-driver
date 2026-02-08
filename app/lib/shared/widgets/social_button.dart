@@ -26,14 +26,14 @@ class SocialButton extends StatelessWidget {
       height: 56,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
         border: Border.all(color: AppColors.lightBorder),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
           child: Center(
             child: isLoading
                 ? const SizedBox(

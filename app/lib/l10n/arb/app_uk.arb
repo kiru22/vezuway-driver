@@ -65,8 +65,9 @@
   "home_createRoutePrompt": "Сплануй наступний рейс",
 
   "stats_packages": "Посилки",
-  "stats_totalWeight": "Загальна вага",
+  "stats_totalWeight": "Заг. вага",
   "stats_declaredValue": "Вартiсть",
+  "stats_contacts": "Контакти",
 
   "packages_title": "Замовлення",
   "packages_searchPlaceholder": "Шукати за кодом, вiдправником або отримувачем...",

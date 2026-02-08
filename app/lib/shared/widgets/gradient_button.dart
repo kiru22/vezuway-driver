@@ -23,15 +23,21 @@ class GradientButton extends StatelessWidget {
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        gradient: isEnabled ? AppColors.loginButtonGradient : null,
+        gradient: isEnabled ? AppColors.primaryGradient : null,
         color: isEnabled ? null : AppColors.lightSurfaceLight,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
         boxShadow: isEnabled
             ? [
                 BoxShadow(
-                  color: AppColors.loginBlobGreen1.withValues(alpha: 0.3),
+                  color: const Color(0xFF00FF88).withValues(alpha: 0.45),
+                  blurRadius: 28,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
                   blurRadius: 12,
-                  offset: const Offset(0, 6),
+                  offset: const Offset(0, 8),
                 ),
               ]
             : null,
@@ -40,7 +46,7 @@ class GradientButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
           child: Center(
             child: isLoading
                 ? const SizedBox(

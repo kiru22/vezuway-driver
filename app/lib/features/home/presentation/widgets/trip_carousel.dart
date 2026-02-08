@@ -35,7 +35,7 @@ class UpcomingTripsList extends ConsumerWidget {
         children: [
           if (trips.isEmpty)
             EmptyState(
-              icon: Icons.route_rounded,
+              icon: Icons.map_rounded,
               title: l10n.home_noScheduledRoutes,
               subtitle: l10n.home_createRoutePrompt,
             )
@@ -110,7 +110,7 @@ class _SimpleTripCard extends StatelessWidget {
                 ],
               ),
               child: const Icon(
-                Icons.route_rounded,
+                Icons.map_rounded,
                 color: Colors.white,
                 size: 20,
               ),

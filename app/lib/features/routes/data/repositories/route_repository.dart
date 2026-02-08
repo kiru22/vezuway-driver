@@ -10,8 +10,13 @@ class RouteRepository {
 
   Future<List<RouteModel>> getRoutes({
     bool? activeOnly,
+    int page = 1,
+    int perPage = 15,
   }) async {
-    final queryParams = <String, dynamic>{};
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
     if (activeOnly == true) queryParams['active_only'] = true;
 
     final response = await _api.get('/routes', queryParameters: queryParams);

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/pill_tab_bar.dart';
+import '../../../../shared/widgets/gooey_tab_bar.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../domain/providers/admin_provider.dart';
 import '../widgets/admin_error_view.dart';
@@ -41,9 +41,12 @@ class _AllUsersScreenState extends ConsumerState<AllUsersScreen>
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: PillTabBar(
-            controller: _tabController,
-            labels: [l10n.admin_allUsers, l10n.admin_clients, l10n.admin_drivers],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: GooeyTabBar(
+              controller: _tabController,
+              labels: [l10n.admin_allUsers, l10n.admin_clients, l10n.admin_drivers],
+            ),
           ),
         ),
 

@@ -17,7 +17,7 @@ import '../../data/models/trip_model.dart';
 import '../../domain/providers/trip_provider.dart';
 import 'trips_calendar.dart';
 
-class TripsTab extends ConsumerWidget {
+class TripsTab extends ConsumerStatefulWidget {
   final VoidCallback onCreateTrip;
   final Future<void> Function(String tripId) onDelete;
   final Function(String tripId) onEdit;
@@ -30,18 +30,44 @@ class TripsTab extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TripsTab> createState() => _TripsTabState();
+}
+
+class _TripsTabState extends ConsumerState<TripsTab> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(tripsProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context);
     final tripsState = ref.watch(tripsProvider);
 
-    if (tripsState.isLoading) {
+    if (tripsState.isLoading && tripsState.trips.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       );
     }
 
-    if (tripsState.error != null) {
+    if (tripsState.error != null && tripsState.trips.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -52,7 +78,7 @@ class TripsTab extends ConsumerWidget {
                 style: TextStyle(color: colors.textSecondary)),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => ref.read(tripsProvider.notifier).loadTrips(),
+              onPressed: () => ref.read(tripsProvider.notifier).loadTrips(refresh: true),
               child: Text(l10n.trips_retry),
             ),
           ],
@@ -65,9 +91,10 @@ class TripsTab extends ConsumerWidget {
     }
 
     return RefreshIndicator(
-      onRefresh: () => ref.read(tripsProvider.notifier).loadTrips(),
+      onRefresh: () => ref.read(tripsProvider.notifier).loadTrips(refresh: true),
       color: AppColors.primary,
       child: SingleChildScrollView(
+        controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
         child: Column(
@@ -95,8 +122,8 @@ class TripsTab extends ConsumerWidget {
               const SizedBox(height: 12),
               ...tripsState.filteredActiveTrips.map((trip) => TripCard(
                     trip: trip,
-                    onDelete: () => onDelete(trip.id),
-                    onEdit: () => onEdit(trip.id),
+                    onDelete: () => widget.onDelete(trip.id),
+                    onEdit: () => widget.onEdit(trip.id),
                   )),
               const SizedBox(height: 24),
             ],
@@ -109,8 +136,8 @@ class TripsTab extends ConsumerWidget {
               const SizedBox(height: 12),
               ...tripsState.filteredUpcomingTrips.map((trip) => TripCard(
                     trip: trip,
-                    onDelete: () => onDelete(trip.id),
-                    onEdit: () => onEdit(trip.id),
+                    onDelete: () => widget.onDelete(trip.id),
+                    onEdit: () => widget.onEdit(trip.id),
                   )),
               const SizedBox(height: 24),
             ],
@@ -125,10 +152,15 @@ class TripsTab extends ConsumerWidget {
                   .take(5)
                   .map((trip) => TripCard(
                         trip: trip,
-                        onDelete: () => onDelete(trip.id),
-                        onEdit: () => onEdit(trip.id),
+                        onDelete: () => widget.onDelete(trip.id),
+                        onEdit: () => widget.onEdit(trip.id),
                       )),
             ],
+            if (tripsState.hasMore)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              ),
           ],
         ),
       ),
@@ -141,7 +173,7 @@ class TripsTab extends ConsumerWidget {
       title: l10n.tripsRoutes_noTrips,
       subtitle: l10n.tripsRoutes_noTripsSubtitle,
       buttonText: l10n.tripsRoutes_createTrip,
-      onButtonPressed: onCreateTrip,
+      onButtonPressed: widget.onCreateTrip,
     );
   }
 }

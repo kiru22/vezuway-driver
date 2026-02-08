@@ -16,13 +16,17 @@ class TripsState {
   final List<TripModel> trips;
   final bool isLoading;
   final String? error;
-  final DateTime? filterDate; // null = sin filtro
+  final DateTime? filterDate;
+  final bool hasMore;
+  final int currentPage;
 
   const TripsState({
     this.trips = const [],
     this.isLoading = false,
     this.error,
     this.filterDate,
+    this.hasMore = true,
+    this.currentPage = 1,
   });
 
   TripsState copyWith({
@@ -31,12 +35,16 @@ class TripsState {
     String? error,
     DateTime? filterDate,
     bool clearFilter = false,
+    bool? hasMore,
+    int? currentPage,
   }) {
     return TripsState(
       trips: trips ?? this.trips,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       filterDate: clearFilter ? null : (filterDate ?? this.filterDate),
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
     );
   }
 
@@ -134,34 +142,67 @@ class TripsNotifier extends StateNotifier<TripsState> {
     _init();
   }
 
+  static const _perPage = 15;
+  TripStatus? _currentStatus;
+  bool? _currentUpcoming;
+  bool? _currentActive;
+
   Future<void> _init() async {
     if (_isInitialized) return;
     _isInitialized = true;
-    await loadTrips();
+    await loadTrips(refresh: true);
   }
 
   Future<void> loadTrips({
     TripStatus? status,
     bool? upcoming,
     bool? active,
+    bool refresh = false,
   }) async {
     if (state.isLoading) return;
 
-    state = state.copyWith(isLoading: true, error: null);
+    if (status != null) _currentStatus = status;
+    if (upcoming != null) _currentUpcoming = upcoming;
+    if (active != null) _currentActive = active;
+
+    if (refresh) {
+      state = state.copyWith(
+        isLoading: true,
+        error: null,
+        hasMore: true,
+        currentPage: 1,
+        trips: [],
+      );
+    } else {
+      state = state.copyWith(isLoading: true, error: null);
+    }
 
     try {
+      final page = refresh ? 1 : state.currentPage;
       final trips = await _repository.getTrips(
-        status: status,
-        upcoming: upcoming,
-        active: active,
+        status: _currentStatus,
+        upcoming: _currentUpcoming,
+        active: _currentActive,
+        page: page,
+        perPage: _perPage,
       );
-      state = state.copyWith(trips: trips, isLoading: false);
+      state = state.copyWith(
+        trips: refresh ? trips : [...state.trips, ...trips],
+        isLoading: false,
+        hasMore: trips.length >= _perPage,
+        currentPage: page + 1,
+      );
     } catch (_) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error al cargar viajes',
       );
     }
+  }
+
+  Future<void> loadMore() async {
+    if (!state.hasMore || state.isLoading) return;
+    await loadTrips();
   }
 
   Future<bool> createTrip({

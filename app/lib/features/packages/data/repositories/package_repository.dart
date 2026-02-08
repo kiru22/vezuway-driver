@@ -12,8 +12,13 @@ class PackageRepository {
     PackageStatus? status,
     String? tripId,
     String? search,
+    int page = 1,
+    int perPage = 15,
   }) async {
-    final queryParams = <String, dynamic>{};
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
     if (status != null) queryParams['status'] = status.apiValue;
     if (tripId != null) queryParams['trip_id'] = tripId;
     if (search != null && search.isNotEmpty) queryParams['search'] = search;

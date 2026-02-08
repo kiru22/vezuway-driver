@@ -11,7 +11,7 @@ import '../../../../shared/widgets/auth_logo.dart';
 import '../../../../shared/widgets/auth_text_field.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../../../shared/widgets/gradient_button.dart';
-import '../../../../shared/widgets/beams_background.dart';
+import '../../../../shared/widgets/grainy_gradient.dart';
 import '../../../../shared/widgets/social_button.dart';
 import '../../domain/providers/auth_provider.dart';
 
@@ -90,8 +90,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Theme(
       data: AppTheme.lightTheme,
       child: Scaffold(
-        backgroundColor: AppColors.loginBackground,
-        body: BeamsBackground(
+        backgroundColor: Colors.white,
+        body: GrainyGradient(
+          backgroundColor: Colors.white,
+          speed: 1.16,
+          amplitude: 1.0,
+          grainEnabled: false,
+          brightness: 0.01,
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(

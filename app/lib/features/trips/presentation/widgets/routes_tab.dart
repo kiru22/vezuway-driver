@@ -11,7 +11,7 @@ import '../../../../shared/widgets/options_bottom_sheet.dart';
 import '../../../routes/data/models/route_model.dart';
 import '../../../routes/domain/providers/route_provider.dart';
 
-class RoutesTab extends ConsumerWidget {
+class RoutesTab extends ConsumerStatefulWidget {
   final VoidCallback onCreateRoute;
   final Function(String routeId) onEdit;
   final Future<void> Function(String routeId) onDelete;
@@ -24,17 +24,43 @@ class RoutesTab extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RoutesTab> createState() => _RoutesTabState();
+}
+
+class _RoutesTabState extends ConsumerState<RoutesTab> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(routesProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.colors;
     final routesState = ref.watch(routesProvider);
 
-    if (routesState.isLoading) {
+    if (routesState.isLoading && routesState.routes.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       );
     }
 
-    if (routesState.error != null) {
+    if (routesState.error != null && routesState.routes.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -45,7 +71,7 @@ class RoutesTab extends ConsumerWidget {
                 style: TextStyle(color: colors.textSecondary)),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => ref.read(routesProvider.notifier).loadRoutes(),
+              onPressed: () => ref.read(routesProvider.notifier).loadRoutes(refresh: true),
               child: Text(context.l10n.common_retry),
             ),
           ],
@@ -54,19 +80,26 @@ class RoutesTab extends ConsumerWidget {
     }
 
     return RefreshIndicator(
-      onRefresh: () => ref.read(routesProvider.notifier).loadRoutes(),
+      onRefresh: () => ref.read(routesProvider.notifier).loadRoutes(refresh: true),
       color: AppColors.primary,
       child: routesState.routes.isEmpty
           ? _buildEmptyState(context)
           : ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-              itemCount: routesState.routes.length,
+              itemCount: routesState.routes.length + (routesState.hasMore ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == routesState.routes.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
                 final route = routesState.routes[index];
                 return RouteTemplateCard(
                   route: route,
-                  onEdit: () => onEdit(route.id),
-                  onDelete: () => onDelete(route.id),
+                  onEdit: () => widget.onEdit(route.id),
+                  onDelete: () => widget.onDelete(route.id),
                 );
               },
             ),
@@ -87,7 +120,7 @@ class RoutesTab extends ConsumerWidget {
                 title: l10n.tripsRoutes_noRouteTemplates,
                 subtitle: l10n.tripsRoutes_noRouteTemplatesSubtitle,
                 buttonText: l10n.quickAction_newRoute,
-                onButtonPressed: onCreateRoute,
+                onButtonPressed: widget.onCreateRoute,
               ),
             ),
           ),
@@ -249,7 +282,6 @@ class RouteTemplateCard extends StatelessWidget {
   }
 }
 
-/// Timeline visualization with cities grouped by country.
 class _RouteTimeline extends StatelessWidget {
   final RouteModel route;
 
@@ -291,8 +323,6 @@ class _RouteTimeline extends StatelessWidget {
       ),
       child: Column(
         children: rows.map((data) {
-          // First city of each country is on main column (including origin)
-          // Only destination and intermediate cities are indented
           final isOnMainColumn = data.isFirstInCountry && !data.isLastOverall;
           final isIndented = !isOnMainColumn;
           return SizedBox(
@@ -435,7 +465,6 @@ class _CityPoint {
   _CityPoint({required this.city, required this.country});
 }
 
-/// Draws one continuous curved line through all cities
 class _ContinuousLinePainter extends CustomPainter {
   final List<_CityRowData> rows;
   final Color color;
@@ -452,7 +481,6 @@ class _ContinuousLinePainter extends CustomPainter {
   });
 
   bool _isOnMain(_CityRowData row) {
-    // First city of each country (including origin), except destination
     return row.isFirstInCountry && !row.isLastOverall;
   }
 
@@ -468,10 +496,9 @@ class _ContinuousLinePainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     final path = Path();
-    const r = 8.0; // Curve radius
-    const iconRadius = 6.0; // Space around icons
+    const r = 8.0;
+    const iconRadius = 6.0;
 
-    // First row (origin) is on main column
     final firstY = rowHeight / 2;
     path.moveTo(mainX, firstY + iconRadius);
 
@@ -486,7 +513,6 @@ class _ContinuousLinePainter extends CustomPainter {
       final isLast = i == rows.length - 1;
 
       if (!prevOnMain && isOnMain) {
-        // Indented to main: curve left
         final curveStartY = prevY + iconRadius;
         final midY = curveStartY + (y - iconRadius - curveStartY) / 2;
         path.lineTo(indentedX, midY - r);
@@ -495,7 +521,6 @@ class _ContinuousLinePainter extends CustomPainter {
         path.quadraticBezierTo(mainX, midY, mainX, midY + r);
         path.lineTo(mainX, y - iconRadius);
       } else if (prevOnMain && !isOnMain) {
-        // Main to indented: curve right
         final curveStartY = prevY + iconRadius;
         final targetY = isLast ? y - iconRadius : y;
         final midY = curveStartY + (targetY - curveStartY) / 2;
@@ -505,11 +530,9 @@ class _ContinuousLinePainter extends CustomPainter {
         path.quadraticBezierTo(indentedX, midY, indentedX, midY + r);
         path.lineTo(indentedX, targetY);
       } else if (!prevOnMain && !isOnMain) {
-        // Both indented: vertical line
         final endY = y - iconRadius;
         path.lineTo(indentedX, endY);
       } else {
-        // Both on main: vertical line
         path.lineTo(mainX, y - iconRadius);
       }
     }

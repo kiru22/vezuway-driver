@@ -20,6 +20,8 @@ class PackagesState {
   final bool isSelectionMode;
   final Set<String> selectedIds;
   final bool isBulkUpdating;
+  final bool hasMore;
+  final int currentPage;
 
   const PackagesState({
     this.packages = const [],
@@ -31,6 +33,8 @@ class PackagesState {
     this.isSelectionMode = false,
     this.selectedIds = const {},
     this.isBulkUpdating = false,
+    this.hasMore = true,
+    this.currentPage = 1,
   });
 
   PackagesState copyWith({
@@ -45,6 +49,8 @@ class PackagesState {
     bool? isSelectionMode,
     Set<String>? selectedIds,
     bool? isBulkUpdating,
+    bool? hasMore,
+    int? currentPage,
   }) {
     return PackagesState(
       packages: packages ?? this.packages,
@@ -56,6 +62,8 @@ class PackagesState {
       isSelectionMode: isSelectionMode ?? this.isSelectionMode,
       selectedIds: selectedIds ?? this.selectedIds,
       isBulkUpdating: isBulkUpdating ?? this.isBulkUpdating,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
     );
   }
 }
@@ -71,21 +79,40 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
   Future<void> _init() async {
     if (_isInitialized) return;
     _isInitialized = true;
-    await loadPackages();
+    await loadPackages(refresh: true);
   }
 
-  Future<void> loadPackages() async {
-    // Prevent concurrent loads
+  static const _perPage = 15;
+
+  Future<void> loadPackages({bool refresh = false}) async {
     if (state.isLoading) return;
 
-    state = state.copyWith(isLoading: true, error: null);
+    if (refresh) {
+      state = state.copyWith(
+        isLoading: true,
+        error: null,
+        hasMore: true,
+        currentPage: 1,
+        packages: [],
+      );
+    } else {
+      state = state.copyWith(isLoading: true, error: null);
+    }
 
     try {
+      final page = refresh ? 1 : state.currentPage;
       final packages = await _repository.getPackages(
         status: state.filterStatus,
         tripId: state.tripId,
+        page: page,
+        perPage: _perPage,
       );
-      state = state.copyWith(packages: packages, isLoading: false);
+      state = state.copyWith(
+        packages: refresh ? packages : [...state.packages, ...packages],
+        isLoading: false,
+        hasMore: packages.length >= _perPage,
+        currentPage: page + 1,
+      );
     } catch (e, stack) {
       debugPrint('PackagesNotifier.loadPackages error: $e\n$stack');
       state = state.copyWith(
@@ -95,13 +122,18 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     }
   }
 
+  Future<void> loadMore() async {
+    if (!state.hasMore || state.isLoading) return;
+    await loadPackages();
+  }
+
   Future<void> filterByStatus(PackageStatus? status) async {
     if (status == null) {
       state = state.copyWith(clearFilter: true);
     } else {
       state = state.copyWith(filterStatus: status);
     }
-    await loadPackages();
+    await loadPackages(refresh: true);
   }
 
   Future<void> filterByTrip(String? tripId) async {
@@ -110,7 +142,7 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     } else {
       state = state.copyWith(tripId: tripId);
     }
-    await loadPackages();
+    await loadPackages(refresh: true);
   }
 
   void toggleCityFilter(String city) {
@@ -280,7 +312,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     }
   }
 
-  /// Entra en modo selección
   void enterSelectionMode([String? initialId]) {
     state = state.copyWith(
       isSelectionMode: true,
@@ -288,7 +319,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     );
   }
 
-  /// Sale del modo selección y limpia la selección
   void exitSelectionMode() {
     state = state.copyWith(
       isSelectionMode: false,
@@ -296,7 +326,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     );
   }
 
-  /// Alterna la selección de un paquete
   void toggleSelection(String id) {
     final newSelected = Set<String>.from(state.selectedIds);
     if (newSelected.contains(id)) {
@@ -307,7 +336,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     state = state.copyWith(selectedIds: newSelected);
   }
 
-  /// Selecciona todos los paquetes que tienen un nextStatus válido
   void selectAllWithNextStatus() {
     final selectableIds = state.packages
         .where((p) => p.status != PackageStatus.delivered)
@@ -316,8 +344,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     state = state.copyWith(selectedIds: selectableIds);
   }
 
-  /// Avanza los paquetes seleccionados a su siguiente estado
-  /// Agrupa por nextStatus y hace llamadas API separadas
   Future<({bool success, int count, String? error})>
       bulkAdvanceToNextStatus() async {
     if (state.selectedIds.isEmpty) {
@@ -327,7 +353,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
     state = state.copyWith(isBulkUpdating: true);
 
     try {
-      // Agrupar paquetes por su nextStatus
       final Map<PackageStatus, List<String>> groupedByNextStatus = {};
 
       for (final id in state.selectedIds) {
@@ -350,7 +375,6 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         );
       }
 
-      // Ejecutar updates por grupo
       int totalUpdated = 0;
       for (final entry in groupedByNextStatus.entries) {
         final result = await _repository.bulkUpdateStatus(
@@ -360,10 +384,8 @@ class PackagesNotifier extends StateNotifier<PackagesState> {
         totalUpdated += result.updatedCount;
       }
 
-      // Recargar la lista para obtener estados actualizados
-      await loadPackages();
+      await loadPackages(refresh: true);
 
-      // Salir del modo selección
       state = state.copyWith(
         isSelectionMode: false,
         selectedIds: {},

@@ -476,6 +476,12 @@ abstract class AppLocalizations {
   /// **'Valor'**
   String get stats_declaredValue;
 
+  /// No description provided for @stats_contacts.
+  ///
+  /// In es, this message translates to:
+  /// **'Contactos'**
+  String get stats_contacts;
+
   /// No description provided for @packages_title.
   ///
   /// In es, this message translates to:

@@ -6,37 +6,42 @@ import '../../../trips/data/models/trip_model.dart';
 import '../../data/models/route_model.dart';
 import '../../data/repositories/route_repository.dart';
 
-// Route Repository Provider
 final routeRepositoryProvider = Provider<RouteRepository>((ref) {
   return RouteRepository(ref.read(apiServiceProvider));
 });
 
-// Routes List State
 class RoutesState {
   final List<RouteModel> routes;
   final bool isLoading;
   final String? error;
+  final bool hasMore;
+  final int currentPage;
 
   const RoutesState({
     this.routes = const [],
     this.isLoading = false,
     this.error,
+    this.hasMore = true,
+    this.currentPage = 1,
   });
 
   RoutesState copyWith({
     List<RouteModel>? routes,
     bool? isLoading,
     String? error,
+    bool? hasMore,
+    int? currentPage,
   }) {
     return RoutesState(
       routes: routes ?? this.routes,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
     );
   }
 }
 
-// Routes Notifier
 class RoutesNotifier extends StateNotifier<RoutesState> {
   final RouteRepository _repository;
   bool _isInitialized = false;
@@ -45,26 +50,56 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
     _init();
   }
 
+  static const _perPage = 15;
+  bool? _currentActiveOnly;
+
   Future<void> _init() async {
     if (_isInitialized) return;
     _isInitialized = true;
-    await loadRoutes();
+    await loadRoutes(refresh: true);
   }
 
-  Future<void> loadRoutes({bool? activeOnly}) async {
+  Future<void> loadRoutes({bool? activeOnly, bool refresh = false}) async {
     if (state.isLoading) return;
 
-    state = state.copyWith(isLoading: true, error: null);
+    if (activeOnly != null) _currentActiveOnly = activeOnly;
+
+    if (refresh) {
+      state = state.copyWith(
+        isLoading: true,
+        error: null,
+        hasMore: true,
+        currentPage: 1,
+        routes: [],
+      );
+    } else {
+      state = state.copyWith(isLoading: true, error: null);
+    }
 
     try {
-      final routes = await _repository.getRoutes(activeOnly: activeOnly);
-      state = state.copyWith(routes: routes, isLoading: false);
+      final page = refresh ? 1 : state.currentPage;
+      final routes = await _repository.getRoutes(
+        activeOnly: _currentActiveOnly,
+        page: page,
+        perPage: _perPage,
+      );
+      state = state.copyWith(
+        routes: refresh ? routes : [...state.routes, ...routes],
+        isLoading: false,
+        hasMore: routes.length >= _perPage,
+        currentPage: page + 1,
+      );
     } catch (_) {
       state = state.copyWith(
         isLoading: false,
         error: 'Error al cargar plantillas de rutas',
       );
     }
+  }
+
+  Future<void> loadMore() async {
+    if (!state.hasMore || state.isLoading) return;
+    await loadRoutes();
   }
 
   Future<bool> createRoute({
@@ -169,20 +204,17 @@ class RoutesNotifier extends StateNotifier<RoutesState> {
   }
 }
 
-// Routes Provider
 final routesProvider =
     StateNotifierProvider<RoutesNotifier, RoutesState>((ref) {
   return RoutesNotifier(ref.read(routeRepositoryProvider));
 });
 
-// Single Route Provider
 final routeDetailProvider =
     FutureProvider.family<RouteModel, String>((ref, id) async {
   final repository = ref.read(routeRepositoryProvider);
   return repository.getRoute(id);
 });
 
-// Route Trips Provider
 final routeTripsProvider =
     FutureProvider.family<List<TripModel>, String>((ref, routeId) async {
   final repository = ref.read(routeRepositoryProvider);

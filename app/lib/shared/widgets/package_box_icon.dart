@@ -6,12 +6,14 @@ import '../../core/theme/app_colors.dart';
 class PackageBoxIcon extends StatelessWidget {
   final double size;
   final Color? color;
+  final Color? tapeColor;
   final bool filled;
 
   const PackageBoxIcon({
     super.key,
     this.size = 24,
     this.color,
+    this.tapeColor,
     this.filled = false,
   });
 
@@ -30,18 +32,24 @@ class PackageBoxIcon extends StatelessWidget {
                 children: [
                   SvgPicture.asset(
                     asset,
+                    width: size,
+                    height: size,
                     colorFilter:
                         ColorFilter.mode(iconColor, BlendMode.srcIn),
                   ),
                   SvgPicture.asset(
                     'assets/icons/package_box_tape.svg',
+                    width: size,
+                    height: size,
                     colorFilter: ColorFilter.mode(
-                        AppColors.primary, BlendMode.srcIn),
+                        tapeColor ?? AppColors.primary, BlendMode.srcIn),
                   ),
                 ],
               )
             : SvgPicture.asset(
                 asset,
+                width: size,
+                height: size,
                 colorFilter:
                     ColorFilter.mode(iconColor, BlendMode.srcIn),
               ),

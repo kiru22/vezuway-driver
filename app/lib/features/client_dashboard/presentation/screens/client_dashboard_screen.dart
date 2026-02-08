@@ -9,6 +9,7 @@ import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/providers/locale_provider.dart';
 import '../../../../shared/providers/theme_provider.dart';
 import '../../../../shared/widgets/app_header.dart';
+import '../../../../shared/widgets/gooey_toggle.dart';
 import '../../../../shared/widgets/shimmer_widget.dart';
 import '../../../auth/domain/providers/auth_provider.dart';
 import '../../../home/presentation/widgets/hero_section.dart';
@@ -296,30 +297,16 @@ class _UserMenuSheet extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _LanguageChip(
-                            label: 'ES',
-                            isSelected: locale == AppLocale.es,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              ref
-                                  .read(localeProvider.notifier)
-                                  .setLocale(AppLocale.es);
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          _LanguageChip(
-                            label: 'UA',
-                            isSelected: locale == AppLocale.uk,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              ref
-                                  .read(localeProvider.notifier)
-                                  .setLocale(AppLocale.uk);
-                            },
-                          ),
-                        ],
+                      GooeyToggle(
+                        value: locale == AppLocale.uk,
+                        onChanged: (isUk) {
+                          HapticFeedback.lightImpact();
+                          ref.read(localeProvider.notifier).setLocale(
+                                isUk ? AppLocale.uk : AppLocale.es,
+                              );
+                        },
+                        leftLabel: 'ES',
+                        rightLabel: 'UA',
                       ),
                     ],
                   ),
@@ -526,41 +513,3 @@ class _MenuOption extends StatelessWidget {
   }
 }
 
-class _LanguageChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _LanguageChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppTheme.durationFast,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: isSelected ? AppColors.primaryGradient : null,
-          color: isSelected ? null : colors.surfaceLight,
-          borderRadius: BorderRadius.circular(8),
-          border: isSelected ? null : Border.all(color: colors.border),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? Colors.white : colors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -17,8 +17,13 @@ class TripRepository {
     bool? active,
     String? from,
     String? to,
+    int page = 1,
+    int perPage = 15,
   }) async {
-    final queryParams = <String, dynamic>{};
+    final queryParams = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
     if (status != null) queryParams['status'] = status.apiValue;
     if (upcoming == true) queryParams['upcoming'] = true;
     if (active == true) queryParams['active'] = true;

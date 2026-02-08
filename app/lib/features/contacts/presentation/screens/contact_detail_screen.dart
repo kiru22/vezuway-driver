@@ -7,7 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_extensions.dart';
 import '../../../../l10n/l10n_extension.dart';
 import '../../../../shared/widgets/options_bottom_sheet.dart';
-import '../../../../shared/widgets/pill_tab_bar.dart';
+import '../../../../shared/widgets/gooey_tab_bar.dart';
 import '../../../packages/presentation/widgets/package_card_v2.dart';
 import '../../data/models/contact_model.dart';
 import '../../domain/providers/contact_provider.dart';
@@ -75,9 +75,12 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen>
       body: Column(
         children: [
           const SizedBox(height: 8),
-          PillTabBar(
-            controller: _tabController,
-            labels: [l10n.contacts_tabDetails, l10n.contacts_tabHistory],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: GooeyTabBar(
+              controller: _tabController,
+              labels: [l10n.contacts_tabDetails, l10n.contacts_tabHistory],
+            ),
           ),
           const SizedBox(height: 16),
           Expanded(

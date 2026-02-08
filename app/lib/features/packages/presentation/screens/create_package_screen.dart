@@ -21,6 +21,7 @@ import '../../../ocr/presentation/widgets/ocr_scan_button.dart';
 import '../widgets/package_image_gallery.dart';
 import '../widgets/add_image_button.dart';
 import '../../../../shared/widgets/styled_form_field.dart';
+import '../../../../shared/widgets/gooey_tab_bar.dart';
 import '../../../../shared/widgets/submit_bottom_bar.dart';
 import '../../../contacts/data/models/contact_model.dart';
 import '../../../contacts/presentation/widgets/contact_search_field.dart';
@@ -37,9 +38,11 @@ class CreatePackageScreen extends ConsumerStatefulWidget {
       _CreatePackageScreenState();
 }
 
-class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
+class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  int _selectedTabIndex = 1; // Default to receiver tab
+  late TabController _tabController;
+  int _selectedTabIndex = 1;
 
   final _senderNameController = TextEditingController();
   final _senderPhoneController = TextEditingController();
@@ -78,6 +81,12 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, initialIndex: 1, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() => _selectedTabIndex = _tabController.index);
+      }
+    });
 
     for (final controller in [
       _weightController,
@@ -219,6 +228,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     _heightController.dispose();
     _quantityController.dispose();
     _descriptionController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -364,7 +374,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
   void _switchTab(int index) {
     if (_selectedTabIndex == index) return;
-    setState(() => _selectedTabIndex = index);
+    _tabController.animateTo(index);
   }
 
   void _applyOcrResult(
@@ -461,7 +471,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
 
     // Validate receiver city (sender is optional)
     if (_receiverCity == null) {
-      setState(() => _selectedTabIndex = 1);
+      _switchTab(1);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n.packages_cityRequired),
@@ -474,7 +484,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     if (!_formKey.currentState!.validate()) {
       // Switch to receiver tab if validation error (receiver is required)
       if (_receiverNameController.text.isEmpty) {
-        setState(() => _selectedTabIndex = 1);
+        _switchTab(1);
       }
       return;
     }
@@ -661,7 +671,11 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                         _buildTripSelector(trips, colors),
                         SizedBox(height: intraGap),
 
-                        _buildPillTabs(colors, isUltraCompact: isUltraCompact),
+                        GooeyTabBar(
+                          controller: _tabController,
+                          labels: [context.l10n.packages_tabSender, context.l10n.packages_tabReceiver],
+                          height: isUltraCompact ? 40 : 52,
+                        ),
                         SizedBox(height: sectionGap),
 
                         _buildPersonForm(colors, isCompact, isUltraCompact: isUltraCompact),
@@ -890,85 +904,6 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
               _updatePriceCalculation();
             });
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPillTabs(AppColorsExtension colors, {bool isUltraCompact = false}) {
-    final isDark = context.isDarkMode;
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: isDark ? colors.surface : AppColors.lightSurfaceLight,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? colors.border : AppColors.lightBorder,
-        ),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final tabWidth = (constraints.maxWidth - 4) / 2; // Account for gap
-
-          return Stack(
-            children: [
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutCubic,
-                left: _selectedTabIndex == 0 ? 0 : tabWidth + 4,
-                top: 0,
-                bottom: 0,
-                width: tabWidth,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.35),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  _buildTabLabel(0, context.l10n.packages_tabSender, isDark, colors, isUltraCompact),
-                  const SizedBox(width: 4),
-                  _buildTabLabel(1, context.l10n.packages_tabReceiver, isDark, colors, isUltraCompact),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTabLabel(int index, String label, bool isDark, AppColorsExtension colors, bool isUltraCompact) {
-    final isActive = _selectedTabIndex == index;
-    final inactiveColor = isDark ? colors.textSecondary : AppColors.statusNeutralText;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => _switchTab(index),
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: isUltraCompact ? 8 : 14),
-          child: Center(
-            child: AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                color: isActive ? Colors.white : inactiveColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              child: Text(label),
-            ),
-          ),
         ),
       ),
     );

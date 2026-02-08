@@ -519,8 +519,8 @@ class _PremiumBottomNav extends StatelessWidget {
                         ),
                         Expanded(
                           child: _NavItem(
-                            icon: Icons.timeline_outlined,
-                            activeIcon: Icons.timeline_rounded,
+                            icon: Icons.map_outlined,
+                            activeIcon: Icons.map_rounded,
                             label: l10n.nav_routes,
                             isSelected: currentIndex == 2,
                             onTap: () => onTap(2),

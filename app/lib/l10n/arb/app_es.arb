@@ -82,6 +82,7 @@
   "stats_packages": "Paquetes",
   "stats_totalWeight": "Peso total",
   "stats_declaredValue": "Valor",
+  "stats_contacts": "Contactos",
 
   "@@_PACKAGES": "============ PACKAGES ============",
   "packages_title": "Pedidos",

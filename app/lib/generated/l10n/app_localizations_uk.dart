@@ -197,10 +197,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get stats_packages => 'Посилки';
 
   @override
-  String get stats_totalWeight => 'Загальна вага';
+  String get stats_totalWeight => 'Заг. вага';
 
   @override
   String get stats_declaredValue => 'Вартiсть';
+
+  @override
+  String get stats_contacts => 'Контакти';
 
   @override
   String get packages_title => 'Замовлення';

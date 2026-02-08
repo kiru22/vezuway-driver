@@ -27,7 +27,7 @@ class ClientStatsGrid extends ConsumerWidget {
         Expanded(
           child: StatCard(
             icon: Icons.inventory_2_rounded,
-            iconWidget: const PackageBoxIcon(size: 20, color: Colors.white, filled: true),
+            iconWidget: const PackageBoxIcon(size: 48, color: Colors.white, filled: true),
             label: l10n.clientDashboard_totalShipments,
             value: '${stats.total}',
             gradient: [AppColors.primary, AppColors.primaryDark],

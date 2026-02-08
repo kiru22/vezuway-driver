@@ -49,9 +49,18 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
     );
     _listAnimationController.forward();
 
+    _scrollController.addListener(_onScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(packagesProvider.notifier).loadPackages();
+      ref.read(packagesProvider.notifier).loadPackages(refresh: true);
     });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(packagesProvider.notifier).loadMore();
+    }
   }
 
   void _collapseAll() {
@@ -182,7 +191,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
                 child: RefreshIndicator(
                   onRefresh: () async {
                     ref.invalidate(packageCountsProvider);
-                    await ref.read(packagesProvider.notifier).loadPackages();
+                    await ref.read(packagesProvider.notifier).loadPackages(refresh: true);
                   },
                   color: AppColors.primary,
                   child: GestureDetector(
@@ -234,7 +243,7 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
   }
 
   Widget _buildSliverBody(PackagesState state, List<PackageModel> packages) {
-    if (state.isLoading) {
+    if (state.isLoading && state.packages.isEmpty) {
       return const SliverFillRemaining(
         child: Center(
           child: CircularProgressIndicator(color: AppColors.primary),
@@ -285,29 +294,36 @@ class _PackagesScreenState extends ConsumerState<PackagesScreen>
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
-              children: packages.map((package) {
-                return PackageCardV2(
-                  package: package,
-                  isExpanded: _expandedPackageId == package.id,
-                  onExpand: () =>
-                      setState(() => _expandedPackageId = package.id),
-                  onTap: () => context.push('/packages/${package.id}'),
-                  onStatusChange: (status) async {
-                    await ref
+              children: [
+                ...packages.map((package) {
+                  return PackageCardV2(
+                    package: package,
+                    isExpanded: _expandedPackageId == package.id,
+                    onExpand: () =>
+                        setState(() => _expandedPackageId = package.id),
+                    onTap: () => context.push('/packages/${package.id}'),
+                    onStatusChange: (status) async {
+                      await ref
+                          .read(packagesProvider.notifier)
+                          .updateStatus(package.id, status);
+                      ref.invalidate(packageCountsProvider);
+                    },
+                    isSelectionMode: state.isSelectionMode,
+                    isSelected: state.selectedIds.contains(package.id),
+                    onSelectionToggle: () => ref
                         .read(packagesProvider.notifier)
-                        .updateStatus(package.id, status);
-                    ref.invalidate(packageCountsProvider);
-                  },
-                  isSelectionMode: state.isSelectionMode,
-                  isSelected: state.selectedIds.contains(package.id),
-                  onSelectionToggle: () => ref
-                      .read(packagesProvider.notifier)
-                      .toggleSelection(package.id),
-                  onLongPress: () => ref
-                      .read(packagesProvider.notifier)
-                      .enterSelectionMode(package.id),
-                );
-              }).toList(),
+                        .toggleSelection(package.id),
+                    onLongPress: () => ref
+                        .read(packagesProvider.notifier)
+                        .enterSelectionMode(package.id),
+                  );
+                }),
+                if (state.hasMore)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+              ],
             ),
           ),
         ),
